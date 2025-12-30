@@ -65,6 +65,7 @@ librework/
 │   ├── API.md              # API documentation
 │   └── DEPLOYMENT.md       # Deployment guide
 ├── ARCHITECTURE.md         # System architecture
+├── FIGMA_PROTOTYPES.md     # UI/UX Design Specifications
 ├── docker-compose.yml      # Local development setup
 └── README.md              # This file
 ```
