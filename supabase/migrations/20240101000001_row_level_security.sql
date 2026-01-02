@@ -161,7 +161,7 @@ CREATE POLICY "Users can create reviews for their completed reservations"
         auth.uid() = user_id
         AND EXISTS (
             SELECT 1 FROM reservations 
-            WHERE id = review.reservation_id 
+            WHERE id = reservation_id 
             AND user_id = auth.uid()
             AND status = 'completed'
         )

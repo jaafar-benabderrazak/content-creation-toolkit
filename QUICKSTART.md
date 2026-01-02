@@ -13,7 +13,16 @@ A complete reservation platform with:
 Install these first:
 1. **Node.js 18+**: https://nodejs.org/
 2. **Python 3.11+**: https://www.python.org/downloads/
-3. **Git**: https://git-scm.com/downloads
+3. **uv** (Fast Python package manager): https://github.com/astral-sh/uv#installation
+   ```bash
+   # Quick install
+   pip install uv
+   # Or on Windows PowerShell
+   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+   # Or on macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+4. **Git**: https://git-scm.com/downloads
 
 ## Setup in 5 Minutes
 
@@ -43,17 +52,19 @@ Open terminal in project root:
 # Go to backend folder
 cd backend
 
-# Create virtual environment
-python -m venv venv
+# Create virtual environment with uv (much faster!)
+uv venv
 
 # Activate it
-# Windows:
-venv\Scripts\activate
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Windows CMD:
+.venv\Scripts\activate.bat
 # Mac/Linux:
-source venv/bin/activate
+source .venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (lightning fast with uv!)
+uv pip install -r requirements.txt
 
 # Create .env file
 copy .env.example .env   # Windows
@@ -67,6 +78,16 @@ cp .env.example .env     # Mac/Linux
 # JWT_SECRET_KEY=make-up-a-long-random-string
 
 # Run the server
+python -m app.main
+```
+
+**Alternative: Using traditional pip**
+```bash
+cd backend
+python -m venv venv
+# Windows PowerShell: venv\Scripts\Activate.ps1
+# Mac/Linux: source venv/bin/activate
+pip install -r requirements.txt
 python -m app.main
 ```
 
@@ -163,10 +184,13 @@ Then:
 ```bash
 # Make sure you're in venv:
 cd backend
-venv\Scripts\activate   # Windows
-source venv/bin/activate  # Mac/Linux
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Mac/Linux: source .venv/bin/activate
 
-# Reinstall:
+# Reinstall with uv:
+uv pip install -r requirements.txt
+
+# Or with pip:
 pip install -r requirements.txt
 ```
 
@@ -289,8 +313,8 @@ If things get messy:
 # Backend
 cd backend
 deactivate  # exit venv
-rm -rf venv __pycache__  # delete venv
-python -m venv venv  # recreate
+rm -rf .venv venv __pycache__  # delete venv
+uv venv  # recreate with uv
 # Then follow Step 3 again
 
 # Frontend

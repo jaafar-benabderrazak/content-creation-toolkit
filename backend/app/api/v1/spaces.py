@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timedelta
 from app.schemas import SpaceCreate, SpaceUpdate, SpaceResponse, UserResponse
 from app.core.supabase import get_supabase
 from app.core.dependencies import get_current_owner, verify_establishment_owner
@@ -162,8 +163,8 @@ async def get_space_qr_code(space_id: str):
     """Generate and return QR code for a space."""
     supabase = get_supabase()
     
-    # Get space
-    response = supabase.table("spaces").select("qr_code, name").eq("id", space_id).execute()
+    # Get space and establishment details
+    response = supabase.table("spaces").select("*, establishments!inner(name)").eq("id", space_id).execute()
     
     if not response.data:
         raise HTTPException(
@@ -172,6 +173,7 @@ async def get_space_qr_code(space_id: str):
         )
     
     space = response.data[0]
+    establishment_name = space["establishments"]["name"]
     
     # Generate QR code
     qr_data = f"https://librework.app/validate/{space['qr_code']}"
@@ -190,7 +192,215 @@ async def get_space_qr_code(space_id: str):
     return {
         "qr_code": space["qr_code"],
         "image_base64": img_base64,
-        "url": qr_data,
-        "space_name": space["name"]
+        "image_url": qr_data,
+        "printable_url": f"/api/v1/spaces/{space_id}/qr-code/print",
+        "space_name": space["name"],
+        "establishment_name": establishment_name
+    }
+
+
+@router.get("/{space_id}/qr-code/print")
+async def get_printable_qr_code(space_id: str):
+    """Generate a printable QR code with space details."""
+    from fastapi.responses import StreamingResponse
+    from PIL import Image, ImageDraw, ImageFont
+    
+    supabase = get_supabase()
+    
+    # Get space and establishment details
+    response = supabase.table("spaces").select("*, establishments!inner(name, category)").eq("id", space_id).execute()
+    
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Space not found"
+        )
+    
+    space = response.data[0]
+    establishment = space["establishments"]
+    
+    # Generate QR code
+    qr_data = f"https://librework.app/validate/{space['qr_code']}"
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Create a larger image with text
+    width = 800
+    height = 1000
+    img = Image.new('RGB', (width, height), 'white')
+    draw = ImageDraw.Draw(img)
+    
+    # Paste QR code in center
+    qr_img = qr_img.resize((600, 600))
+    img.paste(qr_img, (100, 200))
+    
+    # Add text (using default font)
+    # Title
+    draw.text((width//2, 50), "LibreWork", fill='black', anchor='mm', font=None)
+    draw.text((width//2, 100), establishment["name"], fill='black', anchor='mm', font=None)
+    draw.text((width//2, 130), f"Space: {space['name']}", fill='black', anchor='mm', font=None)
+    draw.text((width//2, 160), f"Type: {space['space_type']}", fill='black', anchor='mm', font=None)
+    
+    # Instructions
+    draw.text((width//2, 850), "Scan to make or validate", fill='black', anchor='mm', font=None)
+    draw.text((width//2, 880), "your reservation", fill='black', anchor='mm', font=None)
+    draw.text((width//2, 920), f"Code: {space['qr_code']}", fill='gray', anchor='mm', font=None)
+    
+    # Convert to bytes
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    
+    return StreamingResponse(buffer, media_type="image/png", headers={
+        "Content-Disposition": f"attachment; filename=qr_{space['name'].replace(' ', '_')}.png"
+    })
+
+
+@router.get("/validate/{qr_code}")
+async def validate_qr_code(qr_code: str):
+    """Validate a QR code and return space information."""
+    supabase = get_supabase()
+    
+    # Find space by QR code
+    response = supabase.table("spaces").select("*, establishments!inner(name, category, address, city)").eq("qr_code", qr_code).execute()
+    
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid QR code"
+        )
+    
+    space = response.data[0]
+    establishment = space["establishments"]
+    
+    return {
+        "is_valid": True,
+        "qr_code": qr_code,
+        "space_id": space["id"],
+        "space_name": space["name"],
+        "space_type": space["space_type"],
+        "capacity": space["capacity"],
+        "credit_price_per_hour": space.get("credit_price_per_hour", 1),
+        "is_available": space["is_available"],
+        "establishment_id": space["establishment_id"],
+        "establishment_name": establishment["name"],
+        "establishment_category": establishment["category"],
+        "establishment_address": establishment["address"],
+        "establishment_city": establishment["city"]
+    }
+
+
+@router.get("/{space_id}/availability/now")
+async def check_space_availability_now(space_id: str):
+    """Check if a space is currently available."""
+    supabase = get_supabase()
+    now = datetime.utcnow()
+    
+    # Get space info
+    space_response = supabase.table("spaces").select("*").eq("id", space_id).execute()
+    if not space_response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Space not found"
+        )
+    
+    # Check for active reservation
+    response = supabase.table("reservations")\
+        .select("*")\
+        .eq("space_id", space_id)\
+        .in_("status", ["pending", "confirmed"])\
+        .lte("start_time", now.isoformat())\
+        .gte("end_time", now.isoformat())\
+        .execute()
+    
+    is_available = len(response.data) == 0
+    
+    # Find next available slot if occupied
+    next_available = None
+    current_reservation = None
+    
+    if not is_available:
+        current_reservation = response.data[0]["id"]
+        next_available = response.data[0]["end_time"]
+    
+    return {
+        "space_id": space_id,
+        "is_available": is_available,
+        "checked_at": now.isoformat(),
+        "next_available": next_available,
+        "current_reservation": current_reservation
+    }
+
+
+@router.get("/{space_id}/availability/range")
+async def check_space_availability_range(
+    space_id: str,
+    start_date: str,
+    end_date: str
+):
+    """Check space availability for a date range."""
+    supabase = get_supabase()
+    
+    # Parse dates
+    try:
+        start_dt = datetime.fromisoformat(start_date)
+        end_dt = datetime.fromisoformat(end_date)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM:SS)"
+        )
+    
+    # Get all reservations in the range
+    response = supabase.table("reservations")\
+        .select("start_time, end_time, status")\
+        .eq("space_id", space_id)\
+        .in_("status", ["pending", "confirmed"])\
+        .gte("start_time", start_dt.isoformat())\
+        .lte("end_time", end_dt.isoformat())\
+        .order("start_time")\
+        .execute()
+    
+    # Build availability slots
+    slots = []
+    current_time = start_dt
+    
+    for reservation in response.data:
+        res_start = datetime.fromisoformat(reservation["start_time"])
+        res_end = datetime.fromisoformat(reservation["end_time"])
+        
+        # Add free slot before this reservation
+        if current_time < res_start:
+            slots.append({
+                "start": current_time.isoformat(),
+                "end": res_start.isoformat(),
+                "is_available": True
+            })
+        
+        # Add occupied slot
+        slots.append({
+            "start": res_start.isoformat(),
+            "end": res_end.isoformat(),
+            "is_available": False
+        })
+        
+        current_time = res_end
+    
+    # Add final free slot if any
+    if current_time < end_dt:
+        slots.append({
+            "start": current_time.isoformat(),
+            "end": end_dt.isoformat(),
+            "is_available": True
+        })
+    
+    return {
+        "space_id": space_id,
+        "start_date": start_date,
+        "end_date": end_date,
+        "slots": slots
     }
 

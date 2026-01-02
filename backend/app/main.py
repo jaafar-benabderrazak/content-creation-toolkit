@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1 import auth, establishments, spaces, reservations, credits, reviews
+from app.api.v1 import (
+    auth, establishments, spaces, reservations, credits, reviews, users, owner, debug,
+    favorites, activity, groups, loyalty, notifications, calendar
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -19,12 +22,23 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(debug.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(auth.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(users.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(owner.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(establishments.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(spaces.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(reservations.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(credits.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(reviews.router, prefix=f"{settings.API_V1_PREFIX}")
+
+# New feature routers
+app.include_router(favorites.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(activity.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(groups.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(loyalty.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(notifications.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(calendar.router, prefix=f"{settings.API_V1_PREFIX}")
 
 
 @app.get("/")

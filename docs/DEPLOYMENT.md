@@ -1,165 +1,144 @@
 # LibreWork - Deployment Guide
 
+## Overview
+
+This guide covers multiple deployment options for the LibreWork platform:
+1. **Quick Deploy** (Vercel + Railway) - Recommended for most users
+2. **Docker Compose** - For self-hosting
+3. **Manual Deployment** - For custom infrastructure
+4. **Cloud Platforms** - AWS, Google Cloud, Azure
+
 ## Prerequisites
 
 - Node.js 18+ installed
-- Python 3.11+ installed
-- Supabase account
-- Railway/Fly.io account (for backend deployment)
-- Vercel account (for frontend deployment)
+- Python 3.11+ installed (3.13 supported)
+- Supabase account (free tier available)
+- Git installed
+- Deployment platform account (Vercel/Railway/Render)
 
-## Supabase Setup
+---
 
-### 1. Create Supabase Project
+## Option 1: Quick Deploy (Recommended)
 
-1. Go to [supabase.com](https://supabase.com)
-2. Create a new project
-3. Note down:
-   - Project URL
-   - `anon` public key
+### Step 1: Supabase Setup
+
+1. **Create Supabase Project**
+   - Go to [supabase.com](https://supabase.com)
+   - Click "New Project"
+   - Choose organization and set project name
+   - Select region closest to your users
+   - Set a strong database password
+
+2. **Get Credentials**
+   Navigate to Settings > API and note:
+   - Project URL: `https://xxxxx.supabase.co`
+   - `anon` public key (starts with `eyJ...`)
    - `service_role` key (keep secret!)
 
-### 2. Run Migrations
+3. **Run Database Migrations**
+   - Go to SQL Editor in Supabase Dashboard
+   - Create new query
+   - Copy contents of `supabase/migrations/20240101000000_initial_schema.sql`
+   - Run query
+   - Repeat for `20240101000001_row_level_security.sql`
+   - Optionally run `supabase/seed.sql` for test data
 
-1. Navigate to SQL Editor in Supabase Dashboard
-2. Copy and run the contents of `supabase/migrations/20240101000000_initial_schema.sql`
-3. Then run `supabase/migrations/20240101000001_row_level_security.sql`
-4. Optionally run `supabase/seed.sql` for test data
+4. **Create Storage Bucket**
+   - Go to Storage section
+   - Create new bucket: `qr-codes`
+   - Set to Public
+   - Add policy for public read access:
+   ```sql
+   create policy "QR codes are publicly readable"
+   on storage.objects for select
+   using ( bucket_id = 'qr-codes' );
+   ```
 
-### 3. Create Storage Bucket
+### Step 2: Backend Deployment (Railway)
 
-1. Go to Storage in Supabase Dashboard
-2. Create a new public bucket named `qr-codes`
-3. Set appropriate policies for public read access
+1. **Sign up for Railway**
+   - Go to [railway.app](https://railway.app)
+   - Sign in with GitHub
 
-## Backend Deployment
+2. **Create New Project**
+   - Click "New Project"
+   - Select "Deploy from GitHub repo"
+   - Connect your LibreWork repository
+   - Select the repository
 
-### Local Development
+3. **Configure Build**
+   - Root directory: Leave as `/` or set to `backend`
+   - Build command (auto-detected):
+   ```bash
+   cd backend && pip install -r requirements.txt
+   ```
+   - Start command:
+   ```bash
+   cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   ```
 
-1. Navigate to backend directory:
-```bash
-cd backend
-```
+4. **Add Environment Variables**
+   In Railway Dashboard > Variables, add:
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_KEY=your_anon_key_here
+   SUPABASE_SERVICE_KEY=your_service_role_key_here
+   JWT_SECRET_KEY=generate_strong_random_key
+   DEBUG=False
+   CORS_ORIGINS=["https://your-app.vercel.app"]
+   ```
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+   Generate JWT secret:
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+5. **Deploy**
+   - Railway will automatically deploy
+   - Note your backend URL: `https://your-app.up.railway.app`
+   - Test health: `https://your-app.up.railway.app/health`
+   - View API docs: `https://your-app.up.railway.app/docs`
 
-4. Create `.env` file (copy from `.env.example`):
-```bash
-cp .env.example .env
-```
+### Step 3: Frontend Deployment (Vercel)
 
-5. Fill in environment variables:
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_anon_key
-SUPABASE_SERVICE_KEY=your_service_role_key
-JWT_SECRET_KEY=generate_a_strong_random_key
-DEBUG=True
-```
+1. **Sign up for Vercel**
+   - Go to [vercel.com](https://vercel.com)
+   - Sign in with GitHub
 
-6. Run the server:
-```bash
-python -m app.main
-# Or with uvicorn:
-uvicorn app.main:app --reload
-```
+2. **Import Project**
+   - Click "Add New" > "Project"
+   - Import your LibreWork repository
+   - Framework Preset: Next.js (auto-detected)
+   - Root Directory: `frontend`
 
-7. API will be available at http://localhost:8000
-8. API docs at http://localhost:8000/docs
+3. **Configure Build**
+   Vercel auto-detects Next.js settings:
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
+   - Install Command: `npm install`
 
-### Production Deployment (Railway)
+4. **Add Environment Variables**
+   ```env
+   NEXT_PUBLIC_API_URL=https://your-backend.up.railway.app
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+   ```
 
-1. Create a new project on Railway
-2. Connect your GitHub repository
-3. Set build command: `pip install -r backend/requirements.txt`
-4. Set start command: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables in Railway dashboard:
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-   - `SUPABASE_SERVICE_KEY`
-   - `JWT_SECRET_KEY`
-   - `DEBUG=False`
-   - `CORS_ORIGINS=["https://your-frontend-domain.vercel.app"]`
-6. Deploy!
+5. **Deploy**
+   - Click "Deploy"
+   - Wait for build to complete
+   - Your app will be live at: `https://your-app.vercel.app`
 
-### Alternative: Docker Deployment
+6. **Update Backend CORS**
+   Go back to Railway and update:
+   ```env
+   CORS_ORIGINS=["https://your-app.vercel.app"]
+   ```
+   Railway will auto-redeploy.
 
-1. Build Docker image:
-```bash
-cd backend
-docker build -t librework-backend .
-```
+---
 
-2. Run container:
-```bash
-docker run -p 8000:8000 \
-  -e SUPABASE_URL=your_url \
-  -e SUPABASE_KEY=your_key \
-  -e SUPABASE_SERVICE_KEY=your_service_key \
-  -e JWT_SECRET_KEY=your_secret \
-  librework-backend
-```
-
-## Frontend Deployment
-
-### Local Development
-
-1. Navigate to frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create `.env.local` file:
-```bash
-cp .env.local.example .env.local
-```
-
-4. Fill in environment variables:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-```
-
-5. Run development server:
-```bash
-npm run dev
-```
-
-6. App will be available at http://localhost:3000
-
-### Production Deployment (Vercel)
-
-1. Push your code to GitHub
-2. Import project in Vercel
-3. Set root directory to `frontend`
-4. Add environment variables:
-   - `NEXT_PUBLIC_API_URL=https://your-backend.railway.app`
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. Deploy!
-
-Vercel will automatically:
-- Install dependencies
-- Build the Next.js app
-- Deploy to CDN
-- Provide a production URL
-
-## Post-Deployment Configuration
+## Option 2: Docker Compose (Self-Hosting)
 
 ### 1. Update CORS Origins
 

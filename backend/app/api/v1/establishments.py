@@ -229,3 +229,114 @@ async def get_establishment_spaces(establishment_id: str):
     
     return response.data
 
+
+@router.get("/search/advanced", response_model=List[EstablishmentResponse])
+async def advanced_search(
+    q: Optional[str] = None,  # General search query
+    category: Optional[str] = None,
+    city: Optional[str] = None,
+    min_rating: Optional[float] = Query(None, ge=0, le=5),
+    services: Optional[str] = None,  # Comma-separated
+    open_now: Optional[bool] = None,
+    available_now: Optional[bool] = None,
+    min_price: Optional[int] = None,
+    max_price: Optional[int] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    radius_km: float = Query(50.0, ge=0.1, le=200),
+    limit: int = Query(50, ge=1, le=100)
+):
+    """Advanced search with multiple filters."""
+    supabase = get_supabase()
+    
+    query = supabase.table("establishments").select("*").eq("is_active", True)
+    
+    # Text search
+    if q:
+        query = query.or_(f"name.ilike.%{q}%,description.ilike.%{q}%,address.ilike.%{q}%")
+    
+    # Category filter
+    if category:
+        query = query.eq("category", category)
+    
+    # City filter
+    if city:
+        query = query.ilike("city", f"%{city}%")
+    
+    # Rating filter
+    if min_rating is not None:
+        query = query.gte("rating", min_rating)
+    
+    query = query.limit(limit * 2)  # Fetch more for post-filtering
+    response = query.execute()
+    
+    establishments = []
+    
+    for item in response.data:
+        establishment = EstablishmentResponse(**item)
+        
+        # Services filter
+        if services:
+            required_services = [s.strip() for s in services.split(",")]
+            establishment_services = item.get("services", []) or []
+            if not all(service in establishment_services for service in required_services):
+                continue
+        
+        # Open now filter (simplified - would need opening_hours in DB)
+        if open_now:
+            # TODO: Implement with actual opening hours
+            pass
+        
+        # Available now filter
+        if available_now:
+            # Check if any space is available right now
+            from datetime import datetime
+            now = datetime.utcnow()
+            spaces_response = supabase.table("spaces")\
+                .select("id")\
+                .eq("establishment_id", item["id"])\
+                .eq("is_available", True)\
+                .execute()
+            
+            if not spaces_response.data:
+                continue
+            
+            # Check for active reservations
+            has_available = False
+            for space in spaces_response.data:
+                reservations = supabase.table("reservations")\
+                    .select("id")\
+                    .eq("space_id", space["id"])\
+                    .in_("status", ["pending", "confirmed"])\
+                    .lte("start_time", now.isoformat())\
+                    .gte("end_time", now.isoformat())\
+                    .execute()
+                
+                if len(reservations.data) == 0:
+                    has_available = True
+                    break
+            
+            if not has_available:
+                continue
+        
+        # Distance calculation
+        if latitude is not None and longitude is not None:
+            from geopy.distance import geodesic
+            distance = geodesic(
+                (latitude, longitude),
+                (establishment.latitude, establishment.longitude)
+            ).kilometers
+            establishment.distance_km = round(distance, 2)
+            
+            if establishment.distance_km > radius_km:
+                continue
+        
+        establishments.append(establishment)
+    
+    # Sort by distance if coordinates provided, otherwise by rating
+    if latitude is not None and longitude is not None:
+        establishments.sort(key=lambda x: x.distance_km)
+    else:
+        establishments.sort(key=lambda x: x.rating, reverse=True)
+    
+    return establishments[:limit]

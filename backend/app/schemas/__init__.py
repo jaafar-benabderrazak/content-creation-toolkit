@@ -111,6 +111,7 @@ class EstablishmentBase(BaseModel):
     category: EstablishmentCategory
     opening_hours: dict[str, OpeningHours]
     amenities: List[str] = []
+    services: List[str] = []  # e.g., ["WiFi", "Coffee", "Printing", "Meeting Rooms"]
     images: List[str] = []
 
 
@@ -128,6 +129,7 @@ class EstablishmentUpdate(BaseModel):
     category: Optional[EstablishmentCategory] = None
     opening_hours: Optional[dict[str, OpeningHours]] = None
     amenities: Optional[List[str]] = None
+    services: Optional[List[str]] = None
     images: Optional[List[str]] = None
     is_active: Optional[bool] = None
 
@@ -149,6 +151,8 @@ class SpaceBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     space_type: SpaceType
     capacity: int = Field(..., gt=0)
+    description: Optional[str] = None
+    credit_price_per_hour: int = Field(1, gt=0, description="Credits required per hour")
 
 
 class SpaceCreate(SpaceBase):
@@ -159,6 +163,8 @@ class SpaceUpdate(BaseModel):
     name: Optional[str] = None
     space_type: Optional[SpaceType] = None
     capacity: Optional[int] = Field(None, gt=0)
+    description: Optional[str] = None
+    credit_price_per_hour: Optional[int] = Field(None, gt=0)
     is_available: Optional[bool] = None
 
 
@@ -288,4 +294,68 @@ class AvailableSpaceResult(BaseModel):
     space: SpaceResponse
     establishment: EstablishmentResponse
     earliest_available: datetime
+
+
+# Owner Dashboard schemas
+class OwnerDashboardStats(BaseModel):
+    total_establishments: int
+    total_spaces: int
+    total_reservations: int
+    total_revenue_credits: int
+    active_reservations: int
+    pending_reservations: int
+    average_rating: Optional[float] = None
+    total_reviews: int
+
+
+class EstablishmentStats(BaseModel):
+    establishment_id: str
+    establishment_name: str
+    total_spaces: int
+    total_reservations: int
+    revenue_credits: int
+    active_reservations: int
+    average_rating: Optional[float] = None
+    total_reviews: int
+    occupancy_rate: float
+
+
+# QR Code schemas
+class QRCodeResponse(BaseModel):
+    qr_code: str
+    image_base64: str
+    image_url: str
+    printable_url: str
+    space_name: str
+    establishment_name: str
+
+
+class QRCodeValidation(BaseModel):
+    qr_code: str
+    space_id: str
+    space_name: str
+    establishment_name: str
+    is_valid: bool
+
+
+# User Profile schemas
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
+    preferences: Optional[dict] = None
+
+
+class UserProfileResponse(UserResponse):
+    phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
+    preferences: Optional[dict] = None
+    total_reservations: int = 0
+    total_reviews: int = 0
+
+
+class UserReservationHistory(BaseModel):
+    reservations: List[ReservationResponse]
+    total_count: int
+    total_spent_credits: int
 

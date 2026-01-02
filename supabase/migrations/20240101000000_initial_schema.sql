@@ -2,12 +2,36 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
--- Create custom types
-CREATE TYPE user_role AS ENUM ('customer', 'owner', 'admin');
-CREATE TYPE establishment_category AS ENUM ('cafe', 'library', 'coworking', 'restaurant');
-CREATE TYPE space_type AS ENUM ('table', 'room', 'desk', 'booth');
-CREATE TYPE reservation_status AS ENUM ('pending', 'confirmed', 'checked_in', 'completed', 'cancelled');
-CREATE TYPE transaction_type AS ENUM ('purchase', 'reservation', 'cancellation_refund', 'bonus');
+-- Create custom types (with IF NOT EXISTS equivalent)
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('customer', 'owner', 'admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE establishment_category AS ENUM ('cafe', 'library', 'coworking', 'restaurant');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE space_type AS ENUM ('table', 'room', 'desk', 'booth');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE reservation_status AS ENUM ('pending', 'confirmed', 'checked_in', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE transaction_type AS ENUM ('purchase', 'reservation', 'cancellation_refund', 'bonus');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Users table (extends Supabase auth.users)
 CREATE TABLE users (

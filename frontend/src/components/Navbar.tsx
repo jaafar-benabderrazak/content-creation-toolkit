@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, User } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -16,11 +17,11 @@ interface NavbarProps {
 
 export function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Get from auth context
 
   const navLinks = [
     { name: 'Home', id: 'home' },
     { name: 'Explore', id: 'explore' },
-    { name: 'Dashboard', id: 'dashboard' },
   ];
 
   return (
@@ -34,9 +35,9 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
               className="flex items-center space-x-2"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9AB18]">
-                <span className="text-white">LW</span>
+                <span className="text-white font-bold">LW</span>
               </div>
-              <span className="text-gray-900">LibreWork</span>
+              <span className="text-xl font-semibold text-gray-900">LibreWork</span>
             </button>
           </div>
 
@@ -48,7 +49,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                 onClick={() => onNavigate(link.id)}
                 className={`${
                   currentPage === link.id
-                    ? 'text-[#F9AB18]'
+                    ? 'text-[#F9AB18] font-medium'
                     : 'text-gray-700 hover:text-[#F9AB18]'
                 } transition-colors`}
               >
@@ -57,25 +58,49 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
             ))}
           </div>
 
-          {/* User Menu */}
+          {/* Auth Buttons / User Menu */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => onNavigate('dashboard')}
+                  className="text-gray-700"
+                >
+                  Dashboard
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onNavigate('dashboard')}>
-                  My Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onNavigate('owner-dashboard')}>
-                  Owner Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onNavigate('dashboard')}>
+                      My Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onNavigate('owner-dashboard')}>
+                      Owner Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Logout</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="text-gray-700">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="bg-[#F9AB18] hover:bg-[#F8A015] text-white">
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,7 +122,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                       }}
                       className={`${
                         currentPage === link.id
-                          ? 'text-[#F9AB18]'
+                          ? 'text-[#F9AB18] font-medium'
                           : 'text-gray-700'
                       } text-left`}
                     >
@@ -105,26 +130,44 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                     </button>
                   ))}
                   <hr className="border-gray-200" />
-                  <button
-                    onClick={() => {
-                      onNavigate('dashboard');
-                      setMobileOpen(false);
-                    }}
-                    className="text-left text-gray-700"
-                  >
-                    My Dashboard
-                  </button>
-                  <button
-                    onClick={() => {
-                      onNavigate('owner-dashboard');
-                      setMobileOpen(false);
-                    }}
-                    className="text-left text-gray-700"
-                  >
-                    Owner Dashboard
-                  </button>
-                  <button className="text-left text-gray-700">Settings</button>
-                  <button className="text-left text-gray-700">Logout</button>
+                  
+                  {isAuthenticated ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          onNavigate('dashboard');
+                          setMobileOpen(false);
+                        }}
+                        className="text-left text-gray-700"
+                      >
+                        My Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          onNavigate('owner-dashboard');
+                          setMobileOpen(false);
+                        }}
+                        className="text-left text-gray-700"
+                      >
+                        Owner Dashboard
+                      </button>
+                      <button className="text-left text-gray-700">Settings</button>
+                      <button className="text-left text-gray-700">Logout</button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login" onClick={() => setMobileOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">
+                          Log in
+                        </Button>
+                      </Link>
+                      <Link href="/register" onClick={() => setMobileOpen(false)}>
+                        <Button className="w-full bg-[#F9AB18] hover:bg-[#F8A015]">
+                          Sign up
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

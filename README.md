@@ -4,13 +4,38 @@ A platform that allows users to find and reserve spaces in cafes, libraries, and
 
 ## Features
 
+### For Customers
 - **Find Establishments**: Browse cafes, libraries, coworking spaces, and restaurants
+- **🆕 Advanced Search**: Filter by location, services, rating, and real-time availability
 - **Location-Based Search**: Find nearest establishments or soonest available spots
 - **Easy Booking**: Reserve spaces with just a few clicks
+- **🆕 Group Reservations**: Create group bookings and split credits with friends
 - **Credit System**: Pay with symbolic "coffee credits" (10 free credits on signup)
-- **QR Code Validation**: Owners can validate reservations by scanning QR codes
-- **Real-time Updates**: See live availability and reservation status
+- **🆕 Loyalty & Rewards**: Earn points, unlock tiers, and get exclusive perks
+- **QR Code Scanning**: Scan QR codes to make or validate reservations
+- **🆕 Real-Time Availability**: See live space availability with auto-updates
+- **🆕 Favorites**: Save your favorite establishments for quick access
+- **User Profile**: Track your reservation history and favorite places
+- **🆕 Activity Heatmap**: Visualize your visit patterns with interactive heatmaps
+- **Statistics Dashboard**: View your spending, reviews, and visit patterns
 - **Review System**: Rate and review establishments after your visit
+- **🆕 Push Notifications**: Get real-time alerts for reservations and reminders
+- **🆕 Calendar Integration**: Export reservations to Google Calendar, Apple Calendar, Outlook
+- **🆕 Email Notifications**: Receive confirmations, reminders, and updates via email
+
+### For Space Owners
+- **🆕 Enhanced Owner Dashboard**: Comprehensive management hub with tabbed interface
+- **Establishment Management**: Create and manage multiple locations with quick switcher
+- **🆕 Reservation Management**: View, filter, check-in, and cancel bookings with detailed tables
+- **Space Configuration**: Add tables, rooms, desks with custom pricing
+- **🆕 Loyalty Program Manager**: Create custom loyalty programs with multi-tier rewards
+- **🆕 Analytics Dashboard**: Track revenue trends, customer behavior, and space performance
+- **Services Listing**: Specify available amenities (WiFi, Coffee, Printing, etc.)
+- **QR Code Generation**: Generate printable QR codes for each space
+- **Real-Time Insights**: Monitor current occupancy and availability
+- **Flexible Pricing**: Set credit price per hour for each space
+- **🆕 Group Booking Management**: Handle group reservations efficiently with member tracking
+- **Review Management**: View and analyze customer feedback with rating distribution
 
 ## Tech Stack
 
@@ -62,20 +87,51 @@ librework/
 │   ├── migrations/         # Database migrations
 │   └── seed.sql            # Sample data
 ├── docs/
-│   ├── API.md              # API documentation
-│   └── DEPLOYMENT.md       # Deployment guide
+│   ├── API.md                    # API documentation
+│   ├── DATABASE_SCHEMA.md       # Database schema
+│   ├── FEATURE_IMPLEMENTATION.md # Original features guide
+│   ├── NEW_FEATURES.md          # 🆕 New features documentation
+│   └── DEPLOYMENT.md            # Deployment guide
+├── REPLIT_DEPLOYMENT.md         # 🆕 Replit deployment (15 min)
+├── database_schema_replit.sql   # 🆕 Single schema for Replit
+├── .replit                      # 🆕 Replit configuration
+├── replit.nix                   # 🆕 Nix packages
+├── start.sh                     # 🆕 Startup script
 ├── ARCHITECTURE.md         # System architecture
 ├── FIGMA_PROTOTYPES.md     # UI/UX Design Specifications
 ├── docker-compose.yml      # Local development setup
 └── README.md              # This file
 ```
 
+## 🚀 Quick Deploy on Replit (Recommended!)
+
+**Get your app running in 15 minutes with zero configuration hassle:**
+
+1. **Import to Replit** - Fork this repo or upload the project
+2. **Follow the guide** - [`REPLIT_DEPLOYMENT.md`](./REPLIT_DEPLOYMENT.md) has step-by-step instructions
+3. **You're live!** - Application deployed with HTTPS automatically
+
+**What's Included:**
+- ✅ Complete LibreWork application
+- ✅ PostgreSQL database via Supabase (free tier)
+- ✅ Ultra-simple JWT authentication (no complex setup!)
+- ✅ QR code generation for spaces
+- ✅ Owner & customer dashboards
+- ✅ Production-ready with HTTPS
+
+[👉 Deploy on Replit Now](./REPLIT_DEPLOYMENT.md)
+
+---
+
 ## Quick Start
+
+**Want to deploy immediately?** See [Quick Deploy Guide](docs/QUICK_DEPLOY.md) for step-by-step instructions (15 minutes).
 
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Python 3.11+
+- Python 3.11+ (Python 3.13 supported)
+- [uv](https://github.com/astral-sh/uv) - Fast Python package installer (`pip install uv` or see [installation guide](https://github.com/astral-sh/uv#installation))
 - Supabase account (free tier available)
 
 ### 1. Clone Repository
@@ -95,10 +151,18 @@ cd librework
 
 ```bash
 cd backend
+
+# Using uv (recommended - much faster!)
+uv venv
+source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
+uv pip install -r requirements.txt
+
+# OR using traditional pip
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows PowerShell: venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env
+
+cp .env.example .env  # Windows: copy .env.example .env
 # Edit .env with your Supabase credentials
 python -m app.main
 ```
@@ -288,26 +352,36 @@ For issues and questions:
 
 ## Roadmap
 
-### Phase 1 (Current)
+### Phase 1 (✅ Completed)
 - [x] Core reservation system
 - [x] Credit system
 - [x] QR code validation
 - [x] Search and filtering
 - [x] Basic UI
+- [x] **Real-time availability display**
+- [x] **Favorite establishments**
+- [x] **Email notifications**
+- [x] **Advanced search with filters**
+- [x] **Activity tracking & heatmap**
+- [x] **Group reservations**
+- [x] **Loyalty & rewards program**
+- [x] **Push notifications**
+- [x] **Calendar integration**
 
 ### Phase 2 (Planned)
 - [ ] Mobile apps (React Native)
-- [ ] Push notifications
+- [ ] WebSocket real-time updates
 - [ ] Advanced analytics for owners
 - [ ] Social features
 - [ ] Payment integration
+- [ ] SMS notifications
 
 ### Phase 3 (Future)
 - [ ] AI-powered recommendations
 - [ ] Dynamic pricing
-- [ ] Calendar integration
-- [ ] Group reservations
-- [ ] Loyalty programs
+- [ ] Calendar sync (bidirectional)
+- [ ] Group reservations v2 (split payments)
+- [ ] Loyalty programs per establishment
 
 ## Acknowledgments
 

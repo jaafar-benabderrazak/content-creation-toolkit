@@ -477,6 +477,316 @@ Create a review for a completed reservation.
 
 **Response:** `201 Created`
 
+## User Profile Endpoints
+
+### Get My Profile
+
+**GET** `/api/v1/users/me/profile`
+
+Get current user's full profile with statistics.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:** `200 OK`
+```json
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "full_name": "John Doe",
+  "phone_number": "+1234567890",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "role": "customer",
+  "coffee_credits": 15,
+  "preferences": {},
+  "total_reservations": 42,
+  "total_reviews": 18,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### Update My Profile
+
+**PUT** `/api/v1/users/me/profile`
+
+Update current user's profile information.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "full_name": "John Smith",
+  "phone_number": "+1234567890",
+  "avatar_url": "https://example.com/new-avatar.jpg",
+  "preferences": {
+    "notifications": true,
+    "newsletter": false
+  }
+}
+```
+
+**Response:** `200 OK`
+
+### Get My Statistics
+
+**GET** `/api/v1/users/me/stats`
+
+Get detailed statistics for current user.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:** `200 OK`
+```json
+{
+  "total_reservations": 42,
+  "completed_reservations": 38,
+  "cancelled_reservations": 4,
+  "active_reservations": 2,
+  "total_spent_credits": 84,
+  "current_credits": 15,
+  "total_reviews": 18,
+  "average_rating_given": 4.5,
+  "favorite_establishments": [
+    {
+      "id": "uuid",
+      "name": "Café Central",
+      "category": "cafe",
+      "visit_count": 12
+    }
+  ]
+}
+```
+
+### Get My Reservation History
+
+**GET** `/api/v1/users/me/reservations`
+
+Get detailed reservation history for current user.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Query Parameters:**
+- `limit` (optional): Max results (default: 50, max: 100)
+- `offset` (optional): Pagination offset (default: 0)
+- `status` (optional): Filter by status
+
+**Response:** `200 OK`
+```json
+{
+  "reservations": [
+    {
+      "id": "uuid",
+      "space_id": "uuid",
+      "establishment_id": "uuid",
+      "start_time": "2024-01-15T10:00:00Z",
+      "end_time": "2024-01-15T12:00:00Z",
+      "status": "completed",
+      "cost_credits": 2,
+      "validation_code": "123456",
+      "checked_in_at": "2024-01-15T10:05:00Z",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T12:00:00Z"
+    }
+  ],
+  "total_count": 42,
+  "total_spent_credits": 84
+}
+```
+
+## Owner Dashboard Endpoints
+
+### Get Owner Dashboard
+
+**GET** `/api/v1/owner/dashboard`
+
+Get comprehensive dashboard statistics for owner.
+
+**Headers:** `Authorization: Bearer <token>` (owner role required)
+
+**Response:** `200 OK`
+```json
+{
+  "total_establishments": 3,
+  "total_spaces": 24,
+  "total_reservations": 156,
+  "total_revenue_credits": 312,
+  "active_reservations": 8,
+  "pending_reservations": 3,
+  "average_rating": 4.7,
+  "total_reviews": 89
+}
+```
+
+### Get Owner Establishments
+
+**GET** `/api/v1/owner/establishments`
+
+Get all establishments owned by current user.
+
+**Headers:** `Authorization: Bearer <token>` (owner role required)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Café Central",
+    "description": "Best coffee in town",
+    "address": "123 Main St",
+    "city": "Paris",
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "category": "cafe",
+    "opening_hours": {},
+    "amenities": ["wifi", "power_outlets"],
+    "services": ["Coffee", "WiFi", "Meeting Rooms"],
+    "images": [],
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]
+```
+
+### Get Establishment Statistics
+
+**GET** `/api/v1/owner/establishments/{establishment_id}/stats`
+
+Get detailed statistics for a specific establishment.
+
+**Headers:** `Authorization: Bearer <token>` (owner role required)
+
+**Response:** `200 OK`
+```json
+{
+  "establishment_id": "uuid",
+  "establishment_name": "Café Central",
+  "total_spaces": 8,
+  "total_reservations": 156,
+  "revenue_credits": 312,
+  "active_reservations": 8,
+  "average_rating": 4.7,
+  "total_reviews": 89,
+  "occupancy_rate": 68.5
+}
+```
+
+### Get Owner Reservations
+
+**GET** `/api/v1/owner/reservations`
+
+Get all reservations for owner's establishments.
+
+**Headers:** `Authorization: Bearer <token>` (owner role required)
+
+**Query Parameters:**
+- `status` (optional): Filter by status
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "uuid",
+    "user_id": "uuid",
+    "space_id": "uuid",
+    "establishment_id": "uuid",
+    "start_time": "2024-01-15T10:00:00Z",
+    "end_time": "2024-01-15T12:00:00Z",
+    "status": "confirmed",
+    "cost_credits": 2,
+    "spaces": {
+      "name": "Table 1",
+      "establishment_id": "uuid"
+    },
+    "users": {
+      "full_name": "John Doe",
+      "email": "john@example.com"
+    }
+  }
+]
+```
+
+## QR Code Extended Endpoints
+
+### Get Printable QR Code
+
+**GET** `/api/v1/spaces/{space_id}/qr-code/print`
+
+Download a printable QR code image with space details (PNG format).
+
+**Response:** `200 OK` (Content-Type: image/png)
+
+Returns a printable 800x1000px image with:
+- LibreWork branding
+- Establishment name
+- Space name and type
+- QR code (600x600px)
+- Scan instructions
+- Validation code
+
+### Validate QR Code
+
+**GET** `/api/v1/spaces/validate/{qr_code}`
+
+Validate a QR code and get associated space information.
+
+**Response:** `200 OK`
+```json
+{
+  "is_valid": true,
+  "qr_code": "abc123xyz",
+  "space_id": "uuid",
+  "space_name": "Table 1",
+  "space_type": "table",
+  "capacity": 4,
+  "credit_price_per_hour": 2,
+  "is_available": true,
+  "establishment_id": "uuid",
+  "establishment_name": "Café Central",
+  "establishment_category": "cafe",
+  "establishment_address": "123 Main St",
+  "establishment_city": "Paris"
+}
+```
+
+## Space Management Features
+
+### Space Pricing
+
+Each space can have custom credit pricing:
+
+```json
+{
+  "name": "Premium Meeting Room",
+  "space_type": "room",
+  "capacity": 8,
+  "credit_price_per_hour": 5,
+  "description": "Private meeting room with whiteboard and projector"
+}
+```
+
+### Services Configuration
+
+Establishments can list available services:
+
+```json
+{
+  "services": [
+    "WiFi",
+    "Coffee & Beverages",
+    "Printing & Scanning",
+    "Meeting Rooms",
+    "Lockers",
+    "Power Outlets",
+    "Air Conditioning",
+    "Parking",
+    "Kitchen Access",
+    "24/7 Access"
+  ]
+}
+```
+
 ## Error Responses
 
 All errors follow this format:
