@@ -1,0 +1,15 @@
+# Replit Configuration for LibreWork
+run = "bash start.sh"
+language = "python3"
+
+[env]
+PYTHONPATH = "${PYTHONPATH}:${REPL_HOME}/backend"
+NODE_ENV = "production"
+
+[nix]
+channel = "stable-23_05"
+
+[deployment]
+run = ["sh", "-c", "bash start.sh"]
+deploymentTarget = "cloudrun"
+
