@@ -33,12 +33,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Navbar correctly reflects authenticated/unauthenticated state on every page
   4. Owner dashboard is only accessible to users with the owner role (RBAC enforced end-to-end)
   5. No legacy auth code remains in the codebase (no python-jose, passlib, next-auth, Supabase Auth imports)
-**Plans**: TBD
+**Plans:** 5 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Backend auth foundation (DB migration, Stack Auth JWT verification, dependencies, RBAC simplification)
+- [ ] 01-02-PLAN.md — Frontend Stack Auth setup (SDK install, provider, handler route, Navbar, API interceptor)
+- [ ] 01-03-PLAN.md — Backend router migration & legacy cleanup (update 15+ router imports, delete legacy auth files)
+- [ ] 01-04-PLAN.md — Frontend component migration & legacy cleanup (replace all hook usages, delete legacy files)
+- [ ] 01-05-PLAN.md — RBAC integration & end-to-end verification (webhook, owner self-promotion, full flow test)
 
 ### Phase 2: Testing & Logging
 **Goal**: Backend is verified with automated tests and instrumented with structured logging for debugging
