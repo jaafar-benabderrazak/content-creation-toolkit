@@ -85,14 +85,36 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01..09 | TBD | Pending |
-| PAY-01..04 | TBD | Pending |
-| EMAIL-01..03 | TBD | Pending |
-| SEARCH-01..04 | TBD | Pending |
-| UX-01..03 | TBD | Pending |
-| I18N-01..02 | TBD | Pending |
-| OWNER-01 | TBD | Pending |
-| INFRA-01..04 | TBD | Pending |
+| AUTH-01 | Phase 1: Auth Migration | Pending |
+| AUTH-02 | Phase 1: Auth Migration | Pending |
+| AUTH-03 | Phase 1: Auth Migration | Pending |
+| AUTH-04 | Phase 1: Auth Migration | Pending |
+| AUTH-05 | Phase 1: Auth Migration | Pending |
+| AUTH-06 | Phase 1: Auth Migration | Pending |
+| AUTH-07 | Phase 1: Auth Migration | Pending |
+| AUTH-08 | Phase 1: Auth Migration | Pending |
+| AUTH-09 | Phase 1: Auth Migration | Pending |
+| PAY-01 | Phase 6: Stripe Payments | Pending |
+| PAY-02 | Phase 6: Stripe Payments | Pending |
+| PAY-03 | Phase 6: Stripe Payments | Pending |
+| PAY-04 | Phase 6: Stripe Payments | Pending |
+| EMAIL-01 | Phase 4: Email Delivery | Pending |
+| EMAIL-02 | Phase 4: Email Delivery | Pending |
+| EMAIL-03 | Phase 4: Email Delivery | Pending |
+| SEARCH-01 | Phase 5: Search & Discovery | Pending |
+| SEARCH-02 | Phase 5: Search & Discovery | Pending |
+| SEARCH-03 | Phase 5: Search & Discovery | Pending |
+| SEARCH-04 | Phase 5: Search & Discovery | Pending |
+| UX-01 | Phase 8: UI Polish & Responsive Design | Pending |
+| UX-02 | Phase 8: UI Polish & Responsive Design | Pending |
+| UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
+| I18N-01 | Phase 3: Frontend Restructuring & i18n | Pending |
+| I18N-02 | Phase 3: Frontend Restructuring & i18n | Pending |
+| OWNER-01 | Phase 7: Owner Analytics | Pending |
+| INFRA-01 | Phase 2: Testing & Logging | Pending |
+| INFRA-02 | Phase 2: Testing & Logging | Pending |
+| INFRA-03 | Phase 1: Auth Migration | Pending |
+| INFRA-04 | Phase 6: Stripe Payments | Pending |
 
 ---
-*Last updated: 2026-02-20 after requirements definition*
+*Last updated: 2026-02-20 after roadmap creation*
