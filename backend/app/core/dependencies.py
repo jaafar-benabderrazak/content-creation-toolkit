@@ -1,92 +1,98 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.core.security import decode_access_token
+"""
+FastAPI authentication dependencies for LibreWork.
+Verifies Stack Auth JWTs and resolves local user records.
+"""
+import jwt
+from fastapi import HTTPException, Request, status
+
+from app.core.stack_auth import verify_stack_auth_token
 from app.core.supabase import get_supabase
-from app.schemas import UserRole, UserResponse
-from typing import Optional
-
-security = HTTPBearer()
+from app.schemas import UserResponse, UserRole
 
 
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> UserResponse:
-    """Get the current authenticated user from JWT token."""
-    token = credentials.credentials
-    
-    payload = decode_access_token(token)
-    if payload is None:
+async def get_current_user(request: Request) -> UserResponse:
+    """Get the current authenticated user from a Stack Auth access token."""
+    token = request.headers.get("x-stack-access-token")
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Missing access token",
         )
-    
-    if payload.get("type") != "access":
+
+    try:
+        payload = verify_stack_auth_token(token)
+    except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type",
+            detail="Token has expired",
         )
-    
-    user_id: str = payload.get("sub")
-    if user_id is None:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Invalid or expired token",
         )
-    
-    # Fetch user from database
+
+    stack_auth_id = payload.get("sub")
+    if not stack_auth_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
     supabase = get_supabase()
-    response = supabase.table("users").select("*").eq("id", user_id).execute()
-    
-    if not response.data or len(response.data) == 0:
+    response = (
+        supabase.table("users")
+        .select("*")
+        .eq("stack_auth_id", stack_auth_id)
+        .single()
+        .execute()
+    )
+
+    if not response.data:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail="User not found in database",
         )
-    
-    return UserResponse(**response.data[0])
+
+    return UserResponse(**response.data)
 
 
-async def get_current_active_user(
-    current_user: UserResponse = Depends(get_current_user),
-) -> UserResponse:
-    """Get the current active user."""
-    return current_user
+async def get_current_active_user(request: Request) -> UserResponse:
+    """Alias kept for backward compatibility with existing routers."""
+    return await get_current_user(request)
 
 
-async def get_current_owner(
-    current_user: UserResponse = Depends(get_current_user),
-) -> UserResponse:
+async def get_current_owner(request: Request) -> UserResponse:
     """Get the current user if they are an owner or admin."""
-    if current_user.role not in [UserRole.OWNER, UserRole.ADMIN]:
+    user = await get_current_user(request)
+    if user.role not in (UserRole.OWNER, UserRole.ADMIN):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions. Owner role required.",
         )
-    return current_user
+    return user
 
 
-async def get_current_admin(
-    current_user: UserResponse = Depends(get_current_user),
-) -> UserResponse:
+async def get_current_admin(request: Request) -> UserResponse:
     """Get the current user if they are an admin."""
-    if current_user.role != UserRole.ADMIN:
+    user = await get_current_user(request)
+    if user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions. Admin role required.",
         )
-    return current_user
+    return user
 
 
-def verify_establishment_owner(establishment_owner_id: str, current_user: UserResponse):
+def verify_establishment_owner(
+    establishment_owner_id: str, current_user: UserResponse
+) -> bool:
     """Verify that the current user owns the establishment."""
     if current_user.role == UserRole.ADMIN:
         return True
-    
     if establishment_owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to modify this establishment",
         )
     return True
-
