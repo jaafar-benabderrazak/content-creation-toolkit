@@ -1,6 +1,9 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@stackframe/stack';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -17,7 +20,11 @@ interface NavbarProps {
 
 export function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Get from auth context
+  const user = useUser();
+  const isAuthenticated = !!user;
+  const isOwnerOrAdmin =
+    (user?.clientReadOnlyMetadata as any)?.role === 'owner' ||
+    (user?.clientReadOnlyMetadata as any)?.role === 'admin';
 
   const navLinks = [
     { name: 'Home', id: 'home' },
@@ -79,22 +86,26 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                     <DropdownMenuItem onClick={() => onNavigate('dashboard')}>
                       My Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onNavigate('owner-dashboard')}>
-                      Owner Dashboard
-                    </DropdownMenuItem>
+                    {isOwnerOrAdmin && (
+                      <DropdownMenuItem onClick={() => onNavigate('owner-dashboard')}>
+                        Owner Dashboard
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem>Settings</DropdownMenuItem>
-                    <DropdownMenuItem>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => user.signOut()}>
+                      Logout
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
               <>
-                <Link href="/login">
+                <Link href="/handler/sign-in">
                   <Button variant="ghost" className="text-gray-700">
                     Log in
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/handler/sign-up">
                   <Button className="bg-[#F9AB18] hover:bg-[#F8A015] text-white">
                     Sign up
                   </Button>
@@ -142,26 +153,33 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                       >
                         My Dashboard
                       </button>
+                      {isOwnerOrAdmin && (
+                        <button
+                          onClick={() => {
+                            onNavigate('owner-dashboard');
+                            setMobileOpen(false);
+                          }}
+                          className="text-left text-gray-700"
+                        >
+                          Owner Dashboard
+                        </button>
+                      )}
+                      <button className="text-left text-gray-700">Settings</button>
                       <button
-                        onClick={() => {
-                          onNavigate('owner-dashboard');
-                          setMobileOpen(false);
-                        }}
+                        onClick={() => user.signOut()}
                         className="text-left text-gray-700"
                       >
-                        Owner Dashboard
+                        Logout
                       </button>
-                      <button className="text-left text-gray-700">Settings</button>
-                      <button className="text-left text-gray-700">Logout</button>
                     </>
                   ) : (
                     <>
-                      <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      <Link href="/handler/sign-in" onClick={() => setMobileOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start">
                           Log in
                         </Button>
                       </Link>
-                      <Link href="/register" onClick={() => setMobileOpen(false)}>
+                      <Link href="/handler/sign-up" onClick={() => setMobileOpen(false)}>
                         <Button className="w-full bg-[#F9AB18] hover:bg-[#F8A015]">
                           Sign up
                         </Button>
