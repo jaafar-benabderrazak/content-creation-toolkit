@@ -6,12 +6,12 @@
 
 - [ ] **AUTH-01**: User can sign up and log in via Stack Auth (email/password), replacing all custom JWT auth
 - [ ] **AUTH-02**: User session is managed by Stack Auth SDK; frontend uses `useUser()` instead of custom hooks
-- [ ] **AUTH-03**: Backend verifies Stack Auth JWTs via JWKS (RS256, cached) instead of custom `decode_access_token()`
+- [x] **AUTH-03**: Backend verifies Stack Auth JWTs via JWKS (RS256, cached) instead of custom `decode_access_token()`
 - [ ] **AUTH-04**: All three frontend auth hooks (useAuth, useSimpleAuth, useAuth_replit) are replaced by Stack Auth's hook
 - [ ] **AUTH-05**: Legacy auth code is removed (Supabase Auth router, next-auth, python-jose, passlib)
 - [ ] **AUTH-06**: Navbar correctly shows authenticated/unauthenticated state based on Stack Auth session
 - [ ] **AUTH-07**: Owner components use correct token source (no more token vs access_token mismatch)
-- [ ] **AUTH-08**: RBAC roles (customer, owner, admin) work with Stack Auth user metadata
+- [x] **AUTH-08**: RBAC roles (customer, owner, admin) work with Stack Auth user metadata
 - [ ] **AUTH-09**: Existing user accounts are migrated or re-created in Stack Auth
 
 ### Payments (PAY)
@@ -53,7 +53,7 @@
 
 - [ ] **INFRA-01**: Auth, RBAC, and core API endpoints have automated test coverage
 - [ ] **INFRA-02**: Backend uses structured logging (structlog) instead of print statements
-- [ ] **INFRA-03**: Password column naming is standardized to `hashed_password` across all migrations and scripts
+- [x] **INFRA-03**: Password column naming is standardized to `hashed_password` across all migrations and scripts
 - [ ] **INFRA-04**: Double-booking is prevented at the database level (exclusion constraint or RPC function)
 
 ## v2 Requirements (Deferred)
@@ -87,12 +87,12 @@
 |-------------|-------|--------|
 | AUTH-01 | Phase 1: Auth Migration | Pending |
 | AUTH-02 | Phase 1: Auth Migration | Pending |
-| AUTH-03 | Phase 1: Auth Migration | Pending |
+| AUTH-03 | Phase 1: Auth Migration | Complete |
 | AUTH-04 | Phase 1: Auth Migration | Pending |
 | AUTH-05 | Phase 1: Auth Migration | Pending |
 | AUTH-06 | Phase 1: Auth Migration | Pending |
 | AUTH-07 | Phase 1: Auth Migration | Pending |
-| AUTH-08 | Phase 1: Auth Migration | Pending |
+| AUTH-08 | Phase 1: Auth Migration | Complete |
 | AUTH-09 | Phase 1: Auth Migration | Pending |
 | PAY-01 | Phase 6: Stripe Payments | Pending |
 | PAY-02 | Phase 6: Stripe Payments | Pending |
@@ -113,7 +113,7 @@
 | OWNER-01 | Phase 7: Owner Analytics | Pending |
 | INFRA-01 | Phase 2: Testing & Logging | Pending |
 | INFRA-02 | Phase 2: Testing & Logging | Pending |
-| INFRA-03 | Phase 1: Auth Migration | Pending |
+| INFRA-03 | Phase 1: Auth Migration | Complete |
 | INFRA-04 | Phase 6: Stripe Payments | Pending |
 
 ---

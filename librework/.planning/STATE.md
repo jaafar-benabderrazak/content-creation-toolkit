@@ -34,6 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01 P01 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -47,6 +48,8 @@ Recent decisions affecting current work:
 - [Roadmap]: UX polish is final phase — comprehensive responsive audit after all views exist
 - [Research]: Keep RBAC roles in Supabase users table, sync only identity from Stack Auth
 - [Research]: Start with basic Stripe Checkout (no Connect), add Connect later for owner payouts
+- [Phase 01]: Made JWT_SECRET_KEY optional (empty default) for Stack Auth migration
+- [Phase 01]: RBAC simplified to pure role-string lookup; no DB custom_roles join needed
 
 ### Pending Todos
 
