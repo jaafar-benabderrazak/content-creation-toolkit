@@ -194,6 +194,28 @@ Plans:
 - [ ] 09-01-PLAN.md — Fix CSS variable hex-to-HSL mismatch in globals.css (select/popover visibility bug)
 - [ ] 09-02-PLAN.md — Integrate Google Maps Places API (New) for real establishment data on Explore page
 
+### Phase 10: Add more features
+
+**Goal:** Stripe Checkout payments, Resend email notifications, next-intl i18n (FR/EN), enhanced owner analytics dashboard, user-location map centering, and Playwright E2E tests for all features
+**Depends on:** Phase 9
+**Requirements:** PAY-01, PAY-02, PAY-03, PAY-04, EMAIL-01, EMAIL-02, EMAIL-03, I18N-01, I18N-02, OWNER-01, SEARCH-01
+**Success Criteria** (what must be TRUE):
+  1. User can pay for a reservation via Stripe Checkout and reservation status updates automatically
+  2. User receives booking confirmation and cancellation emails via Resend
+  3. URLs include locale prefix (/en, /fr) with working language switcher
+  4. Owner dashboard shows revenue and occupancy charts with real data
+  5. Explore map centers on user's geolocation when permission granted
+  6. Playwright E2E tests cover all Phase 10 features
+**Plans:** 6 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Stripe backend payments + webhook handler (PAY-01, PAY-02, PAY-03)
+- [ ] 10-02-PLAN.md — Resend email integration for transactional and marketing emails (EMAIL-01, EMAIL-02, EMAIL-03)
+- [ ] 10-03-PLAN.md — Owner analytics charts + explore geolocation centering (OWNER-01, SEARCH-01)
+- [ ] 10-04-PLAN.md — Stripe frontend checkout flow + payment history (PAY-04)
+- [ ] 10-05-PLAN.md — next-intl i18n with locale routing and translations (I18N-01, I18N-02)
+- [ ] 10-06-PLAN.md — Playwright E2E tests for all Phase 10 features
+
 ---
 *Created: 2026-02-20*
 *Depth: comprehensive (8 phases)*
