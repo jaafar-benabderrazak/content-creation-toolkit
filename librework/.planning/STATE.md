@@ -35,6 +35,7 @@ Progress: [░░░░░░░░░░] 5%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 12min | 2 tasks | 6 files |
+| Phase 09 P02 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -52,6 +53,9 @@ Recent decisions affecting current work:
 - [Phase 01]: RBAC simplified to pure role-string lookup; no DB custom_roles join needed
 - [Phase 09-01]: CSS variables in globals.css must use bare HSL triples (not hex) because tailwind.config.ts wraps them in hsl(var(--X))
 - [Phase 09-01]: @theme inline and @custom-variant are Tailwind v4 syntax — inert and removed under v3
+- [Phase 09-02]: Used --legacy-peer-deps for npm install due to pre-existing react-leaflet@5/React18 conflict
+- [Phase 09-02]: Excluded openingHours from Places API fields to stay on Essentials SKU (10K free/month)
+- [Phase 09-02]: APIProvider conditionally wraps children only when NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is defined
 
 ### Roadmap Evolution
 

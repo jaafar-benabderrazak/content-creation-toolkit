@@ -29,7 +29,7 @@
 
 ### Search & Discovery (SEARCH)
 
-- [ ] **SEARCH-01**: User can discover establishments via interactive map + list view
+- [x] **SEARCH-01**: User can discover establishments via interactive map + list view
 - [ ] **SEARCH-02**: Spatial queries use PostGIS instead of in-memory distance filtering
 - [ ] **SEARCH-03**: User can filter by price range, amenities, capacity, and rating
 - [ ] **SEARCH-04**: User can filter by "open now" based on establishment opening hours
@@ -101,7 +101,7 @@
 | EMAIL-01 | Phase 4: Email Delivery | Pending |
 | EMAIL-02 | Phase 4: Email Delivery | Pending |
 | EMAIL-03 | Phase 4: Email Delivery | Pending |
-| SEARCH-01 | Phase 5: Search & Discovery | Pending |
+| SEARCH-01 | Phase 5: Search & Discovery | Complete |
 | SEARCH-02 | Phase 5: Search & Discovery | Pending |
 | SEARCH-03 | Phase 5: Search & Discovery | Pending |
 | SEARCH-04 | Phase 5: Search & Discovery | Pending |

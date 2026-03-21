@@ -188,7 +188,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 **Goal:** Select/popover/dropdown components render with correct opaque backgrounds by fixing CSS variable format, and Explore page shows real establishments from Google Places API with map markers at real GPS coordinates
 **Depends on:** Nothing (independent bugfix + feature addition)
 **Requirements:** UX-01, SEARCH-01
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md — Fix CSS variable hex-to-HSL mismatch in globals.css (select/popover visibility bug)
