@@ -36,7 +36,7 @@
 
 ### UX & Frontend (UX)
 
-- [ ] **UX-01**: All views are fully responsive on mobile, tablet, and desktop
+- [x] **UX-01**: All views are fully responsive on mobile, tablet, and desktop
 - [ ] **UX-02**: UI is refreshed with consistent design system (colors, typography, spacing, components)
 - [ ] **UX-03**: Frontend uses proper App Router routes instead of SPA-in-one-page conditional rendering
 
@@ -105,7 +105,7 @@
 | SEARCH-02 | Phase 5: Search & Discovery | Pending |
 | SEARCH-03 | Phase 5: Search & Discovery | Pending |
 | SEARCH-04 | Phase 5: Search & Discovery | Pending |
-| UX-01 | Phase 8: UI Polish & Responsive Design | Pending |
+| UX-01 | Phase 8: UI Polish & Responsive Design | Complete |
 | UX-02 | Phase 8: UI Polish & Responsive Design | Pending |
 | UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
 | I18N-01 | Phase 3: Frontend Restructuring & i18n | Pending |

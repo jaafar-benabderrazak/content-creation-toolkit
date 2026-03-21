@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 1 of 8 (Auth Migration)
-Plan: 0 of 5 in current phase
-Status: Planned — ready to execute
-Last activity: 2026-02-20 — Phase 1 planned with 5 plans in 3 waves, verification passed
+Phase: 9 of 9 (Fix Select Visibility Issues and Integrate Google Maps Open Data)
+Plan: 1 of 1 in current phase
+Status: In Progress — 09-01 complete
+Last activity: 2026-03-21 — 09-01 complete: CSS variable hex→HSL fix, select/dropdown backgrounds now opaque
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 5%
 
 ## Performance Metrics
 
@@ -50,6 +50,12 @@ Recent decisions affecting current work:
 - [Research]: Start with basic Stripe Checkout (no Connect), add Connect later for owner payouts
 - [Phase 01]: Made JWT_SECRET_KEY optional (empty default) for Stack Auth migration
 - [Phase 01]: RBAC simplified to pure role-string lookup; no DB custom_roles join needed
+- [Phase 09-01]: CSS variables in globals.css must use bare HSL triples (not hex) because tailwind.config.ts wraps them in hsl(var(--X))
+- [Phase 09-01]: @theme inline and @custom-variant are Tailwind v4 syntax — inert and removed under v3
+
+### Roadmap Evolution
+
+- Phase 9 added: Fix select visibility issues and integrate Google Maps open data
 
 ### Pending Todos
 
@@ -62,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Stopped at: Phase 1 planned and verified
-Resume file: .planning/phases/01-auth-migration/01-01-PLAN.md
+Last session: 2026-03-21
+Stopped at: Completed 09-01-PLAN.md
+Resume file: .planning/phases/09-fix-select-visibility-issues-and-integrate-google-maps-open-data/09-01-SUMMARY.md
