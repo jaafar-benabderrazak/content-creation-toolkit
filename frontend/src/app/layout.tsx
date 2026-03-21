@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { StackProvider, StackTheme } from '@stackframe/stack'
@@ -21,9 +20,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Suspense>
-          <StackProvider app={stackClientApp}>
-            <StackTheme theme={{
+        <StackProvider app={stackClientApp}>
+          <StackTheme theme={{
               light: {
                 primary: '#F9AB18',
                 primaryForeground: '#ffffff',
@@ -71,9 +69,8 @@ export default function RootLayout({
               <Providers>
                 {children}
               </Providers>
-            </StackTheme>
-          </StackProvider>
-        </Suspense>
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   )

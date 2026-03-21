@@ -22,6 +22,8 @@ interface NavbarProps {
 
 export function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const user = useUser();
   const { demoRole, enterDemo, exitDemo } = useDemoStore();
 
@@ -102,64 +104,75 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                 >
                   Dashboard
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative">
-                      <User className="h-5 w-5" />
-                      {demoRole && (
-                        <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 border-2 border-white" />
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  >
+                    <User className="h-5 w-5" />
+                    {demoRole && (
+                      <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 border-2 border-white" />
+                    )}
+                  </Button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-gray-200 bg-white p-1 shadow-lg z-50">
+                      <div className="px-3 py-1.5 text-sm text-gray-500">{displayName}</div>
+                      <div className="my-1 h-px bg-gray-100" />
+                      <button onClick={() => { onNavigate('dashboard'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
+                        My Dashboard
+                      </button>
+                      {isOwnerOrAdmin && (
+                        <button onClick={() => { onNavigate('owner-dashboard'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
+                          Owner Dashboard
+                        </button>
                       )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <div className="px-2 py-1.5 text-sm text-gray-500">{displayName}</div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => onNavigate('dashboard')}>
-                      My Dashboard
-                    </DropdownMenuItem>
-                    {isOwnerOrAdmin && (
-                      <DropdownMenuItem onClick={() => onNavigate('owner-dashboard')}>
-                        Owner Dashboard
-                      </DropdownMenuItem>
-                    )}
-                    {isOwnerOrAdmin && (
-                      <DropdownMenuItem onClick={() => onNavigate('owner-admin')}>
-                        Manage Spaces
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      {demoRole ? 'Exit Demo' : 'Logout'}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      {isOwnerOrAdmin && (
+                        <button onClick={() => { onNavigate('owner-admin'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
+                          Manage Spaces
+                        </button>
+                      )}
+                      <div className="my-1 h-px bg-gray-100" />
+                      <button onClick={() => { handleLogout(); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-red-500">
+                        {demoRole ? 'Exit Demo' : 'Logout'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>
                 {/* Demo buttons */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-2">
-                      <Play className="h-3.5 w-3.5 fill-amber-600" />
-                      Demo
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <div className="px-2 py-1.5 text-xs text-gray-400 uppercase tracking-wider">Try as</div>
-                    <DropdownMenuItem onClick={() => enterDemo('customer')}>
-                      <div>
-                        <div className="font-medium">Customer</div>
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-2"
+                    onClick={() => setDemoOpen(!demoOpen)}
+                  >
+                    <Play className="h-3.5 w-3.5 fill-amber-600" />
+                    Demo
+                  </Button>
+                  {demoOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg z-50">
+                      <div className="px-3 py-1.5 text-xs text-gray-400 uppercase tracking-wider">Try as</div>
+                      <button
+                        onClick={() => { enterDemo('customer'); setDemoOpen(false); }}
+                        className="w-full text-left rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="font-medium text-sm text-gray-900">Customer</div>
                         <div className="text-xs text-gray-400">Browse & book spaces</div>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => enterDemo('owner')}>
-                      <div>
-                        <div className="font-medium">Space Owner</div>
+                      </button>
+                      <button
+                        onClick={() => { enterDemo('owner'); setDemoOpen(false); }}
+                        className="w-full text-left rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="font-medium text-sm text-gray-900">Space Owner</div>
                         <div className="text-xs text-gray-400">Manage venues & analytics</div>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <Link href="/login">
                   <Button variant="ghost" className="text-gray-700">
                     Log in
