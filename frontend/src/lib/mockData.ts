@@ -10,6 +10,7 @@ export interface Establishment {
   amenities: string[];
   spaces: Space[];
   reviews: Review[];
+  coordinates?: { lat: number; lng: number }; // Real GPS from Places API
 }
 
 export interface Space {
@@ -78,6 +79,7 @@ export const establishments: Establishment[] = [
         date: '2025-12-18',
       },
     ],
+    coordinates: { lat: 48.8566, lng: 2.3522 },
   },
   {
     id: '2',
@@ -104,6 +106,7 @@ export const establishments: Establishment[] = [
         date: '2025-12-22',
       },
     ],
+    coordinates: { lat: 48.8484, lng: 2.3455 },
   },
   {
     id: '3',
@@ -129,6 +132,7 @@ export const establishments: Establishment[] = [
         date: '2025-12-19',
       },
     ],
+    coordinates: { lat: 48.8606, lng: 2.3376 },
   },
   {
     id: '4',
@@ -154,6 +158,7 @@ export const establishments: Establishment[] = [
         date: '2025-12-21',
       },
     ],
+    coordinates: { lat: 48.8530, lng: 2.3499 },
   },
   {
     id: '5',
@@ -179,6 +184,7 @@ export const establishments: Establishment[] = [
         date: '2025-12-23',
       },
     ],
+    coordinates: { lat: 48.8620, lng: 2.3510 },
   },
 ];
 
