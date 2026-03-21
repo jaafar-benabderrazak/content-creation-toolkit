@@ -5,8 +5,10 @@ export const stackClientApp = new StackClientApp({
   publishableClientKey: process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY!,
   tokenStore: "nextjs-cookie",
   urls: {
+    signIn: "/login",
+    signUp: "/register",
     afterSignIn: "/",
     afterSignUp: "/",
-    afterSignOut: "/handler/sign-in",
+    afterSignOut: "/login",
   },
 });
