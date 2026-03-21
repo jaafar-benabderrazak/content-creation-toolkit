@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     PARTIAL_REFUND_BEFORE_MINUTES: int = 30  # 30 minutes
     PARTIAL_REFUND_PERCENTAGE: float = 0.5  # 50%
     
+    # Stripe
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    # Email (Resend)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "LibreWork <onboarding@resend.dev>"
+
     # Search
     DEFAULT_SEARCH_RADIUS_KM: float = 10.0
     MAX_SEARCH_RESULTS: int = 50

@@ -1,264 +1,176 @@
 """
-Email notification service for LibreWork
-Supports multiple email providers: SendGrid, SMTP, Resend
+Email notification service for LibreWork using Resend.
+Supports booking confirmation, cancellation, and marketing emails.
+All functions degrade gracefully when RESEND_API_KEY is not configured.
 """
-from typing import Optional, Dict, Any
-import os
-from datetime import datetime
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import logging
+from typing import Optional
 
-# Email templates
-RESERVATION_CONFIRMATION_TEMPLATE = """
-<!DOCTYPE html>
+import resend
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+def _get_base_styles() -> str:
+    return """
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #1a1a1a; color: white; padding: 24px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header h1 { margin: 0; font-size: 22px; }
+        .accent { color: #F9AB18; }
+        .content { background-color: #f9f9f9; padding: 24px; }
+        .details { background-color: white; padding: 16px; border-left: 4px solid #F9AB18; margin: 16px 0; border-radius: 0 4px 4px 0; }
+        .details p { margin: 6px 0; }
+        .footer { text-align: center; color: #999; font-size: 12px; padding: 20px; background-color: #1a1a1a; border-radius: 0 0 8px 8px; }
+        .footer p { margin: 4px 0; color: #ccc; }
+    """
+
+
+def send_booking_confirmation(
+    to_email: str,
+    user_name: str,
+    space_name: str,
+    start_time: str,
+    end_time: str,
+) -> Optional[dict]:
+    """
+    Send booking confirmation email via Resend.
+
+    Returns the Resend response dict on success, or None if RESEND_API_KEY is
+    not configured or if sending fails. Email failure never raises to the caller.
+    """
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured — skipping booking confirmation email")
+        return None
+
+    try:
+        resend.api_key = settings.RESEND_API_KEY
+
+        html = f"""<!DOCTYPE html>
 <html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4F46E5; color: white; padding: 20px; text-align: center; }}
-        .content {{ background-color: #f9f9f9; padding: 20px; margin: 20px 0; }}
-        .details {{ background-color: white; padding: 15px; border-left: 4px solid #4F46E5; margin: 15px 0; }}
-        .code {{ font-size: 24px; font-weight: bold; color: #4F46E5; text-align: center; padding: 15px; background-color: #f0f0f0; }}
-        .footer {{ text-align: center; color: #666; font-size: 12px; padding: 20px; }}
-    </style>
-</head>
+<head><style>{_get_base_styles()}</style></head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Reservation Confirmed!</h1>
-        </div>
-        <div class="content">
-            <p>Hi {user_name},</p>
-            <p>Your reservation has been confirmed. Here are the details:</p>
-            
-            <div class="details">
-                <p><strong>Establishment:</strong> {establishment_name}</p>
-                <p><strong>Space:</strong> {space_name}</p>
-                <p><strong>Date:</strong> {date}</p>
-                <p><strong>Time:</strong> {start_time} - {end_time}</p>
-                <p><strong>Credits Charged:</strong> {credits}</p>
-            </div>
-            
-            <p><strong>Your Validation Code:</strong></p>
-            <div class="code">{validation_code}</div>
-            
-            <p>Show this code when you arrive at the establishment.</p>
-        </div>
-        <div class="footer">
-            <p>LibreWork - Find Your Perfect Space</p>
-            <p>© {year} LibreWork. All rights reserved.</p>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>Libre<span class="accent">Work</span> — Booking Confirmed</h1>
     </div>
+    <div class="content">
+      <p>Hi {user_name},</p>
+      <p>Your workspace reservation is confirmed. Here are the details:</p>
+      <div class="details">
+        <p><strong>Space:</strong> {space_name}</p>
+        <p><strong>Start:</strong> {start_time}</p>
+        <p><strong>End:</strong> {end_time}</p>
+      </div>
+      <p>We look forward to seeing you. If you need to cancel, please do so at least 2 hours in advance for a full refund.</p>
+    </div>
+    <div class="footer">
+      <p>LibreWork &mdash; Find Your Perfect Workspace</p>
+      <p>This is an automated message, please do not reply.</p>
+    </div>
+  </div>
 </body>
-</html>
-"""
+</html>"""
 
-CANCELLATION_TEMPLATE = """
-<!DOCTYPE html>
+        response = resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [to_email],
+            "subject": "Booking Confirmed — LibreWork",
+            "html": html,
+        })
+        return response
+    except Exception as exc:
+        logger.error("Failed to send booking confirmation email to %s: %s", to_email, exc)
+        return None
+
+
+def send_cancellation_email(
+    to_email: str,
+    user_name: str,
+    space_name: str,
+    start_time: str,
+) -> Optional[dict]:
+    """
+    Send cancellation notification email via Resend.
+
+    Returns the Resend response dict on success, or None if RESEND_API_KEY is
+    not configured or if sending fails. Email failure never raises to the caller.
+    """
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured — skipping cancellation email")
+        return None
+
+    try:
+        resend.api_key = settings.RESEND_API_KEY
+
+        html = f"""<!DOCTYPE html>
 <html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #EF4444; color: white; padding: 20px; text-align: center; }}
-        .content {{ background-color: #f9f9f9; padding: 20px; margin: 20px 0; }}
-        .footer {{ text-align: center; color: #666; font-size: 12px; padding: 20px; }}
-    </style>
-</head>
+<head><style>{_get_base_styles()}</style></head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Reservation Cancelled</h1>
-        </div>
-        <div class="content">
-            <p>Hi {user_name},</p>
-            <p>Your reservation has been cancelled:</p>
-            <p><strong>Establishment:</strong> {establishment_name}</p>
-            <p><strong>Date & Time:</strong> {datetime}</p>
-            <p><strong>Credits Refunded:</strong> {refund}</p>
-        </div>
-        <div class="footer">
-            <p>LibreWork - Find Your Perfect Space</p>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>Libre<span class="accent">Work</span> — Reservation Cancelled</h1>
     </div>
-</body>
-</html>
-"""
-
-REMINDER_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #10B981; color: white; padding: 20px; text-align: center; }}
-        .content {{ background-color: #f9f9f9; padding: 20px; margin: 20px 0; }}
-        .footer {{ text-align: center; color: #666; font-size: 12px; padding: 20px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Upcoming Reservation Reminder</h1>
-        </div>
-        <div class="content">
-            <p>Hi {user_name},</p>
-            <p>This is a friendly reminder about your upcoming reservation:</p>
-            <p><strong>Establishment:</strong> {establishment_name}</p>
-            <p><strong>Time:</strong> {time}</p>
-            <p><strong>Validation Code:</strong> {validation_code}</p>
-        </div>
-        <div class="footer">
-            <p>LibreWork - Find Your Perfect Space</p>
-        </div>
+    <div class="content">
+      <p>Hi {user_name},</p>
+      <p>Your reservation has been cancelled:</p>
+      <div class="details">
+        <p><strong>Space:</strong> {space_name}</p>
+        <p><strong>Original Start:</strong> {start_time}</p>
+      </div>
+      <p>Any applicable credits have been refunded to your account per our cancellation policy.</p>
     </div>
+    <div class="footer">
+      <p>LibreWork &mdash; Find Your Perfect Workspace</p>
+      <p>This is an automated message, please do not reply.</p>
+    </div>
+  </div>
 </body>
-</html>
-"""
+</html>"""
+
+        response = resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [to_email],
+            "subject": "Reservation Cancelled — LibreWork",
+            "html": html,
+        })
+        return response
+    except Exception as exc:
+        logger.error("Failed to send cancellation email to %s: %s", to_email, exc)
+        return None
 
 
-class EmailService:
-    """Email service supporting multiple providers."""
-    
-    def __init__(self):
-        self.provider = os.getenv("EMAIL_PROVIDER", "smtp")  # smtp, sendgrid, resend
-        self.from_email = os.getenv("EMAIL_FROM", "noreply@librework.app")
-        self.from_name = os.getenv("EMAIL_FROM_NAME", "LibreWork")
-        
-        # Provider-specific config
-        if self.provider == "sendgrid":
-            self.api_key = os.getenv("SENDGRID_API_KEY")
-        elif self.provider == "smtp":
-            self.smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-            self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
-            self.smtp_user = os.getenv("SMTP_USER")
-            self.smtp_password = os.getenv("SMTP_PASSWORD")
-        elif self.provider == "resend":
-            self.api_key = os.getenv("RESEND_API_KEY")
-    
-    def send_email(self, to_email: str, subject: str, html_content: str) -> bool:
-        """Send email using configured provider."""
-        try:
-            if self.provider == "sendgrid":
-                return self._send_sendgrid(to_email, subject, html_content)
-            elif self.provider == "smtp":
-                return self._send_smtp(to_email, subject, html_content)
-            elif self.provider == "resend":
-                return self._send_resend(to_email, subject, html_content)
-            else:
-                print(f"Unknown email provider: {self.provider}")
-                return False
-        except Exception as e:
-            print(f"Error sending email: {e}")
-            return False
-    
-    def _send_smtp(self, to_email: str, subject: str, html_content: str) -> bool:
-        """Send via SMTP."""
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = f"{self.from_name} <{self.from_email}>"
-        msg['To'] = to_email
-        
-        html_part = MIMEText(html_content, 'html')
-        msg.attach(html_part)
-        
-        with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-            server.starttls()
-            if self.smtp_user and self.smtp_password:
-                server.login(self.smtp_user, self.smtp_password)
-            server.send_message(msg)
-        
-        return True
-    
-    def _send_sendgrid(self, to_email: str, subject: str, html_content: str) -> bool:
-        """Send via SendGrid."""
-        from sendgrid import SendGridAPIClient
-        from sendgrid.helpers.mail import Mail
-        
-        message = Mail(
-            from_email=self.from_email,
-            to_emails=to_email,
-            subject=subject,
-            html_content=html_content
-        )
-        
-        sg = SendGridAPIClient(self.api_key)
-        response = sg.send(message)
-        return response.status_code in [200, 202]
-    
-    def _send_resend(self, to_email: str, subject: str, html_content: str) -> bool:
-        """Send via Resend."""
-        import requests
-        
-        response = requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "from": f"{self.from_name} <{self.from_email}>",
-                "to": [to_email],
-                "subject": subject,
-                "html": html_content
-            }
-        )
-        return response.status_code == 200
-    
-    def send_reservation_confirmation(self, user_data: Dict[str, Any], reservation_data: Dict[str, Any]) -> bool:
-        """Send reservation confirmation email."""
-        html = RESERVATION_CONFIRMATION_TEMPLATE.format(
-            user_name=user_data.get("full_name", "User"),
-            establishment_name=reservation_data["establishment_name"],
-            space_name=reservation_data["space_name"],
-            date=reservation_data["date"],
-            start_time=reservation_data["start_time"],
-            end_time=reservation_data["end_time"],
-            credits=reservation_data["credits"],
-            validation_code=reservation_data["validation_code"],
-            year=datetime.now().year
-        )
-        
-        return self.send_email(
-            to_email=user_data["email"],
-            subject="Reservation Confirmed - LibreWork",
-            html_content=html
-        )
-    
-    def send_cancellation(self, user_data: Dict[str, Any], reservation_data: Dict[str, Any]) -> bool:
-        """Send cancellation email."""
-        html = CANCELLATION_TEMPLATE.format(
-            user_name=user_data.get("full_name", "User"),
-            establishment_name=reservation_data["establishment_name"],
-            datetime=reservation_data["datetime"],
-            refund=reservation_data.get("refund", 0)
-        )
-        
-        return self.send_email(
-            to_email=user_data["email"],
-            subject="Reservation Cancelled - LibreWork",
-            html_content=html
-        )
-    
-    def send_reminder(self, user_data: Dict[str, Any], reservation_data: Dict[str, Any]) -> bool:
-        """Send reservation reminder."""
-        html = REMINDER_TEMPLATE.format(
-            user_name=user_data.get("full_name", "User"),
-            establishment_name=reservation_data["establishment_name"],
-            time=reservation_data["time"],
-            validation_code=reservation_data["validation_code"]
-        )
-        
-        return self.send_email(
-            to_email=user_data["email"],
-            subject="Upcoming Reservation Reminder - LibreWork",
-            html_content=html
-        )
+def send_marketing_email(
+    to_emails: list[str],
+    subject: str,
+    html_content: str,
+) -> Optional[dict]:
+    """
+    Send a marketing email to multiple recipients via Resend.
 
+    Returns the Resend response dict on success, or None if RESEND_API_KEY is
+    not configured or if sending fails.
+    """
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured — skipping marketing email")
+        return None
 
-# Global email service instance
-email_service = EmailService()
+    if not to_emails:
+        logger.warning("send_marketing_email called with empty recipient list")
+        return None
 
+    try:
+        resend.api_key = settings.RESEND_API_KEY
+
+        response = resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": to_emails,
+            "subject": subject,
+            "html": html_content,
+        })
+        return response
+    except Exception as exc:
+        logger.error("Failed to send marketing email: %s", exc)
+        return None
