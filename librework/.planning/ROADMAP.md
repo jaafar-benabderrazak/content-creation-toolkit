@@ -183,6 +183,17 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 7. Owner Analytics | 0/? | Not started | - |
 | 8. UI Polish & Responsive Design | 0/? | Not started | - |
 
+### Phase 9: Fix select visibility issues and integrate Google Maps open data
+
+**Goal:** Select/popover/dropdown components render with correct opaque backgrounds by fixing CSS variable format, and Explore page shows real establishments from Google Places API with map markers at real GPS coordinates
+**Depends on:** Nothing (independent bugfix + feature addition)
+**Requirements:** UX-01, SEARCH-01
+**Plans:** 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Fix CSS variable hex-to-HSL mismatch in globals.css (select/popover visibility bug)
+- [ ] 09-02-PLAN.md — Integrate Google Maps Places API (New) for real establishment data on Explore page
+
 ---
 *Created: 2026-02-20*
 *Depth: comprehensive (8 phases)*
