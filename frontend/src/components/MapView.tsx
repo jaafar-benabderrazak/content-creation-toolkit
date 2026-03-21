@@ -1,17 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { MapPin } from 'lucide-react'
 import type { Establishment } from '@/lib/mockData'
-
-// Mock coordinates for demo establishments
-const COORDS: Record<string, [number, number]> = {
-  '1': [48.8566, 2.3522],   // Paris center
-  '2': [48.8484, 2.3455],
-  '3': [48.8606, 2.3376],
-  '4': [48.8530, 2.3499],
-  '5': [48.8620, 2.3510],
-}
 
 interface MapViewProps {
   establishments: Establishment[]
@@ -62,7 +52,9 @@ export function MapView({ establishments, onSelect }: MapViewProps) {
       })
 
       establishments.forEach((est) => {
-        const coords = COORDS[est.id]
+        const coords = est.coordinates
+          ? [est.coordinates.lat, est.coordinates.lng] as [number, number]
+          : null
         if (!coords) return
 
         const marker = L.marker(coords, { icon: goldIcon }).addTo(map)
@@ -85,8 +77,8 @@ export function MapView({ establishments, onSelect }: MapViewProps) {
 
       // Fit bounds to markers
       const validCoords = establishments
-        .map((e) => COORDS[e.id])
-        .filter(Boolean) as [number, number][]
+        .filter((e) => e.coordinates)
+        .map((e) => [e.coordinates!.lat, e.coordinates!.lng] as [number, number])
       if (validCoords.length > 1) {
         map.fitBounds(validCoords, { padding: [40, 40] })
       }

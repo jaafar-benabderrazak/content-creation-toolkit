@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,6 +7,7 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { MapView } from './MapView';
 import { establishments, Establishment } from '../lib/mockData';
+import { fetchNearbyEstablishments } from '../lib/googlePlaces';
 
 interface ExplorePageProps {
   onNavigate: (page: string, establishmentId?: string) => void;
@@ -24,8 +25,32 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showMap, setShowMap] = useState(false);
+  const [liveEstablishments, setLiveEstablishments] = useState<Establishment[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const filteredEstablishments = establishments.filter((est) => {
+  useEffect(() => {
+    if (typeof window === 'undefined' || !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
+      return;
+    }
+
+    setIsLoading(true);
+    fetchNearbyEstablishments({ lat: 48.8566, lng: 2.3522 })
+      .then((results) => {
+        if (results.length > 0) {
+          setLiveEstablishments(results);
+        }
+      })
+      .catch(() => {
+        // Silently fall back to mock data
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const activeEstablishments = liveEstablishments.length > 0 ? liveEstablishments : establishments;
+
+  const filteredEstablishments = activeEstablishments.filter((est) => {
     const matchesSearch = est.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           est.address.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || est.category === categoryFilter;
@@ -109,72 +134,90 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
         {/* Results count */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {filteredEstablishments.length} space{filteredEstablishments.length !== 1 ? 's' : ''} found
+            {isLoading ? (
+              'Loading nearby spaces...'
+            ) : (
+              `${filteredEstablishments.length} space${filteredEstablishments.length !== 1 ? 's' : ''} found`
+            )}
           </p>
         </div>
 
-        {/* Results Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {filteredEstablishments.map((venue) => (
-            <Card
-              key={venue.id}
-              className="group cursor-pointer overflow-hidden border-gray-100 bg-white transition-all hover:shadow-lg hover:border-gray-200"
-              onClick={() => onNavigate('details', venue.id)}
-            >
-              <div className="flex flex-col sm:flex-row">
-                <div className="relative aspect-[4/3] w-full overflow-hidden sm:w-56 sm:shrink-0">
-                  <img
-                    src={venue.image}
-                    alt={venue.name}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <Badge
-                    className={`absolute top-3 left-3 shadow-sm ${
-                      venue.category === 'cafe'
-                        ? 'bg-blue-500 text-white'
-                        : venue.category === 'library'
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-violet-500 text-white'
-                    }`}
-                  >
-                    {venue.category.charAt(0).toUpperCase() + venue.category.slice(1)}
-                  </Badge>
-                </div>
-                <CardContent className="flex flex-1 flex-col justify-between p-4">
-                  <div>
-                    <div className="mb-1 flex items-start justify-between">
-                      <h3 className="font-semibold text-gray-900">{venue.name}</h3>
-                      <div className="ml-2 flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5">
-                        <span className="text-sm text-[#F9AB18]">&#9733;</span>
-                        <span className="text-sm font-medium text-gray-700">{venue.rating}</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-400 mb-2">{venue.address} &middot; {venue.distance}</p>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">{venue.description}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {venue.amenities.slice(0, 4).map((amenity, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2.5 py-1 text-xs text-gray-600 border border-gray-100"
-                      >
-                        <span>{AMENITY_ICONS[amenity] || ''}</span>
-                        {amenity}
-                      </span>
-                    ))}
-                    {venue.amenities.length > 4 && (
-                      <span className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs text-gray-400 border border-gray-100">
-                        +{venue.amenities.length - 4}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#F9AB18] border-t-transparent" />
+          </div>
+        )}
 
-        {filteredEstablishments.length === 0 && (
+        {/* Results Grid */}
+        {!isLoading && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {filteredEstablishments.map((venue) => (
+              <Card
+                key={venue.id}
+                className="group cursor-pointer overflow-hidden border-gray-100 bg-white transition-all hover:shadow-lg hover:border-gray-200"
+                onClick={() => onNavigate('details', venue.id)}
+              >
+                <div className="flex flex-col sm:flex-row">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden sm:w-56 sm:shrink-0">
+                    <img
+                      src={venue.image}
+                      alt={venue.name}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <Badge
+                      className={`absolute top-3 left-3 shadow-sm ${
+                        venue.category === 'cafe'
+                          ? 'bg-blue-500 text-white'
+                          : venue.category === 'library'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-violet-500 text-white'
+                      }`}
+                    >
+                      {venue.category.charAt(0).toUpperCase() + venue.category.slice(1)}
+                    </Badge>
+                  </div>
+                  <CardContent className="flex flex-1 flex-col justify-between p-4">
+                    <div>
+                      <div className="mb-1 flex items-start justify-between">
+                        <h3 className="font-semibold text-gray-900">{venue.name}</h3>
+                        <div className="ml-2 flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5">
+                          <span className="text-sm text-[#F9AB18]">&#9733;</span>
+                          <span className="text-sm font-medium text-gray-700">{venue.rating}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-400 mb-2">{venue.address}{venue.distance ? ` · ${venue.distance}` : ''}</p>
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">{venue.description}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {venue.amenities.slice(0, 4).map((amenity, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2.5 py-1 text-xs text-gray-600 border border-gray-100"
+                        >
+                          <span>{AMENITY_ICONS[amenity] || ''}</span>
+                          {amenity}
+                        </span>
+                      ))}
+                      {venue.amenities.length > 4 && (
+                        <span className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs text-gray-400 border border-gray-100">
+                          +{venue.amenities.length - 4}
+                        </span>
+                      )}
+                      {venue.spaces.length === 0 && (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs text-amber-600 border border-amber-100">
+                          Contact to book
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && filteredEstablishments.length === 0 && (
           <div className="py-20 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
               <Search className="h-8 w-8 text-gray-300" />
