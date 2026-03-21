@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1 import (
-    auth, establishments, spaces, reservations, credits, reviews, users, owner, debug,
-    favorites, activity, groups, loyalty, notifications, calendar
+    auth, auth_enhanced, establishments, spaces, reservations, credits, reviews, users, owner, debug,
+    favorites, activity, groups, loyalty, notifications, calendar, rbac, admin_audit
 )
 
 app = FastAPI(
@@ -23,7 +23,10 @@ app.add_middleware(
 
 # Include routers
 app.include_router(debug.router, prefix=f"{settings.API_V1_PREFIX}")
+# Legacy auth router (kept for backward compatibility)
 app.include_router(auth.router, prefix=f"{settings.API_V1_PREFIX}")
+# Enhanced auth router (new CivilDocPro-style authentication)
+app.include_router(auth_enhanced.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(users.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(owner.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(establishments.router, prefix=f"{settings.API_V1_PREFIX}")
@@ -39,6 +42,10 @@ app.include_router(groups.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(loyalty.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(notifications.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(calendar.router, prefix=f"{settings.API_V1_PREFIX}")
+
+# RBAC and Admin routers (new enhanced auth system)
+app.include_router(rbac.router, prefix=f"{settings.API_V1_PREFIX}")
+app.include_router(admin_audit.router, prefix=f"{settings.API_V1_PREFIX}")
 
 
 @app.get("/")
