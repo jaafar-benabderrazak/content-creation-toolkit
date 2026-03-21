@@ -39,7 +39,7 @@ export function AdvancedSearchForm({ onResults }: { onResults: (results: any[]) 
             };
             await performSearch(searchFilters);
           },
-          (error) => {
+          async (error) => {
             console.error('Error getting location:', error);
             alert('Could not get your location');
             await performSearch(filters);

@@ -235,7 +235,7 @@ export function LoyaltyDashboard() {
   );
 }
 
-function StatCard({ icon, title, value, color }: any) {
+function StatCard({ icon, title, value, color }: { icon: React.ReactNode; title: string; value: string | number; color: 'blue' | 'green' | 'purple' | 'orange' }) {
   const colorClasses = {
     blue: 'bg-blue-100 text-blue-600',
     green: 'bg-green-100 text-green-600',
