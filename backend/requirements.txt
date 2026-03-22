@@ -25,4 +25,5 @@ pytz==2024.1  # Timezone support
 sendgrid==6.11.0  # Email via SendGrid (optional)
 resend==2.4.0  # Email via Resend (optional)
 requests==2.32.3  # HTTP requests for external APIs
+stripe>=10.0.0  # Stripe payment processing
 

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1 import (
     auth, auth_enhanced, establishments, spaces, reservations, credits, reviews, users, owner, debug,
-    favorites, activity, groups, loyalty, notifications, calendar, rbac, admin_audit
+    favorites, activity, groups, loyalty, notifications, calendar, rbac, admin_audit, payments
 )
 
 app = FastAPI(
@@ -46,6 +46,9 @@ app.include_router(calendar.router, prefix=f"{settings.API_V1_PREFIX}")
 # RBAC and Admin routers (new enhanced auth system)
 app.include_router(rbac.router, prefix=f"{settings.API_V1_PREFIX}")
 app.include_router(admin_audit.router, prefix=f"{settings.API_V1_PREFIX}")
+
+# Payments router (Stripe Checkout)
+app.include_router(payments.router, prefix=f"{settings.API_V1_PREFIX}")
 
 
 @app.get("/")
