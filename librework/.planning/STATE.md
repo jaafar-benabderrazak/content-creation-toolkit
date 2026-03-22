@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 Phase: 10 of 10 (Add More Features)
 Plan: 6 of 6 in current phase
-Status: In Progress — 10-06 not yet started
-Last activity: 2026-03-22 — 10-05 complete: next-intl i18n with URL-based EN/FR locale routing verified in browser
+Status: Complete — all Phase 10 plans executed
+Last activity: 2026-03-22 — 10-06 complete: Playwright E2E suite with 19 tests across 5 spec files for all Phase 10 features
 
 Progress: [██████████] 100%
 
@@ -42,6 +42,7 @@ Progress: [██████████] 100%
 | Phase 10 P03 | 15min | 2 tasks | 4 files |
 | Phase 10-add-more-features P04 | 3min | 2 tasks | 3 files |
 | Phase 10 P05 | 20min | 3 tasks | 14 files |
+| Phase 10 P06 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ Recent decisions affecting current work:
 - [Phase 10-add-more-features]: PaymentHistory amount shown as EUR derived from cost_credits / 100 — consistent with Plan 01 v1 approach
 - [Phase 10-05]: next-intl 4.8.3 URL-based locale routing with [locale] app restructure; root layout pass-through avoids duplicate html
 - [Phase 10-05]: Middleware matcher excludes api|handler|_next|_vercel to prevent locale-prefixing API routes
+- [Phase 10-06]: Installed @playwright/test with --legacy-peer-deps; all backend-dependent E2E tests use page.route() mocking to avoid requiring live backend
 
 ### Roadmap Evolution
 
@@ -91,5 +93,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 10-05-PLAN.md — ready to execute 10-06
-Resume file: .planning/phases/10-add-more-features/10-06-PLAN.md
+Stopped at: Completed 10-06-PLAN.md — Phase 10 fully complete
+Resume file: N/A — all phases and plans complete
