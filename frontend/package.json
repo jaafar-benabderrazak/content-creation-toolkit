@@ -78,6 +78,7 @@
     "node": ">=18.x <=22.x"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
