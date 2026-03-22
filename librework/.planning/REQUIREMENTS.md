@@ -42,8 +42,8 @@
 
 ### Internationalization (I18N)
 
-- [ ] **I18N-01**: next-intl is configured with `[locale]` routing (FR/EN)
-- [ ] **I18N-02**: All user-facing UI text is translated to French and English
+- [x] **I18N-01**: next-intl is configured with `[locale]` routing (FR/EN)
+- [x] **I18N-02**: All user-facing UI text is translated to French and English
 
 ### Owner Tools (OWNER)
 
@@ -108,8 +108,8 @@
 | UX-01 | Phase 8: UI Polish & Responsive Design | Complete |
 | UX-02 | Phase 8: UI Polish & Responsive Design | Pending |
 | UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
-| I18N-01 | Phase 3: Frontend Restructuring & i18n | Pending |
-| I18N-02 | Phase 3: Frontend Restructuring & i18n | Pending |
+| I18N-01 | Phase 3: Frontend Restructuring & i18n | Complete |
+| I18N-02 | Phase 3: Frontend Restructuring & i18n | Complete |
 | OWNER-01 | Phase 7: Owner Analytics | Complete |
 | INFRA-01 | Phase 2: Testing & Logging | Pending |
 | INFRA-02 | Phase 2: Testing & Logging | Pending |

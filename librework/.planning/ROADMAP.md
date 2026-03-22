@@ -206,7 +206,7 @@ Plans:
   4. Owner dashboard shows revenue and occupancy charts with real data
   5. Explore map centers on user's geolocation when permission granted
   6. Playwright E2E tests cover all Phase 10 features
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — Stripe backend payments + webhook handler (PAY-01, PAY-02, PAY-03)
