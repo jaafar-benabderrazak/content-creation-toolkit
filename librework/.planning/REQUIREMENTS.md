@@ -16,9 +16,9 @@
 
 ### Payments (PAY)
 
-- [ ] **PAY-01**: User can pay for a reservation using Stripe Checkout (card payment)
-- [ ] **PAY-02**: Backend creates Stripe Checkout sessions and handles webhooks for payment confirmation
-- [ ] **PAY-03**: Reservation status updates automatically on successful payment (webhook-driven)
+- [x] **PAY-01**: User can pay for a reservation using Stripe Checkout (card payment)
+- [x] **PAY-02**: Backend creates Stripe Checkout sessions and handles webhooks for payment confirmation
+- [x] **PAY-03**: Reservation status updates automatically on successful payment (webhook-driven)
 - [ ] **PAY-04**: User can view payment history and receipts
 
 ### Email (EMAIL)
@@ -47,7 +47,7 @@
 
 ### Owner Tools (OWNER)
 
-- [ ] **OWNER-01**: Owner can view analytics dashboard showing occupancy rates, revenue, and booking trends
+- [x] **OWNER-01**: Owner can view analytics dashboard showing occupancy rates, revenue, and booking trends
 
 ### Infrastructure (INFRA)
 
@@ -94,9 +94,9 @@
 | AUTH-07 | Phase 1: Auth Migration | Pending |
 | AUTH-08 | Phase 1: Auth Migration | Complete |
 | AUTH-09 | Phase 1: Auth Migration | Pending |
-| PAY-01 | Phase 6: Stripe Payments | Pending |
-| PAY-02 | Phase 6: Stripe Payments | Pending |
-| PAY-03 | Phase 6: Stripe Payments | Pending |
+| PAY-01 | Phase 6: Stripe Payments | Complete |
+| PAY-02 | Phase 6: Stripe Payments | Complete |
+| PAY-03 | Phase 6: Stripe Payments | Complete |
 | PAY-04 | Phase 6: Stripe Payments | Pending |
 | EMAIL-01 | Phase 4: Email Delivery | Complete |
 | EMAIL-02 | Phase 4: Email Delivery | Complete |
@@ -110,7 +110,7 @@
 | UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
 | I18N-01 | Phase 3: Frontend Restructuring & i18n | Pending |
 | I18N-02 | Phase 3: Frontend Restructuring & i18n | Pending |
-| OWNER-01 | Phase 7: Owner Analytics | Pending |
+| OWNER-01 | Phase 7: Owner Analytics | Complete |
 | INFRA-01 | Phase 2: Testing & Logging | Pending |
 | INFRA-02 | Phase 2: Testing & Logging | Pending |
 | INFRA-03 | Phase 1: Auth Migration | Complete |

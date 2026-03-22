@@ -62,6 +62,9 @@ Recent decisions affecting current work:
 - [Phase 09-02]: APIProvider conditionally wraps children only when NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is defined
 - [Phase 10-add-more-features]: Replaced class-based EmailService with three standalone functions for simpler reservation call sites
 - [Phase 10-add-more-features]: Marketing endpoint falls back to all users when marketing_opt_in column absent — avoids hard DB migration dependency
+- [Phase 10-01]: Amount always fetched from DB (cost_credits * 100 EUR cents) — never from client request body
+- [Phase 10-01]: Webhook returns 200 even on confirm failure to prevent Stripe retries — logs warning
+- [Phase 10-01]: v1 payment history uses reservation rows, no separate payments table
 - [Phase 10-03]: Added optional center prop to MapView to support geolocation recenter without breaking existing usages
 - [Phase 10-03]: Occupancy stored 0-1 on backend, converted to 0-100% in frontend before charting
 
@@ -82,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 10-03-PLAN.md
-Resume file: .planning/phases/10-add-more-features/10-03-SUMMARY.md
+Stopped at: Completed 10-01-PLAN.md
+Resume file: .planning/phases/10-add-more-features/10-01-SUMMARY.md
