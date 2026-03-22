@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 10 of 10 (Add More Features)
-Plan: 3 of 3 in current phase
-Status: Complete — 10-03 done
-Last activity: 2026-03-22 — 10-03 complete: Owner analytics time-series charts (revenue LineChart, occupancy BarChart) and Explore map geolocation centering
+Plan: 4 of 6 in current phase
+Status: In Progress — 10-04 done
+Last activity: 2026-03-22 — 10-04 complete: ReservationCheckout (Stripe redirect) and PaymentHistory components integrated into UserDashboard
 
 Progress: [██████████] 100%
 
@@ -40,6 +40,7 @@ Progress: [██████████] 100%
 | Phase 10 P01 | 4min | 2 tasks | 7 files |
 | Phase 10-add-more-features P02 | 3 | 2 tasks | 5 files |
 | Phase 10 P03 | 15min | 2 tasks | 4 files |
+| Phase 10-add-more-features P04 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - [Phase 10-01]: v1 payment history uses reservation rows, no separate payments table
 - [Phase 10-03]: Added optional center prop to MapView to support geolocation recenter without breaking existing usages
 - [Phase 10-03]: Occupancy stored 0-1 on backend, converted to 0-100% in frontend before charting
+- [Phase 10-add-more-features]: Inline checkout in Pending tab (not modal) to avoid Dialog z-index issues
+- [Phase 10-add-more-features]: PaymentHistory amount shown as EUR derived from cost_credits / 100 — consistent with Plan 01 v1 approach
 
 ### Roadmap Evolution
 
@@ -85,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 10-01-PLAN.md
-Resume file: .planning/phases/10-add-more-features/10-01-SUMMARY.md
+Stopped at: Completed 10-04-PLAN.md
+Resume file: .planning/phases/10-add-more-features/10-04-SUMMARY.md

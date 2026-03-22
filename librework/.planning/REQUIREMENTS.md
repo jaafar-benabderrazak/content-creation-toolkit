@@ -19,7 +19,7 @@
 - [x] **PAY-01**: User can pay for a reservation using Stripe Checkout (card payment)
 - [x] **PAY-02**: Backend creates Stripe Checkout sessions and handles webhooks for payment confirmation
 - [x] **PAY-03**: Reservation status updates automatically on successful payment (webhook-driven)
-- [ ] **PAY-04**: User can view payment history and receipts
+- [x] **PAY-04**: User can view payment history and receipts
 
 ### Email (EMAIL)
 
@@ -97,7 +97,7 @@
 | PAY-01 | Phase 6: Stripe Payments | Complete |
 | PAY-02 | Phase 6: Stripe Payments | Complete |
 | PAY-03 | Phase 6: Stripe Payments | Complete |
-| PAY-04 | Phase 6: Stripe Payments | Pending |
+| PAY-04 | Phase 6: Stripe Payments | Complete |
 | EMAIL-01 | Phase 4: Email Delivery | Complete |
 | EMAIL-02 | Phase 4: Email Delivery | Complete |
 | EMAIL-03 | Phase 4: Email Delivery | Complete |
