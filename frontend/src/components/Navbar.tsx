@@ -14,6 +14,8 @@ import {
 } from './ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { useDemoStore, DEMO_USERS } from '@/lib/demo';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface NavbarProps {
   currentPage: string;
@@ -26,6 +28,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const user = useUser();
   const { demoRole, enterDemo, exitDemo } = useDemoStore();
+  const t = useTranslations('Navbar');
 
   const isAuthenticated = !!user || !!demoRole;
   const isOwnerOrAdmin = demoRole === 'owner' ||
@@ -45,8 +48,8 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
   };
 
   const navLinks = [
-    { name: 'Home', id: 'home' },
-    { name: 'Explore', id: 'explore' },
+    { name: t('home'), id: 'home' },
+    { name: t('explore'), id: 'explore' },
   ];
 
   return (
@@ -71,7 +74,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
             <div className="hidden md:flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1">
               <Play className="h-3 w-3 text-amber-600 fill-amber-600" />
               <span className="text-xs font-medium text-amber-700">
-                Demo: {demoRole === 'owner' ? 'Owner' : 'Customer'}
+                {t('demoLabel')}: {demoRole === 'owner' ? t('demoOwnerShort') : t('demoCustomerShort')}
               </span>
             </div>
           )}
@@ -95,6 +98,9 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
 
           {/* Auth Buttons / User Menu */}
           <div className="hidden md:flex md:items-center md:space-x-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {isAuthenticated ? (
               <>
                 <Button
@@ -102,7 +108,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                   onClick={() => onNavigate('dashboard')}
                   className="text-gray-700"
                 >
-                  Dashboard
+                  {t('dashboard')}
                 </Button>
                 <div className="relative">
                   <Button
@@ -121,21 +127,21 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                       <div className="px-3 py-1.5 text-sm text-gray-500">{displayName}</div>
                       <div className="my-1 h-px bg-gray-100" />
                       <button onClick={() => { onNavigate('dashboard'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
-                        My Dashboard
+                        {t('myDashboard')}
                       </button>
                       {isOwnerOrAdmin && (
                         <button onClick={() => { onNavigate('owner-dashboard'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
-                          Owner Dashboard
+                          {t('ownerDashboard')}
                         </button>
                       )}
                       {isOwnerOrAdmin && (
                         <button onClick={() => { onNavigate('owner-admin'); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700">
-                          Manage Spaces
+                          {t('manageSpaces')}
                         </button>
                       )}
                       <div className="my-1 h-px bg-gray-100" />
                       <button onClick={() => { handleLogout(); setUserMenuOpen(false); }} className="w-full text-left rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-red-500">
-                        {demoRole ? 'Exit Demo' : 'Logout'}
+                        {demoRole ? t('exitDemo') : t('logout')}
                       </button>
                     </div>
                   )}
@@ -151,36 +157,36 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                     onClick={() => setDemoOpen(!demoOpen)}
                   >
                     <Play className="h-3.5 w-3.5 fill-amber-600" />
-                    Demo
+                    {t('demoLabel')}
                   </Button>
                   {demoOpen && (
                     <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg z-50">
-                      <div className="px-3 py-1.5 text-xs text-gray-400 uppercase tracking-wider">Try as</div>
+                      <div className="px-3 py-1.5 text-xs text-gray-400 uppercase tracking-wider">{t('demoAs')}</div>
                       <button
                         onClick={() => { enterDemo('customer'); setDemoOpen(false); }}
                         className="w-full text-left rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="font-medium text-sm text-gray-900">Customer</div>
-                        <div className="text-xs text-gray-400">Browse & book spaces</div>
+                        <div className="font-medium text-sm text-gray-900">{t('demoCustomer')}</div>
+                        <div className="text-xs text-gray-400">{t('demoCustomerDesc')}</div>
                       </button>
                       <button
                         onClick={() => { enterDemo('owner'); setDemoOpen(false); }}
                         className="w-full text-left rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="font-medium text-sm text-gray-900">Space Owner</div>
-                        <div className="text-xs text-gray-400">Manage venues & analytics</div>
+                        <div className="font-medium text-sm text-gray-900">{t('demoOwner')}</div>
+                        <div className="text-xs text-gray-400">{t('demoOwnerDesc')}</div>
                       </button>
                     </div>
                   )}
                 </div>
                 <Link href="/login">
                   <Button variant="ghost" className="text-gray-700">
-                    Log in
+                    {t('login')}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button className="bg-[#F9AB18] hover:bg-[#F8A015] text-white">
-                    Sign up
+                    {t('register')}
                   </Button>
                 </Link>
               </>
@@ -201,7 +207,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                     <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 mb-2">
                       <Play className="h-3 w-3 text-amber-600 fill-amber-600" />
                       <span className="text-sm font-medium text-amber-700">
-                        Demo: {demoRole === 'owner' ? 'Owner' : 'Customer'}
+                        {t('demoLabel')}: {demoRole === 'owner' ? t('demoOwnerShort') : t('demoCustomerShort')}
                       </span>
                     </div>
                   )}
@@ -223,6 +229,12 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                   ))}
                   <hr className="border-gray-200" />
 
+                  {/* Mobile Language Switcher */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">{t('languageSwitcher')}:</span>
+                    <LanguageSwitcher />
+                  </div>
+
                   {isAuthenticated ? (
                     <>
                       <button
@@ -232,7 +244,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                         }}
                         className="text-left text-gray-700"
                       >
-                        My Dashboard
+                        {t('myDashboard')}
                       </button>
                       {isOwnerOrAdmin && (
                         <>
@@ -243,7 +255,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                             }}
                             className="text-left text-gray-700"
                           >
-                            Owner Dashboard
+                            {t('ownerDashboard')}
                           </button>
                           <button
                             onClick={() => {
@@ -252,7 +264,7 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                             }}
                             className="text-left text-gray-700"
                           >
-                            Manage Spaces
+                            {t('manageSpaces')}
                           </button>
                         </>
                       )}
@@ -263,33 +275,33 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
                         }}
                         className="text-left text-red-500"
                       >
-                        {demoRole ? 'Exit Demo' : 'Logout'}
+                        {demoRole ? t('exitDemo') : t('logout')}
                       </button>
                     </>
                   ) : (
                     <>
-                      <div className="text-xs text-gray-400 uppercase tracking-wider">Try Demo</div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">{t('demoAs')}</div>
                       <button
                         onClick={() => { enterDemo('customer'); setMobileOpen(false); }}
                         className="text-left text-gray-700"
                       >
-                        Demo as Customer
+                        {t('demoCustomer')}
                       </button>
                       <button
                         onClick={() => { enterDemo('owner'); setMobileOpen(false); }}
                         className="text-left text-gray-700"
                       >
-                        Demo as Owner
+                        {t('demoOwner')}
                       </button>
                       <hr className="border-gray-200" />
                       <Link href="/login" onClick={() => setMobileOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start">
-                          Log in
+                          {t('login')}
                         </Button>
                       </Link>
                       <Link href="/register" onClick={() => setMobileOpen(false)}>
                         <Button className="w-full bg-[#F9AB18] hover:bg-[#F8A015]">
-                          Sign up
+                          {t('register')}
                         </Button>
                       </Link>
                     </>
