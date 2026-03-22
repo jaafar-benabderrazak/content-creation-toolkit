@@ -8,6 +8,7 @@ from app.schemas import (
 from app.core.supabase import get_supabase
 from app.core.dependencies import get_current_user, get_current_owner
 from app.core.config import settings
+from app.core.email import send_booking_confirmation, send_cancellation_email
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
@@ -99,7 +100,7 @@ async def create_reservation(
     supabase = get_supabase()
     
     # Validate space exists and get establishment_id
-    space_response = supabase.table("spaces").select("id, establishment_id, is_available").eq("id", reservation_data.space_id).execute()
+    space_response = supabase.table("spaces").select("id, name, establishment_id, is_available").eq("id", reservation_data.space_id).execute()
     
     if not space_response.data:
         raise HTTPException(
@@ -160,9 +161,26 @@ async def create_reservation(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to create reservation"
             )
-        
-        return ReservationResponse(**response.data[0])
-        
+
+        reservation_result = ReservationResponse(**response.data[0])
+
+        # Send booking confirmation email (non-blocking)
+        try:
+            space_name = space.get("name", "your booked space")
+            start_str = reservation_data.start_time.strftime("%Y-%m-%d %H:%M")
+            end_str = reservation_data.end_time.strftime("%Y-%m-%d %H:%M")
+            send_booking_confirmation(
+                to_email=current_user.email,
+                user_name=current_user.full_name or current_user.email,
+                space_name=space_name,
+                start_time=start_str,
+                end_time=end_str,
+            )
+        except Exception:
+            pass  # Email failure must never block reservation creation
+
+        return reservation_result
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -206,15 +224,31 @@ async def cancel_reservation(
     # Update status to cancelled (trigger will handle refund)
     try:
         response = supabase.table("reservations").update({"status": ReservationStatus.CANCELLED.value}).eq("id", reservation_id).execute()
-        
+
         if not response.data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to cancel reservation"
             )
-        
-        return ReservationResponse(**response.data[0])
-        
+
+        cancelled_reservation = ReservationResponse(**response.data[0])
+
+        # Fetch space name for cancellation email
+        try:
+            space_response = supabase.table("spaces").select("name").eq("id", reservation["space_id"]).execute()
+            space_name = space_response.data[0]["name"] if space_response.data else "your space"
+            start_str = datetime.fromisoformat(reservation["start_time"]).strftime("%Y-%m-%d %H:%M")
+            send_cancellation_email(
+                to_email=current_user.email,
+                user_name=current_user.full_name or current_user.email,
+                space_name=space_name,
+                start_time=start_str,
+            )
+        except Exception:
+            pass  # Email failure must never block cancellation
+
+        return cancelled_reservation
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

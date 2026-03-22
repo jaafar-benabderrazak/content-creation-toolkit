@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1 import (
     auth, auth_enhanced, establishments, spaces, reservations, credits, reviews, users, owner, debug,
-    favorites, activity, groups, loyalty, notifications, calendar, rbac, admin_audit, payments
+    favorites, activity, groups, loyalty, notifications, calendar, rbac, admin_audit, payments, email
 )
 
 app = FastAPI(
@@ -49,6 +49,9 @@ app.include_router(admin_audit.router, prefix=f"{settings.API_V1_PREFIX}")
 
 # Payments router (Stripe Checkout)
 app.include_router(payments.router, prefix=f"{settings.API_V1_PREFIX}")
+
+# Email router (marketing emails — admin only)
+app.include_router(email.router, prefix=f"{settings.API_V1_PREFIX}")
 
 
 @app.get("/")
