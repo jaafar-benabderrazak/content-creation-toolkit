@@ -1,14 +1,45 @@
-import React, { useState } from 'react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
 import { QrCode, Camera, Plus, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
+import api from '@/lib/api';
 
 interface OwnerDashboardProps {
   onNavigate: (page: string) => void;
+}
+
+type Period = 'week' | 'month' | 'quarter';
+
+interface RevenuePoint {
+  date: string;
+  revenue: number;
+}
+
+interface OccupancyPoint {
+  date: string;
+  occupancy: number;
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
@@ -18,16 +49,43 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [validatedReservation, setValidatedReservation] = useState<any>(null);
 
-  // Mock data for the chart
-  const chartData = [
-    { day: 'Mon', reservations: 12 },
-    { day: 'Tue', reservations: 19 },
-    { day: 'Wed', reservations: 15 },
-    { day: 'Thu', reservations: 22 },
-    { day: 'Fri', reservations: 28 },
-    { day: 'Sat', reservations: 24 },
-    { day: 'Sun', reservations: 18 },
-  ];
+  const [revenuePeriod, setRevenuePeriod] = useState<Period>('week');
+  const [occupancyPeriod, setOccupancyPeriod] = useState<'week' | 'month'>('week');
+  const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
+  const [occupancyData, setOccupancyData] = useState<OccupancyPoint[]>([]);
+  const [revenueLoading, setRevenueLoading] = useState(false);
+  const [occupancyLoading, setOccupancyLoading] = useState(false);
+  const [revenueError, setRevenueError] = useState(false);
+  const [occupancyError, setOccupancyError] = useState(false);
+
+  // Fetch revenue data
+  useEffect(() => {
+    setRevenueLoading(true);
+    setRevenueError(false);
+    api
+      .get<RevenuePoint[]>(`/owner/analytics/revenue?period=${revenuePeriod}`)
+      .then((res) => setRevenueData(res.data))
+      .catch(() => setRevenueError(true))
+      .finally(() => setRevenueLoading(false));
+  }, [revenuePeriod]);
+
+  // Fetch occupancy data
+  useEffect(() => {
+    setOccupancyLoading(true);
+    setOccupancyError(false);
+    api
+      .get<OccupancyPoint[]>(`/owner/analytics/occupancy?period=${occupancyPeriod}`)
+      .then((res) =>
+        setOccupancyData(
+          res.data.map((d) => ({ ...d, occupancy: Math.round(d.occupancy * 100) }))
+        )
+      )
+      .catch(() => setOccupancyError(true))
+      .finally(() => setOccupancyLoading(false));
+  }, [occupancyPeriod]);
+
+  const formattedRevenue = revenueData.map((d) => ({ ...d, date: formatDate(d.date) }));
+  const formattedOccupancy = occupancyData.map((d) => ({ ...d, date: formatDate(d.date) }));
 
   const stats = {
     todayReservations: 8,
@@ -36,7 +94,6 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
   };
 
   const handleManualValidation = () => {
-    // Mock validation
     if (manualCode.trim()) {
       setValidatedReservation({
         userName: 'John Doe',
@@ -51,7 +108,6 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
 
   const handleScannerOpen = () => {
     setShowScanner(true);
-    // Simulate auto-scan after 2 seconds
     setTimeout(() => {
       setValidatedReservation({
         userName: 'Jane Smith',
@@ -61,6 +117,12 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
       setShowScanner(false);
       setShowSuccess(true);
     }, 2000);
+  };
+
+  const PERIOD_LABELS: Record<Period, string> = {
+    week: 'Week',
+    month: 'Month',
+    quarter: 'Quarter',
   };
 
   return (
@@ -76,8 +138,8 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
               <QrCode className="mr-2 h-4 w-4" />
               Scan QR
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="border-gray-300"
               onClick={() => onNavigate('owner-admin')}
             >
@@ -123,29 +185,130 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
           </Card>
         </div>
 
-        {/* Reservations Chart */}
-        <Card className="mb-8 border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Weekly Reservations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="day" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Bar dataKey="reservations" fill="#F9AB18" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Analytics Charts */}
+        <div className="mb-8 grid gap-6 grid-cols-1 lg:grid-cols-2">
+
+          {/* Revenue Trend Chart */}
+          <Card className="border-gray-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-gray-900">Revenue Trend</CardTitle>
+              <div className="flex gap-1">
+                {(['week', 'month', 'quarter'] as Period[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setRevenuePeriod(p)}
+                    className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                      revenuePeriod === p
+                        ? 'bg-[#F9AB18] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {PERIOD_LABELS[p]}
+                  </button>
+                ))}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {revenueLoading && (
+                <div className="flex h-[250px] items-center justify-center">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#F9AB18] border-t-transparent" />
+                </div>
+              )}
+              {!revenueLoading && revenueError && (
+                <div className="flex h-[250px] items-center justify-center text-sm text-gray-400">
+                  Unable to load revenue data
+                </div>
+              )}
+              {!revenueLoading && !revenueError && formattedRevenue.length === 0 && (
+                <div className="flex h-[250px] items-center justify-center text-sm text-gray-400">
+                  No data for this period
+                </div>
+              )}
+              {!revenueLoading && !revenueError && formattedRevenue.length > 0 && (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={formattedRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="date" stroke="#6B7280" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="#6B7280" tick={{ fontSize: 11 }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#F9AB18"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Revenue (credits)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Occupancy Rate Chart */}
+          <Card className="border-gray-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-gray-900">Occupancy Rate (%)</CardTitle>
+              <div className="flex gap-1">
+                {(['week', 'month'] as ('week' | 'month')[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setOccupancyPeriod(p)}
+                    className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                      occupancyPeriod === p
+                        ? 'bg-[#F9AB18] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {PERIOD_LABELS[p]}
+                  </button>
+                ))}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {occupancyLoading && (
+                <div className="flex h-[250px] items-center justify-center">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#F9AB18] border-t-transparent" />
+                </div>
+              )}
+              {!occupancyLoading && occupancyError && (
+                <div className="flex h-[250px] items-center justify-center text-sm text-gray-400">
+                  Unable to load occupancy data
+                </div>
+              )}
+              {!occupancyLoading && !occupancyError && formattedOccupancy.length === 0 && (
+                <div className="flex h-[250px] items-center justify-center text-sm text-gray-400">
+                  No data for this period
+                </div>
+              )}
+              {!occupancyLoading && !occupancyError && formattedOccupancy.length > 0 && (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={formattedOccupancy}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="date" stroke="#6B7280" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="#6B7280" tick={{ fontSize: 11 }} domain={[0, 100]} unit="%" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value: number) => [`${value}%`, 'Occupancy']}
+                    />
+                    <Bar dataKey="occupancy" fill="#F9AB18" radius={[4, 4, 0, 0]} name="Occupancy %" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Quick Actions */}
         <Card className="border-gray-200">
@@ -169,8 +332,8 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
               <Camera className="mr-2 h-4 w-4" />
               Manual Code Entry
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start border-gray-300"
               onClick={() => onNavigate('owner-admin')}
             >
@@ -188,7 +351,6 @@ export function OwnerDashboard({ onNavigate }: OwnerDashboardProps) {
             <DialogTitle className="text-gray-900">Scan QR Code</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Camera Viewport Mockup */}
             <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-900">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="h-48 w-48 border-4 border-[#F9AB18] rounded-lg animate-pulse" />

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List
+from fastapi import APIRouter, HTTPException, status, Depends, Query
+from typing import List, Dict, Any
+from datetime import datetime, timedelta, date
 from app.schemas import (
     UserResponse, OwnerDashboardStats, EstablishmentStats, EstablishmentResponse
 )
@@ -122,6 +123,122 @@ async def get_establishment_stats(
         total_reviews=total_reviews,
         occupancy_rate=round(occupancy_rate, 2)
     )
+
+
+@router.get("/analytics/revenue")
+async def get_revenue_analytics(
+    period: str = Query("week", pattern="^(week|month|quarter)$"),
+    current_user: UserResponse = Depends(get_current_owner)
+) -> List[Dict[str, Any]]:
+    """Get daily revenue time-series for the owner's establishments."""
+    supabase = get_supabase()
+
+    # Determine date range
+    today = date.today()
+    if period == "week":
+        days = 7
+    elif period == "month":
+        days = 30
+    else:  # quarter
+        days = 90
+    start_date = today - timedelta(days=days - 1)
+
+    # Get owner's establishments
+    establishments = supabase.table("establishments").select("id").eq("owner_id", current_user.id).execute()
+    establishment_ids = [e["id"] for e in establishments.data]
+
+    if not establishment_ids:
+        # Return zeroed series
+        return [
+            {"date": (start_date + timedelta(days=i)).isoformat(), "revenue": 0}
+            for i in range(days)
+        ]
+
+    # Fetch all non-cancelled reservations in the period
+    start_dt = datetime.combine(start_date, datetime.min.time()).isoformat()
+    reservations = (
+        supabase.table("reservations")
+        .select("cost_credits,created_at")
+        .in_("establishment_id", establishment_ids)
+        .neq("status", "cancelled")
+        .gte("created_at", start_dt)
+        .execute()
+    )
+
+    # Group by date
+    revenue_by_date: Dict[str, int] = {}
+    for r in reservations.data:
+        raw = r.get("created_at", "")
+        try:
+            res_date = datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+        except (ValueError, AttributeError):
+            continue
+        revenue_by_date[res_date] = revenue_by_date.get(res_date, 0) + (r.get("cost_credits") or 0)
+
+    # Build complete series (fill missing days with 0)
+    result = []
+    for i in range(days):
+        d = (start_date + timedelta(days=i)).isoformat()
+        result.append({"date": d, "revenue": revenue_by_date.get(d, 0)})
+
+    return result
+
+
+@router.get("/analytics/occupancy")
+async def get_occupancy_analytics(
+    period: str = Query("week", pattern="^(week|month)$"),
+    current_user: UserResponse = Depends(get_current_owner)
+) -> List[Dict[str, Any]]:
+    """Get daily occupancy time-series for the owner's establishments (simplified v1)."""
+    supabase = get_supabase()
+
+    days = 7 if period == "week" else 30
+    today = date.today()
+    start_date = today - timedelta(days=days - 1)
+
+    # Get owner's establishments
+    establishments = supabase.table("establishments").select("id").eq("owner_id", current_user.id).execute()
+    establishment_ids = [e["id"] for e in establishments.data]
+
+    if not establishment_ids:
+        return [
+            {"date": (start_date + timedelta(days=i)).isoformat(), "occupancy": 0.0}
+            for i in range(days)
+        ]
+
+    # Get total spaces count (denominator)
+    spaces_response = supabase.table("spaces").select("id", count="exact").in_("establishment_id", establishment_ids).execute()
+    total_spaces = spaces_response.count or 1  # avoid division by zero
+
+    # Fetch confirmed reservations in the period
+    start_dt = datetime.combine(start_date, datetime.min.time()).isoformat()
+    reservations = (
+        supabase.table("reservations")
+        .select("created_at")
+        .in_("establishment_id", establishment_ids)
+        .eq("status", "confirmed")
+        .gte("created_at", start_dt)
+        .execute()
+    )
+
+    # Count by date
+    count_by_date: Dict[str, int] = {}
+    for r in reservations.data:
+        raw = r.get("created_at", "")
+        try:
+            res_date = datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+        except (ValueError, AttributeError):
+            continue
+        count_by_date[res_date] = count_by_date.get(res_date, 0) + 1
+
+    # Build complete series — occupancy = confirmed_reservations / total_spaces, capped at 1.0
+    result = []
+    for i in range(days):
+        d = (start_date + timedelta(days=i)).isoformat()
+        raw_occ = count_by_date.get(d, 0) / total_spaces
+        result.append({"date": d, "occupancy": round(min(raw_occ, 1.0), 4)})
+
+    return result
 
 
 @router.get("/reservations")
