@@ -216,6 +216,23 @@ Plans:
 - [ ] 10-05-PLAN.md — next-intl i18n with locale routing and translations (I18N-01, I18N-02)
 - [x] 10-06-PLAN.md — Playwright E2E tests for all Phase 10 features (completed 2026-03-22)
 
+### Phase 11: Real map data, mobile responsive polish, and Playwright E2E testing
+
+**Goal:** Enhance map with search-by-area (Leaflet moveend), fix marker layer management bug, enrich place detail popups with distance display. Mobile responsive audit across ExplorePage, EstablishmentDetails, and UserDashboard. Playwright E2E tests for demo mode, booking flow, map interaction, and mobile viewports.
+**Depends on:** Phase 10
+**Requirements:** SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04, UX-01, UX-02, UX-03
+**Success Criteria** (what must be TRUE):
+  1. Dragging the map loads new establishments for the visible area (search-by-area)
+  2. Markers clear and re-render without duplicates when establishments change
+  3. On mobile (375px), map and list toggle exclusively; booking card does not overlap content
+  4. Playwright E2E tests pass for demo flow, map toggle, mobile layouts, and booking form
+**Plans:** 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Fix marker layer bug, add search-by-area via moveend, add distance display (SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04)
+- [ ] 11-02-PLAN.md — Mobile responsive: ResponsiveDialog, map/list toggle, booking card reflow, scrollable tabs (UX-01, UX-02, UX-03)
+- [ ] 11-03-PLAN.md — Playwright E2E tests: demo flow, map interaction, mobile viewports, booking form (SEARCH-01, UX-01)
+
 ---
 *Created: 2026-02-20*
 *Depth: comprehensive (8 phases)*
