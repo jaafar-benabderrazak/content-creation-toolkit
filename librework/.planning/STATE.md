@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 9 of 9 (Fix Select Visibility Issues and Integrate Google Maps Open Data)
-Plan: 2 of 2 in current phase
-Status: Complete — 09-01 and 09-02 done
-Last activity: 2026-03-21 — 09-02 complete: Google Places API integration with APIProvider, live fetch, mock fallback
+Phase: 10 of 10 (Add More Features)
+Plan: 3 of 3 in current phase
+Status: Complete — 10-03 done
+Last activity: 2026-03-22 — 10-03 complete: Owner analytics time-series charts (revenue LineChart, occupancy BarChart) and Explore map geolocation centering
 
 Progress: [██████████] 100%
 
@@ -37,6 +37,8 @@ Progress: [██████████] 100%
 | Phase 01 P01 | 12min | 2 tasks | 6 files |
 | Phase 09 P02 | 4 | 2 tasks | 6 files |
 | Phase 09 P02 | 30 | 2 tasks | 6 files |
+| Phase 10-add-more-features P02 | 3 | 2 tasks | 5 files |
+| Phase 10 P03 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -57,10 +59,15 @@ Recent decisions affecting current work:
 - [Phase 09-02]: Used --legacy-peer-deps for npm install due to pre-existing react-leaflet@5/React18 conflict
 - [Phase 09-02]: Excluded openingHours from Places API fields to stay on Essentials SKU (10K free/month)
 - [Phase 09-02]: APIProvider conditionally wraps children only when NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is defined
+- [Phase 10-add-more-features]: Replaced class-based EmailService with three standalone functions for simpler reservation call sites
+- [Phase 10-add-more-features]: Marketing endpoint falls back to all users when marketing_opt_in column absent — avoids hard DB migration dependency
+- [Phase 10-03]: Added optional center prop to MapView to support geolocation recenter without breaking existing usages
+- [Phase 10-03]: Occupancy stored 0-1 on backend, converted to 0-100% in frontend before charting
 
 ### Roadmap Evolution
 
 - Phase 9 added: Fix select visibility issues and integrate Google Maps open data
+- Phase 10 added: Add more features
 
 ### Pending Todos
 
@@ -73,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21
-Stopped at: Completed 09-02-PLAN.md
-Resume file: .planning/phases/09-fix-select-visibility-issues-and-integrate-google-maps-open-data/09-02-SUMMARY.md
+Last session: 2026-03-22
+Stopped at: Completed 10-03-PLAN.md
+Resume file: .planning/phases/10-add-more-features/10-03-SUMMARY.md

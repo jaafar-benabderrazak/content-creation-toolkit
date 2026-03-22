@@ -23,9 +23,9 @@
 
 ### Email (EMAIL)
 
-- [ ] **EMAIL-01**: System sends transactional emails for password reset, booking confirmation, and cancellation
-- [ ] **EMAIL-02**: Email delivery uses Resend (or equivalent) instead of printing tokens to console
-- [ ] **EMAIL-03**: System can send marketing emails (promotions, newsletter) to opted-in users
+- [x] **EMAIL-01**: System sends transactional emails for password reset, booking confirmation, and cancellation
+- [x] **EMAIL-02**: Email delivery uses Resend (or equivalent) instead of printing tokens to console
+- [x] **EMAIL-03**: System can send marketing emails (promotions, newsletter) to opted-in users
 
 ### Search & Discovery (SEARCH)
 
@@ -98,9 +98,9 @@
 | PAY-02 | Phase 6: Stripe Payments | Pending |
 | PAY-03 | Phase 6: Stripe Payments | Pending |
 | PAY-04 | Phase 6: Stripe Payments | Pending |
-| EMAIL-01 | Phase 4: Email Delivery | Pending |
-| EMAIL-02 | Phase 4: Email Delivery | Pending |
-| EMAIL-03 | Phase 4: Email Delivery | Pending |
+| EMAIL-01 | Phase 4: Email Delivery | Complete |
+| EMAIL-02 | Phase 4: Email Delivery | Complete |
+| EMAIL-03 | Phase 4: Email Delivery | Complete |
 | SEARCH-01 | Phase 5: Search & Discovery | Complete |
 | SEARCH-02 | Phase 5: Search & Discovery | Pending |
 | SEARCH-03 | Phase 5: Search & Discovery | Pending |
