@@ -6,6 +6,8 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { userReservations, userCredits, Reservation } from '../lib/mockData';
+import { ReservationCheckout } from './ReservationCheckout';
+import { PaymentHistory } from './PaymentHistory';
 
 interface UserDashboardProps {
   onNavigate: (page: string) => void;
@@ -14,8 +16,10 @@ interface UserDashboardProps {
 export function UserDashboard({ onNavigate }: UserDashboardProps) {
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [checkoutReservation, setCheckoutReservation] = useState<Reservation | null>(null);
 
   const upcomingReservations = userReservations.filter((r) => r.status === 'confirmed');
+  const pendingReservations = userReservations.filter((r) => r.status === 'pending');
   const pastReservations = userReservations.filter((r) => r.status === 'completed');
   const cancelledReservations = userReservations.filter((r) => r.status === 'cancelled');
 
@@ -48,6 +52,8 @@ export function UserDashboard({ onNavigate }: UserDashboardProps) {
         className={`h-1 w-full ${
           reservation.status === 'confirmed'
             ? 'bg-[#10B981]'
+            : reservation.status === 'pending'
+            ? 'bg-[#F59E0B]'
             : reservation.status === 'cancelled'
             ? 'bg-[#EF4444]'
             : 'bg-gray-500'
@@ -76,6 +82,20 @@ export function UserDashboard({ onNavigate }: UserDashboardProps) {
             <span>{reservation.totalCredits} Credits</span>
           </div>
         </div>
+        {reservation.status === 'pending' && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setCheckoutReservation(reservation)}
+              className="flex-1 bg-[#F9AB18] hover:bg-[#F8A015]"
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              Pay Now
+            </Button>
+            <Button variant="outline" className="border-gray-300 text-gray-700">
+              Cancel
+            </Button>
+          </div>
+        )}
         {reservation.status === 'confirmed' && (
           <div className="flex gap-2">
             <Button
@@ -139,8 +159,17 @@ export function UserDashboard({ onNavigate }: UserDashboardProps) {
         <Tabs defaultValue="upcoming" className="space-y-4">
           <TabsList className="bg-white">
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending
+              {pendingReservations.length > 0 && (
+                <span className="ml-1.5 rounded-full bg-[#F59E0B] px-1.5 py-0.5 text-xs font-medium text-white">
+                  {pendingReservations.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="past">Past</TabsTrigger>
             <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+            <TabsTrigger value="payments">Payment History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-4">
@@ -160,6 +189,31 @@ export function UserDashboard({ onNavigate }: UserDashboardProps) {
                   >
                     Explore Spaces
                   </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="pending" className="space-y-4">
+            {checkoutReservation ? (
+              <div className="py-4">
+                <ReservationCheckout
+                  reservationId={checkoutReservation.id}
+                  spaceName={checkoutReservation.spaceName}
+                  amount={checkoutReservation.totalCredits}
+                  onCancel={() => setCheckoutReservation(null)}
+                />
+              </div>
+            ) : pendingReservations.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {pendingReservations.map((reservation) => (
+                  <ReservationCard key={reservation.id} reservation={reservation} />
+                ))}
+              </div>
+            ) : (
+              <Card className="border-gray-200">
+                <CardContent className="py-16 text-center">
+                  <p className="text-gray-500">No pending reservations</p>
                 </CardContent>
               </Card>
             )}
@@ -195,6 +249,10 @@ export function UserDashboard({ onNavigate }: UserDashboardProps) {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentHistory />
           </TabsContent>
         </Tabs>
       </div>
