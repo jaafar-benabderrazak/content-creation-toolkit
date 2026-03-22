@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, MapPin, SlidersHorizontal, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, MapPin, SlidersHorizontal, X, LocateFixed } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -21,6 +21,8 @@ const AMENITY_ICONS: Record<string, string> = {
   'Phone Booths': '📞', 'Printer': '🖨️', 'Snacks': '🍪',
 };
 
+const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
+
 export function ExplorePage({ onNavigate }: ExplorePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -28,13 +30,40 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
   const [liveEstablishments, setLiveEstablishments] = useState<Establishment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Geolocation state
+  const [userCenter, setUserCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+
+  const requestGeolocation = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setLocating(false);
+      },
+      () => {
+        // Permission denied or error — silently fall back to default center
+        setLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 5000 }
+    );
+  }, []);
+
+  // Request geolocation on mount
+  useEffect(() => {
+    requestGeolocation();
+  }, [requestGeolocation]);
+
   useEffect(() => {
     if (typeof window === 'undefined' || !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
       return;
     }
 
     setIsLoading(true);
-    fetchNearbyEstablishments({ lat: 48.8566, lng: 2.3522 })
+    const center = userCenter ?? DEFAULT_CENTER;
+    fetchNearbyEstablishments(center)
       .then((results) => {
         if (results.length > 0) {
           setLiveEstablishments(results);
@@ -46,7 +75,7 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [userCenter]);
 
   const activeEstablishments = liveEstablishments.length > 0 ? liveEstablishments : establishments;
 
@@ -123,11 +152,25 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
 
         {/* Map */}
         {showMap && (
-          <div className="mb-6">
+          <div className="mb-6 relative">
             <MapView
               establishments={filteredEstablishments}
               onSelect={(id) => onNavigate('details', id)}
+              center={userCenter ?? DEFAULT_CENTER}
             />
+            {/* Center on me button */}
+            <button
+              onClick={() => {
+                requestGeolocation();
+                setShowMap(true);
+              }}
+              disabled={locating}
+              title="Center map on my location"
+              className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-md border border-gray-200 hover:bg-gray-50 disabled:opacity-60 transition-colors"
+            >
+              <LocateFixed className={`h-4 w-4 ${locating ? 'animate-spin text-[#F9AB18]' : 'text-gray-500'}`} />
+              {locating ? 'Locating...' : 'Center on me'}
+            </button>
           </div>
         )}
 
@@ -140,6 +183,9 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
               `${filteredEstablishments.length} space${filteredEstablishments.length !== 1 ? 's' : ''} found`
             )}
           </p>
+          {userCenter && (
+            <span className="text-xs text-gray-400">Showing results near your location</span>
+          )}
         </div>
 
         {/* Loading state */}

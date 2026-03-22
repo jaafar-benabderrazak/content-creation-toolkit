@@ -3,17 +3,33 @@
 import { useEffect, useRef } from 'react'
 import type { Establishment } from '@/lib/mockData'
 
+interface MapCenter {
+  lat: number
+  lng: number
+}
+
 interface MapViewProps {
   establishments: Establishment[]
   onSelect?: (id: string) => void
+  center?: MapCenter
 }
 
-export function MapView({ establishments, onSelect }: MapViewProps) {
+const DEFAULT_CENTER: MapCenter = { lat: 48.8566, lng: 2.3522 }
+
+export function MapView({ establishments, onSelect, center }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
 
+  // Recenter map when center prop changes (user geolocation update)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !center) return
+    mapInstanceRef.current.setView([center.lat, center.lng], 14)
+  }, [center])
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
+
+    const initialCenter = center ?? DEFAULT_CENTER
 
     // Dynamic import to avoid SSR issues
     import('leaflet').then((L) => {
@@ -28,7 +44,7 @@ export function MapView({ establishments, onSelect }: MapViewProps) {
       const map = L.map(mapRef.current!, {
         zoomControl: true,
         attributionControl: true,
-      }).setView([48.8566, 2.3522], 14)
+      }).setView([initialCenter.lat, initialCenter.lng], 14)
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -92,6 +108,7 @@ export function MapView({ establishments, onSelect }: MapViewProps) {
         mapInstanceRef.current = null
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [establishments, onSelect])
 
   return (
