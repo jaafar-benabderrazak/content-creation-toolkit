@@ -37,6 +37,7 @@ Progress: [██████████] 100%
 | Phase 01 P01 | 12min | 2 tasks | 6 files |
 | Phase 09 P02 | 4 | 2 tasks | 6 files |
 | Phase 09 P02 | 30 | 2 tasks | 6 files |
+| Phase 10 P01 | 4min | 2 tasks | 7 files |
 | Phase 10-add-more-features P02 | 3 | 2 tasks | 5 files |
 | Phase 10 P03 | 15min | 2 tasks | 4 files |
 
