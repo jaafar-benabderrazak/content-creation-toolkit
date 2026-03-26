@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 12 of 12 (Complete Auth Migration, App Router Routes, Double-Booking Prevention, Search Filters, Structured Logging, and Test Coverage)
-Plan: 4 of 5 in current phase
-Status: In Progress — Phase 12 Plan 04 executed
-Last activity: 2026-03-26 — 12-04 complete: frontend auth consolidated to Stack Auth useUser()/api instance; 7 components migrated from localStorage+Bearer; user migration script created
+Plan: 5 of 5 in current phase
+Status: Phase 12 Complete — all 5 plans executed
+Last activity: 2026-03-26 — 12-05 complete: pytest test infrastructure with 57 passing tests covering auth 401/200, RBAC 403/200, reservation 409 double-booking — zero real network calls
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [████████░░] 80%
 | Phase 12 P01 | 4min | 2 tasks | 10 files |
 | Phase 12 P02 | 4min | 2 tasks | 4 files |
 | Phase 12 P03 | 7min | 2 tasks | 12 files |
+| Phase 12 P05 | 15min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 12-04]: useAuth.tsx retained as thin useUser() wrapper — adds role/metadata normalization (clientMetadata.role, coffee_credits); wrapper itself contains no legacy auth calls
 - [Phase 12-04]: 7 components were using fetch+localStorage.getItem('token'/'access_token')+Authorization:Bearer — these tokens never existed in Stack Auth localStorage; replaced all with api instance
 - [Phase 12-04]: Migration script checks email in Stack Auth before create — idempotent; password reset required on first login since legacy hashes cannot be imported
+- [Phase 12-05]: patch supabase.create_client at module scope in conftest.py (not get_supabase) to prevent real network call at app import time
+- [Phase 12-05]: async dependency tests call get_current_user/get_current_owner/get_current_admin directly without HTTP layer — more precise isolation
+- [Phase 12-05]: test_dependencies.py/test_rbac_permissions.py used instead of plan-specified test_auth.py/test_rbac.py — equivalent coverage
 
 ### Roadmap Evolution
 
@@ -123,5 +127,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 12-04-PLAN.md — consolidated frontend auth (7 components from localStorage+Bearer to api instance), created user migration script
-Resume file: N/A — continue with 12-05
+Stopped at: Completed 12-05-PLAN.md — pytest test infrastructure with 57 passing tests; auth/RBAC/reservation coverage; Phase 12 complete
+Resume file: N/A — Phase 12 is final phase, all plans complete
