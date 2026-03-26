@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 11 of 11 (Real Map Data, Mobile Responsive Polish, and Playwright E2E Testing)
-Plan: 2 of 3 in current phase
-Status: In progress — Phase 11 Plan 02 executed
-Last activity: 2026-03-26 — 11-02 complete: Mobile responsive audit — ResponsiveDialog, map/list toggle, scrollable tabs
+Plan: 3 of 3 in current phase
+Status: Complete — Phase 11 Plan 03 executed
+Last activity: 2026-03-26 — 11-03 complete: Playwright E2E — demo-flow, explore-map, mobile-viewport, booking-flow specs; Pixel 5 mobile-chrome project
 
 Progress: [██████████] 100%
 
@@ -45,6 +45,7 @@ Progress: [██████████] 100%
 | Phase 10 P06 | 3min | 2 tasks | 7 files |
 | Phase 11 P02 | 15min | 2 tasks | 4 files |
 | Phase 11 P01 | 4min | 2 tasks | 3 files |
+| Phase 11 P03 | 14min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,11 @@ Recent decisions affecting current work:
 - [Phase 11-02]: ResponsiveDialog wraps both Sheet and Dialog internally — callers pass children directly, no extra content wrapper needed
 - [Phase 11-02]: showList = !isMobile || !showMap keeps desktop layout fully unaffected (always true when not mobile)
 - [Phase 11-02]: lg:sticky lg:top-20 scopes sticky positioning to large breakpoints only, preventing booking card overlap on 375px viewports
+- [Phase 11-03]: Playwright mobile-chrome project with Pixel 5 device runs all 44 E2E tests across both desktop and mobile viewports
+- [Phase 11-03]: Demo dropdown buttons matched via .filter({ hasText }) — buttons contain nested divs not direct text nodes, so getByRole name match fails
+- [Phase 11-03]: data-slot="select-item" is the correct Radix UI Select item selector in this shadcn setup (not data-radix-select-item)
+- [Phase 11-03]: navigateToExplore helper branches on md:flex visibility to handle desktop nav vs hamburger Sheet on mobile
+- [Phase 11-03]: Leaflet "Map container is already initialized." filtered as known re-init warning, not a critical error
 
 ### Roadmap Evolution
 
@@ -103,5 +109,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 11-01-PLAN.md — Leaflet marker fix + search-by-area + Haversine distance
-Resume file: N/A — continue with 11-03
+Stopped at: Completed 11-03-PLAN.md — Playwright E2E: demo-flow, explore-map, mobile-viewport, booking-flow; mobile-chrome Pixel 5 project
+Resume file: N/A — Phase 11 complete
