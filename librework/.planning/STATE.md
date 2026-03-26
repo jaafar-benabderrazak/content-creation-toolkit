@@ -44,6 +44,7 @@ Progress: [██████████] 100%
 | Phase 10 P05 | 20min | 3 tasks | 14 files |
 | Phase 10 P06 | 3min | 2 tasks | 7 files |
 | Phase 11 P02 | 15min | 2 tasks | 4 files |
+| Phase 11 P01 | 4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,10 @@ Recent decisions affecting current work:
 - [Phase 10-05]: next-intl 4.8.3 URL-based locale routing with [locale] app restructure; root layout pass-through avoids duplicate html
 - [Phase 10-05]: Middleware matcher excludes api|handler|_next|_vercel to prevent locale-prefixing API routes
 - [Phase 10-06]: Installed @playwright/test with --legacy-peer-deps; all backend-dependent E2E tests use page.route() mocking to avoid requiring live backend
+- [Phase 11-01]: LayerGroup used for Leaflet markers so clearLayers() removes old markers without destroying the map instance
+- [Phase 11-01]: Separate mount-only init effect ([]) from establishments update effect ([establishments]) — root cause of marker duplication was init effect re-running on every establishments change
+- [Phase 11-01]: onSelectRef and onBoundsChangeRef pattern used to avoid stale closures in Leaflet event handlers; both updated via sync useEffects
+- [Phase 11-01]: computeDistance returns metres below 1000 ('850 m'), kilometres above ('1.2 km'); 500ms debounce on map moveend prevents Places API spam
 - [Phase 11-02]: ResponsiveDialog wraps both Sheet and Dialog internally — callers pass children directly, no extra content wrapper needed
 - [Phase 11-02]: showList = !isMobile || !showMap keeps desktop layout fully unaffected (always true when not mobile)
 - [Phase 11-02]: lg:sticky lg:top-20 scopes sticky positioning to large breakpoints only, preventing booking card overlap on 375px viewports
@@ -98,5 +103,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 11-02-PLAN.md — mobile responsive audit complete
+Stopped at: Completed 11-01-PLAN.md — Leaflet marker fix + search-by-area + Haversine distance
 Resume file: N/A — continue with 11-03
