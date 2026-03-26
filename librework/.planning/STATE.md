@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 10 of 10 (Add More Features)
-Plan: 6 of 6 in current phase
-Status: Complete — all Phase 10 plans executed
-Last activity: 2026-03-22 — 10-06 complete: Playwright E2E suite with 19 tests across 5 spec files for all Phase 10 features
+Phase: 11 of 11 (Real Map Data, Mobile Responsive Polish, and Playwright E2E Testing)
+Plan: 2 of 3 in current phase
+Status: In progress — Phase 11 Plan 02 executed
+Last activity: 2026-03-26 — 11-02 complete: Mobile responsive audit — ResponsiveDialog, map/list toggle, scrollable tabs
 
 Progress: [██████████] 100%
 
@@ -43,6 +43,7 @@ Progress: [██████████] 100%
 | Phase 10-add-more-features P04 | 3min | 2 tasks | 3 files |
 | Phase 10 P05 | 20min | 3 tasks | 14 files |
 | Phase 10 P06 | 3min | 2 tasks | 7 files |
+| Phase 11 P02 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -75,11 +76,15 @@ Recent decisions affecting current work:
 - [Phase 10-05]: next-intl 4.8.3 URL-based locale routing with [locale] app restructure; root layout pass-through avoids duplicate html
 - [Phase 10-05]: Middleware matcher excludes api|handler|_next|_vercel to prevent locale-prefixing API routes
 - [Phase 10-06]: Installed @playwright/test with --legacy-peer-deps; all backend-dependent E2E tests use page.route() mocking to avoid requiring live backend
+- [Phase 11-02]: ResponsiveDialog wraps both Sheet and Dialog internally — callers pass children directly, no extra content wrapper needed
+- [Phase 11-02]: showList = !isMobile || !showMap keeps desktop layout fully unaffected (always true when not mobile)
+- [Phase 11-02]: lg:sticky lg:top-20 scopes sticky positioning to large breakpoints only, preventing booking card overlap on 375px viewports
 
 ### Roadmap Evolution
 
 - Phase 9 added: Fix select visibility issues and integrate Google Maps open data
 - Phase 10 added: Add more features
+- Phase 11 added: Real map data, mobile responsive polish, and Playwright E2E testing
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22
-Stopped at: Completed 10-06-PLAN.md — Phase 10 fully complete
-Resume file: N/A — all phases and plans complete
+Last session: 2026-03-26
+Stopped at: Completed 11-02-PLAN.md — mobile responsive audit complete
+Resume file: N/A — continue with 11-03

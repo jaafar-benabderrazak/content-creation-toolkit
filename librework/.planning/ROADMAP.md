@@ -226,7 +226,7 @@ Plans:
   2. Markers clear and re-render without duplicates when establishments change
   3. On mobile (375px), map and list toggle exclusively; booking card does not overlap content
   4. Playwright E2E tests pass for demo flow, map toggle, mobile layouts, and booking form
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 11-01-PLAN.md — Fix marker layer bug, add search-by-area via moveend, add distance display (SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04)
