@@ -8,7 +8,7 @@
 - [ ] **AUTH-02**: User session is managed by Stack Auth SDK; frontend uses `useUser()` instead of custom hooks
 - [x] **AUTH-03**: Backend verifies Stack Auth JWTs via JWKS (RS256, cached) instead of custom `decode_access_token()`
 - [ ] **AUTH-04**: All three frontend auth hooks (useAuth, useSimpleAuth, useAuth_replit) are replaced by Stack Auth's hook
-- [ ] **AUTH-05**: Legacy auth code is removed (Supabase Auth router, next-auth, python-jose, passlib)
+- [x] **AUTH-05**: Legacy auth code is removed (Supabase Auth router, next-auth, python-jose, passlib)
 - [ ] **AUTH-06**: Navbar correctly shows authenticated/unauthenticated state based on Stack Auth session
 - [ ] **AUTH-07**: Owner components use correct token source (no more token vs access_token mismatch)
 - [x] **AUTH-08**: RBAC roles (customer, owner, admin) work with Stack Auth user metadata
@@ -30,14 +30,14 @@
 ### Search & Discovery (SEARCH)
 
 - [x] **SEARCH-01**: User can discover establishments via interactive map + list view
-- [ ] **SEARCH-02**: Spatial queries use PostGIS instead of in-memory distance filtering
-- [ ] **SEARCH-03**: User can filter by price range, amenities, capacity, and rating
-- [ ] **SEARCH-04**: User can filter by "open now" based on establishment opening hours
+- [x] **SEARCH-02**: Spatial queries use PostGIS instead of in-memory distance filtering
+- [x] **SEARCH-03**: User can filter by price range, amenities, capacity, and rating
+- [x] **SEARCH-04**: User can filter by "open now" based on establishment opening hours
 
 ### UX & Frontend (UX)
 
 - [x] **UX-01**: All views are fully responsive on mobile, tablet, and desktop
-- [ ] **UX-02**: UI is refreshed with consistent design system (colors, typography, spacing, components)
+- [x] **UX-02**: UI is refreshed with consistent design system (colors, typography, spacing, components)
 - [ ] **UX-03**: Frontend uses proper App Router routes instead of SPA-in-one-page conditional rendering
 
 ### Internationalization (I18N)
@@ -52,9 +52,9 @@
 ### Infrastructure (INFRA)
 
 - [ ] **INFRA-01**: Auth, RBAC, and core API endpoints have automated test coverage
-- [ ] **INFRA-02**: Backend uses structured logging (structlog) instead of print statements
+- [x] **INFRA-02**: Backend uses structured logging (structlog) instead of print statements
 - [x] **INFRA-03**: Password column naming is standardized to `hashed_password` across all migrations and scripts
-- [ ] **INFRA-04**: Double-booking is prevented at the database level (exclusion constraint or RPC function)
+- [x] **INFRA-04**: Double-booking is prevented at the database level (exclusion constraint or RPC function)
 
 ## v2 Requirements (Deferred)
 
@@ -89,7 +89,7 @@
 | AUTH-02 | Phase 1: Auth Migration | Pending |
 | AUTH-03 | Phase 1: Auth Migration | Complete |
 | AUTH-04 | Phase 1: Auth Migration | Pending |
-| AUTH-05 | Phase 1: Auth Migration | Pending |
+| AUTH-05 | Phase 1: Auth Migration | Complete |
 | AUTH-06 | Phase 1: Auth Migration | Pending |
 | AUTH-07 | Phase 1: Auth Migration | Pending |
 | AUTH-08 | Phase 1: Auth Migration | Complete |
@@ -102,19 +102,19 @@
 | EMAIL-02 | Phase 4: Email Delivery | Complete |
 | EMAIL-03 | Phase 4: Email Delivery | Complete |
 | SEARCH-01 | Phase 5: Search & Discovery | Complete |
-| SEARCH-02 | Phase 5: Search & Discovery | Pending |
-| SEARCH-03 | Phase 5: Search & Discovery | Pending |
-| SEARCH-04 | Phase 5: Search & Discovery | Pending |
+| SEARCH-02 | Phase 5: Search & Discovery | Complete |
+| SEARCH-03 | Phase 5: Search & Discovery | Complete |
+| SEARCH-04 | Phase 5: Search & Discovery | Complete |
 | UX-01 | Phase 8: UI Polish & Responsive Design | Complete |
-| UX-02 | Phase 8: UI Polish & Responsive Design | Pending |
+| UX-02 | Phase 8: UI Polish & Responsive Design | Complete |
 | UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
 | I18N-01 | Phase 3: Frontend Restructuring & i18n | Complete |
 | I18N-02 | Phase 3: Frontend Restructuring & i18n | Complete |
 | OWNER-01 | Phase 7: Owner Analytics | Complete |
 | INFRA-01 | Phase 2: Testing & Logging | Pending |
-| INFRA-02 | Phase 2: Testing & Logging | Pending |
+| INFRA-02 | Phase 2: Testing & Logging | Complete |
 | INFRA-03 | Phase 1: Auth Migration | Complete |
-| INFRA-04 | Phase 6: Stripe Payments | Pending |
+| INFRA-04 | Phase 6: Stripe Payments | Complete |
 
 ---
 *Last updated: 2026-02-20 after roadmap creation*

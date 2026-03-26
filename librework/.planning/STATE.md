@@ -46,6 +46,7 @@ Progress: [████████░░] 80%
 | Phase 11 P02 | 15min | 2 tasks | 4 files |
 | Phase 11 P01 | 4min | 2 tasks | 3 files |
 | Phase 11 P03 | 14min | 2 tasks | 5 files |
+| Phase 12 P01 | 4min | 2 tasks | 10 files |
 | Phase 12 P02 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 11-03]: data-slot="select-item" is the correct Radix UI Select item selector in this shadcn setup (not data-radix-select-item)
 - [Phase 11-03]: navigateToExplore helper branches on md:flex visibility to handle desktop nav vs hamburger Sheet on mobile
 - [Phase 11-03]: Leaflet "Map container is already initialized." filtered as known re-init warning, not a critical error
+- [Phase 12-01]: structlog configure_logging() called before app creation so all processors active before router import side effects
+- [Phase 12-01]: rbac.py and admin_audit.py migrated from auth_enhanced dict-returning functions to dependencies.py UserResponse; dict access replaced with attribute access
 - [Phase 12]: Half-open tstzrange '[)' in exclusion constraint allows back-to-back bookings; cancelled/completed reservations excluded via WHERE clause
 - [Phase 12]: establishments_within_radius RPC pushes capacity/price filters to DB; amenities and open_now filtered in Python post-fetch
 - [Phase 12]: geopy kept in requirements.txt — still used in reservations.py find_soonest_available; removed only from establishments.py per plan scope
@@ -114,5 +117,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 12-02-PLAN.md — double-booking exclusion constraint + PostGIS search RPC + advanced_search filters
+Stopped at: Completed 12-01-PLAN.md — deleted 5 legacy auth files, migrated rbac/admin_audit to Stack Auth deps, added structlog JSON logging with HTTP middleware
 Resume file: N/A — continue with 12-03
