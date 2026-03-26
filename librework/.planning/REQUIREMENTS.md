@@ -9,7 +9,7 @@
 - [x] **AUTH-03**: Backend verifies Stack Auth JWTs via JWKS (RS256, cached) instead of custom `decode_access_token()`
 - [x] **AUTH-04**: All three frontend auth hooks (useAuth, useSimpleAuth, useAuth_replit) are replaced by Stack Auth's hook
 - [x] **AUTH-05**: Legacy auth code is removed (Supabase Auth router, next-auth, python-jose, passlib)
-- [ ] **AUTH-06**: Navbar correctly shows authenticated/unauthenticated state based on Stack Auth session
+- [x] **AUTH-06**: Navbar correctly shows authenticated/unauthenticated state based on Stack Auth session
 - [x] **AUTH-07**: Owner components use correct token source (no more token vs access_token mismatch)
 - [x] **AUTH-08**: RBAC roles (customer, owner, admin) work with Stack Auth user metadata
 - [x] **AUTH-09**: Existing user accounts are migrated or re-created in Stack Auth
@@ -38,7 +38,7 @@
 
 - [x] **UX-01**: All views are fully responsive on mobile, tablet, and desktop
 - [x] **UX-02**: UI is refreshed with consistent design system (colors, typography, spacing, components)
-- [ ] **UX-03**: Frontend uses proper App Router routes instead of SPA-in-one-page conditional rendering
+- [x] **UX-03**: Frontend uses proper App Router routes instead of SPA-in-one-page conditional rendering
 
 ### Internationalization (I18N)
 
@@ -51,7 +51,7 @@
 
 ### Infrastructure (INFRA)
 
-- [ ] **INFRA-01**: Auth, RBAC, and core API endpoints have automated test coverage
+- [x] **INFRA-01**: Auth, RBAC, and core API endpoints have automated test coverage
 - [x] **INFRA-02**: Backend uses structured logging (structlog) instead of print statements
 - [x] **INFRA-03**: Password column naming is standardized to `hashed_password` across all migrations and scripts
 - [x] **INFRA-04**: Double-booking is prevented at the database level (exclusion constraint or RPC function)
@@ -90,7 +90,7 @@
 | AUTH-03 | Phase 1: Auth Migration | Complete |
 | AUTH-04 | Phase 1: Auth Migration | Complete |
 | AUTH-05 | Phase 1: Auth Migration | Complete |
-| AUTH-06 | Phase 1: Auth Migration | Pending |
+| AUTH-06 | Phase 1: Auth Migration | Complete |
 | AUTH-07 | Phase 1: Auth Migration | Complete |
 | AUTH-08 | Phase 1: Auth Migration | Complete |
 | AUTH-09 | Phase 1: Auth Migration | Complete |
@@ -107,11 +107,11 @@
 | SEARCH-04 | Phase 5: Search & Discovery | Complete |
 | UX-01 | Phase 8: UI Polish & Responsive Design | Complete |
 | UX-02 | Phase 8: UI Polish & Responsive Design | Complete |
-| UX-03 | Phase 3: Frontend Restructuring & i18n | Pending |
+| UX-03 | Phase 3: Frontend Restructuring & i18n | Complete |
 | I18N-01 | Phase 3: Frontend Restructuring & i18n | Complete |
 | I18N-02 | Phase 3: Frontend Restructuring & i18n | Complete |
 | OWNER-01 | Phase 7: Owner Analytics | Complete |
-| INFRA-01 | Phase 2: Testing & Logging | Pending |
+| INFRA-01 | Phase 2: Testing & Logging | Complete |
 | INFRA-02 | Phase 2: Testing & Logging | Complete |
 | INFRA-03 | Phase 1: Auth Migration | Complete |
 | INFRA-04 | Phase 6: Stripe Payments | Complete |

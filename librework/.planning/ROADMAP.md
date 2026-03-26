@@ -238,7 +238,7 @@ Plans:
 **Goal:** Finalize Stack Auth migration by removing all legacy auth code, extract SPA views into proper App Router routes, add database-level double-booking prevention, implement PostGIS spatial search with price/capacity/amenity/open-now filters, add structured logging, and establish pytest test coverage for auth/RBAC/reservations
 **Depends on:** Phase 11
 **Requirements:** AUTH-01, AUTH-02, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-09, UX-03, SEARCH-02, SEARCH-03, SEARCH-04, INFRA-01, INFRA-02, INFRA-04
-**Plans:** 5/5 plans complete
+**Plans:** 4/5 plans complete
 
 Plans:
 - [x] 12-01-PLAN.md — Backend legacy auth deletion + structlog setup (AUTH-05, INFRA-02)
