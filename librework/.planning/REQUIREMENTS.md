@@ -4,15 +4,15 @@
 
 ### Authentication (AUTH)
 
-- [ ] **AUTH-01**: User can sign up and log in via Stack Auth (email/password), replacing all custom JWT auth
-- [ ] **AUTH-02**: User session is managed by Stack Auth SDK; frontend uses `useUser()` instead of custom hooks
+- [x] **AUTH-01**: User can sign up and log in via Stack Auth (email/password), replacing all custom JWT auth
+- [x] **AUTH-02**: User session is managed by Stack Auth SDK; frontend uses `useUser()` instead of custom hooks
 - [x] **AUTH-03**: Backend verifies Stack Auth JWTs via JWKS (RS256, cached) instead of custom `decode_access_token()`
-- [ ] **AUTH-04**: All three frontend auth hooks (useAuth, useSimpleAuth, useAuth_replit) are replaced by Stack Auth's hook
+- [x] **AUTH-04**: All three frontend auth hooks (useAuth, useSimpleAuth, useAuth_replit) are replaced by Stack Auth's hook
 - [x] **AUTH-05**: Legacy auth code is removed (Supabase Auth router, next-auth, python-jose, passlib)
 - [ ] **AUTH-06**: Navbar correctly shows authenticated/unauthenticated state based on Stack Auth session
-- [ ] **AUTH-07**: Owner components use correct token source (no more token vs access_token mismatch)
+- [x] **AUTH-07**: Owner components use correct token source (no more token vs access_token mismatch)
 - [x] **AUTH-08**: RBAC roles (customer, owner, admin) work with Stack Auth user metadata
-- [ ] **AUTH-09**: Existing user accounts are migrated or re-created in Stack Auth
+- [x] **AUTH-09**: Existing user accounts are migrated or re-created in Stack Auth
 
 ### Payments (PAY)
 
@@ -85,15 +85,15 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1: Auth Migration | Pending |
-| AUTH-02 | Phase 1: Auth Migration | Pending |
+| AUTH-01 | Phase 1: Auth Migration | Complete |
+| AUTH-02 | Phase 1: Auth Migration | Complete |
 | AUTH-03 | Phase 1: Auth Migration | Complete |
-| AUTH-04 | Phase 1: Auth Migration | Pending |
+| AUTH-04 | Phase 1: Auth Migration | Complete |
 | AUTH-05 | Phase 1: Auth Migration | Complete |
 | AUTH-06 | Phase 1: Auth Migration | Pending |
-| AUTH-07 | Phase 1: Auth Migration | Pending |
+| AUTH-07 | Phase 1: Auth Migration | Complete |
 | AUTH-08 | Phase 1: Auth Migration | Complete |
-| AUTH-09 | Phase 1: Auth Migration | Pending |
+| AUTH-09 | Phase 1: Auth Migration | Complete |
 | PAY-01 | Phase 6: Stripe Payments | Complete |
 | PAY-02 | Phase 6: Stripe Payments | Complete |
 | PAY-03 | Phase 6: Stripe Payments | Complete |

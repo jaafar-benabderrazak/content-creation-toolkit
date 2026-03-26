@@ -238,13 +238,13 @@ Plans:
 **Goal:** Finalize Stack Auth migration by removing all legacy auth code, extract SPA views into proper App Router routes, add database-level double-booking prevention, implement PostGIS spatial search with price/capacity/amenity/open-now filters, add structured logging, and establish pytest test coverage for auth/RBAC/reservations
 **Depends on:** Phase 11
 **Requirements:** AUTH-01, AUTH-02, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-09, UX-03, SEARCH-02, SEARCH-03, SEARCH-04, INFRA-01, INFRA-02, INFRA-04
-**Plans:** 1/5 plans executed
+**Plans:** 3/5 plans executed
 
 Plans:
-- [ ] 12-01-PLAN.md — Backend legacy auth deletion + structlog setup (AUTH-05, INFRA-02)
-- [ ] 12-02-PLAN.md — Double-booking exclusion constraint + PostGIS search RPC + search filters (INFRA-04, SEARCH-02, SEARCH-03, SEARCH-04)
-- [ ] 12-03-PLAN.md — App Router route extraction, onNavigate removal, home-client.tsx deletion (UX-03, AUTH-06)
-- [ ] 12-04-PLAN.md — Frontend auth consolidation to Stack Auth useUser() + user migration script (AUTH-01, AUTH-02, AUTH-04, AUTH-07, AUTH-09)
+- [x] 12-01-PLAN.md — Backend legacy auth deletion + structlog setup (AUTH-05, INFRA-02)
+- [x] 12-02-PLAN.md — Double-booking exclusion constraint + PostGIS search RPC + search filters (INFRA-04, SEARCH-02, SEARCH-03, SEARCH-04)
+- [x] 12-03-PLAN.md — App Router route extraction, onNavigate removal, home-client.tsx deletion (UX-03, AUTH-06)
+- [x] 12-04-PLAN.md — Frontend auth consolidation to Stack Auth useUser() + user migration script (AUTH-01, AUTH-02, AUTH-04, AUTH-07, AUTH-09)
 - [ ] 12-05-PLAN.md — pytest test infrastructure + auth/RBAC/reservation test coverage (INFRA-01)
 
 ---

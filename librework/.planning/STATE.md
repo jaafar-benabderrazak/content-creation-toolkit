@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 12 of 12 (Complete Auth Migration, App Router Routes, Double-Booking Prevention, Search Filters, Structured Logging, and Test Coverage)
-Plan: 2 of 5 in current phase
-Status: In Progress — Phase 12 Plan 02 executed
-Last activity: 2026-03-26 — 12-02 complete: double-booking exclusion constraint + PostGIS search RPC + advanced_search filters (open_now, price, capacity, amenities)
+Plan: 4 of 5 in current phase
+Status: In Progress — Phase 12 Plan 04 executed
+Last activity: 2026-03-26 — 12-04 complete: frontend auth consolidated to Stack Auth useUser()/api instance; 7 components migrated from localStorage+Bearer; user migration script created
 
 Progress: [████████░░] 80%
 
@@ -48,6 +48,7 @@ Progress: [████████░░] 80%
 | Phase 11 P03 | 14min | 2 tasks | 5 files |
 | Phase 12 P01 | 4min | 2 tasks | 10 files |
 | Phase 12 P02 | 4min | 2 tasks | 4 files |
+| Phase 12 P03 | 7min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,11 @@ Recent decisions affecting current work:
 - [Phase 12]: Half-open tstzrange '[)' in exclusion constraint allows back-to-back bookings; cancelled/completed reservations excluded via WHERE clause
 - [Phase 12]: establishments_within_radius RPC pushes capacity/price filters to DB; amenities and open_now filtered in Python post-fetch
 - [Phase 12]: geopy kept in requirements.txt — still used in reservations.py find_soonest_available; removed only from establishments.py per plan scope
+- [Phase 12-03]: useParams from next/navigation (not next-intl) in establishments/[id]/page.tsx — route params are locale-agnostic
+- [Phase 12-03]: EnhancedOwnerDashboard activeView=management renders OwnerAdminPage inline — avoids double-route for same sub-view
+- [Phase 12-04]: useAuth.tsx retained as thin useUser() wrapper — adds role/metadata normalization (clientMetadata.role, coffee_credits); wrapper itself contains no legacy auth calls
+- [Phase 12-04]: 7 components were using fetch+localStorage.getItem('token'/'access_token')+Authorization:Bearer — these tokens never existed in Stack Auth localStorage; replaced all with api instance
+- [Phase 12-04]: Migration script checks email in Stack Auth before create — idempotent; password reset required on first login since legacy hashes cannot be imported
 
 ### Roadmap Evolution
 
@@ -117,5 +123,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 12-01-PLAN.md — deleted 5 legacy auth files, migrated rbac/admin_audit to Stack Auth deps, added structlog JSON logging with HTTP middleware
-Resume file: N/A — continue with 12-03
+Stopped at: Completed 12-04-PLAN.md — consolidated frontend auth (7 components from localStorage+Bearer to api instance), created user migration script
+Resume file: N/A — continue with 12-05
