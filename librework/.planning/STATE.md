@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 11 of 11 (Real Map Data, Mobile Responsive Polish, and Playwright E2E Testing)
-Plan: 3 of 3 in current phase
-Status: Complete — Phase 11 Plan 03 executed
-Last activity: 2026-03-26 — 11-03 complete: Playwright E2E — demo-flow, explore-map, mobile-viewport, booking-flow specs; Pixel 5 mobile-chrome project
+Phase: 12 of 12 (Complete Auth Migration, App Router Routes, Double-Booking Prevention, Search Filters, Structured Logging, and Test Coverage)
+Plan: 2 of 5 in current phase
+Status: In Progress — Phase 12 Plan 02 executed
+Last activity: 2026-03-26 — 12-02 complete: double-booking exclusion constraint + PostGIS search RPC + advanced_search filters (open_now, price, capacity, amenities)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [██████████] 100%
 | Phase 11 P02 | 15min | 2 tasks | 4 files |
 | Phase 11 P01 | 4min | 2 tasks | 3 files |
 | Phase 11 P03 | 14min | 2 tasks | 5 files |
+| Phase 12 P02 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -90,12 +91,16 @@ Recent decisions affecting current work:
 - [Phase 11-03]: data-slot="select-item" is the correct Radix UI Select item selector in this shadcn setup (not data-radix-select-item)
 - [Phase 11-03]: navigateToExplore helper branches on md:flex visibility to handle desktop nav vs hamburger Sheet on mobile
 - [Phase 11-03]: Leaflet "Map container is already initialized." filtered as known re-init warning, not a critical error
+- [Phase 12]: Half-open tstzrange '[)' in exclusion constraint allows back-to-back bookings; cancelled/completed reservations excluded via WHERE clause
+- [Phase 12]: establishments_within_radius RPC pushes capacity/price filters to DB; amenities and open_now filtered in Python post-fetch
+- [Phase 12]: geopy kept in requirements.txt — still used in reservations.py find_soonest_available; removed only from establishments.py per plan scope
 
 ### Roadmap Evolution
 
 - Phase 9 added: Fix select visibility issues and integrate Google Maps open data
 - Phase 10 added: Add more features
 - Phase 11 added: Real map data, mobile responsive polish, and Playwright E2E testing
+- Phase 12 added: Complete auth migration, App Router routes, double-booking prevention, search filters, structured logging, and test coverage
 
 ### Pending Todos
 
@@ -109,5 +114,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 11-03-PLAN.md — Playwright E2E: demo-flow, explore-map, mobile-viewport, booking-flow; mobile-chrome Pixel 5 project
-Resume file: N/A — Phase 11 complete
+Stopped at: Completed 12-02-PLAN.md — double-booking exclusion constraint + PostGIS search RPC + advanced_search filters
+Resume file: N/A — continue with 12-03
