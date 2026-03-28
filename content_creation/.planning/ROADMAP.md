@@ -293,7 +293,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Config Extension and Prompt Templates | 3/3 | Complete   | 2026-03-28 |
 | 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete   | 2026-03-28 |
 | 11. Suno Music Integration | 2/2 | Complete   | 2026-03-28 |
-| 14. Vercel Dashboard UI | 1/4 | In Progress|  |
+| 14. Vercel Dashboard UI | 2/4 | In Progress|  |
 
 ### Phase 12: Discord approval loops for images video and auto YouTube publish
 
@@ -320,7 +320,7 @@ Plans:
 **Goal:** A browser-based dashboard deployed on Vercel provides pipeline config editing, live credit balance monitoring across all API providers, top-up links, pipeline trigger via webhook, and a live generation status log — the user never needs to edit YAML files or SSH into the local machine to manage the pipeline
 
 **Depends on:** Phase 13 (can also run independently — no Python pipeline dependency)
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 

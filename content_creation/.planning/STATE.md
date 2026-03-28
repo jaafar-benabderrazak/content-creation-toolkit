@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Phase 14 — Vercel Dashboard UI (plan 1/4 complete)
+**Current focus:** Phase 14 — Vercel Dashboard UI (plan 3/4 complete)
 
 ## Current Position
 
 Phase: 14 — Vercel Dashboard UI for Pipeline Config, Token/Credit Monitoring, and Top-Up Controls
-Plan: 01 complete (1/4 plans done in phase)
-Status: 14-01 done — Next.js 16 dashboard scaffold with sidebar nav, shadcn/ui components, Vercel config
-Last activity: 2026-03-28 — 14-01 complete: dashboard/ directory with Next.js 16.2.1, layout.tsx sidebar, vercel.json, .env.example
+Plan: 03 complete (3/4 plans done in phase)
+Status: 14-03 done — credit/quota monitoring API routes and Credits page with CreditCard components
+Last activity: 2026-03-28 — 14-03 complete: /api/credits/{suno,replicate,openai,youtube} routes, CreditCard component, /credits page
 
 Progress: [████░░░░░░] 40% (v1.1 milestone)
 
@@ -35,6 +35,7 @@ Progress: [████░░░░░░] 40% (v1.1 milestone)
 | Phase 11-suno-music-integration P01 | 3 | 2 tasks | 3 files |
 | Phase 11-suno-music-integration P02 | 5 | 1 tasks | 1 files |
 | Phase 14 P01 | 18 | 2 tasks | 17 files |
+| Phase 14 P03 | 2 | 2 tasks | 7 files |
 
 ### Recent Trend
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 11-suno-music-integration]: _suno_executor.shutdown(wait=False) called after audio block — future already resolved at that point; avoids blocking video assembly
 - [Phase 14]: Next.js 16.2.1 used instead of 15.x — CVE-2025-66478 patched; autoprefixer required explicitly by Turbopack build
 - [Phase 14]: shadcn/ui components written manually — CLI prompts are interactive TTY-only; non-interactive execution requires direct file authoring
+- [Phase 14]: CreditResponse type exported from suno/route.ts and imported by all sibling credit routes — single source of truth
+- [Phase 14]: YouTube quota reads from YOUTUBE_QUOTA_USED env var — no programmatic API access possible; pipeline must update env var after each upload
 
 ### Roadmap Evolution
 
@@ -111,6 +114,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T21:45:03Z
-Stopped at: Completed 14-01-PLAN.md — Next.js 16 dashboard scaffold with sidebar nav, shadcn/ui, Vercel config; dashboard/ directory created
+Last session: 2026-03-28T21:55:14Z
+Stopped at: Completed 14-03-PLAN.md — credit API routes (suno, replicate, openai, youtube) and Credits page with CreditCard components
 Resume file: None
