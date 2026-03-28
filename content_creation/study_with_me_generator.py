@@ -827,7 +827,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Load pipeline config if provided (read-only for now; Phase 6 wires behavior)
+    # Load pipeline config if provided
     pipeline_config = None
     if args.config:
         from config import PipelineConfig
@@ -1076,6 +1076,11 @@ def main():
         print("Check the logs above for details.")
         sys.exit(1)
     
+    # Run shared pipeline (post-process, notify, approve, publish) if config provided
+    if pipeline_config:
+        from shared.pipeline_runner import run_shared_pipeline
+        run_shared_pipeline(args.out, pipeline_config)
+
     # Cleanup option
     if not args.save_assets:
         print("[Cleanup] Removing temporary assets...")

@@ -654,6 +654,11 @@ def main():
         try:
             mp4, cap = build_one(t, style, render, cfg, post=args.post)
             logging.info(f"DONE — {mp4}\nCAPTION: {cap}")
+
+            # Run shared pipeline if config provided
+            if pipeline_config and mp4:
+                from shared.pipeline_runner import run_shared_pipeline
+                run_shared_pipeline(Path(mp4), pipeline_config)
         except Exception as e:
             logging.exception(f"Failed topic '{t}': {e}")
 
