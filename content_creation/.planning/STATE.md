@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 10 — SDXL Generator Extraction and Image Caching
-Plan: 01 complete (1/2 plans done in phase)
-Status: Phase 10 in progress — 10-01 done (generators/ package + SDXLGenerator); 10-02 pending
-Last activity: 2026-03-28 — 10-01 complete: SDXLGenerator with SHA-256 cache, JSON sidecars, and lazy GPU imports
+Plan: 02 complete (2/2 plans done in phase — Phase 10 COMPLETE)
+Status: Phase 10 complete — 10-01 done (generators/ package + SDXLGenerator); 10-02 done (study_with_me_generator.py refactored to delegate to SDXLGenerator)
+Last activity: 2026-03-28 — 10-02 complete: Inline SDXL removed from orchestrator, SDXLGenerator.generate_batch wired with cache
 
-Progress: [█░░░░░░░░░] 15% (v1.1 milestone)
+Progress: [██░░░░░░░░] 20% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 09-config-extension-and-prompt-templates]: build_compel_prompt tested via sys.modules patch not real GPU — GPU/model dependency excluded from test suite by design
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: SDXLGenerator uses lazy torch/diffusers imports in _generate_one — GPU-free module import and unit testing without model weights
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: Cache key uses full 64-char SHA-256 digest of sort_keys JSON — any single param change produces different key (SDXL-02)
+- [Phase 10-sdxl-generator-extraction-and-image-caching]: create_fallback_image retained in study_with_me_generator.py — has second call site in outer exception handler outside the removed function
+- [Phase 10-sdxl-generator-extraction-and-image-caching]: getattr(pipeline_config, 'sdxl', None) or SDXLSettings(...) pattern handles VideoConfig (no sdxl field) without AttributeError at call site
 
 ### Roadmap Evolution
 
@@ -97,6 +99,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:25:00Z
-Stopped at: Completed 09-03-PLAN.md — PromptTemplate.render() and build_compel_prompt() implemented with 13-test TDD suite
+Last session: 2026-03-28T18:02:37Z
+Stopped at: Completed 10-02-PLAN.md — study_with_me_generator.py refactored: inline SDXL removed, SDXLGenerator.generate_batch wired with SHA-256 cache
 Resume file: None
