@@ -6,6 +6,16 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
 
+class SDXLSettings(BaseModel):
+    negative_prompt: str  # required — no default; missing field raises ValidationError
+    steps: int = Field(default=25, ge=1, le=150)
+    guidance_scale: float = Field(default=7.5, ge=1.0, le=20.0)
+    enable_refiner: bool = False
+    width: int = Field(default=1024, ge=512, le=2048)
+    height: int = Field(default=1024, ge=512, le=2048)
+    quality_suffix: str = ""  # appended to positive prompt; e.g. "masterpiece, best quality, 8k"
+
+
 class VideoSettings(BaseModel):
     style_prompt: str = "cinematic, professional photography, warm lighting"
     music_prompt: str = "ambient lofi study music, soft piano, gentle rain, 70 bpm, calming"
