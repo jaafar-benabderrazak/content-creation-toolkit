@@ -37,6 +37,7 @@ Progress: [███░░░░░░░] 30% (v1.2 milestone — 3/? plans com
 - Last 5 plans: 08-01 (5 min), 08-02 (3 min), 08-03 (4 min), 08-04 (2 min), 14-04 (est. 6 min)
 - Trend: Stable
 | Phase 16 P03 | 1 | 1 tasks | 1 files |
+| Phase 16-smart-defaults P02 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -55,6 +56,7 @@ Recent decisions affecting v1.2 work:
 - [Phase 16-01]: suno.api_key provenance requires raw YAML pre-read — model validator injects env value before load_with_env_defaults loop can inspect it
 - [Phase 16-01]: load_with_env_defaults is the preferred runtime load path; from_yaml remains for tests and tools that don't need env pre-fill
 - [Phase 16]: KNOWN_ENV_VARS list-of-dicts preserves insertion order for stdout; None sections silently skip injection; exit code 0 always
+- [Phase 16-smart-defaults]: ENV_VAR_MAP inlined in route.ts as TS mirror of Python constant; provenance kept as separate React state; EnvBadge defined inline in ProfileEditor
 
 ### Pending Todos
 
@@ -71,6 +73,6 @@ Recent decisions affecting v1.2 work:
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Completed 16-03-PLAN.md — setup.py first-run CLI (env var scan, starter.yaml generation)
+Last session: 2026-03-29
+Stopped at: Completed 16-02-PLAN.md — provenance badges in dashboard config editor
 Resume file: None

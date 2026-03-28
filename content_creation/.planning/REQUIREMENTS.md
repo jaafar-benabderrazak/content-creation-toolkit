@@ -8,7 +8,7 @@
 ### Smart Defaults
 
 - [x] **DFLT-01**: Config loader pre-fills Discord webhook URL, API keys, and channel info from environment variables when not set in YAML
-- [ ] **DFLT-02**: Dashboard config editor shows which values are env-sourced vs. YAML-defined (visual distinction)
+- [x] **DFLT-02**: Dashboard config editor shows which values are env-sourced vs. YAML-defined (visual distinction)
 - [x] **DFLT-03**: First-run setup detects all available env vars and generates a starter profile with populated defaults
 
 ### Channel Branding
@@ -41,7 +41,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DFLT-01 | Phase 16 | Complete |
-| DFLT-02 | Phase 16 | Pending |
+| DFLT-02 | Phase 16 | Complete |
 | DFLT-03 | Phase 16 | Complete |
 | BRND-01 | Phase 17 | Pending |
 | BRND-02 | Phase 17 | Pending |

@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 12: Discord Approval Loops** - Discord approval gate for images and video before YouTube publish
 - [ ] **Phase 13: YouTube Credential Setup and Thumbnail Publishing** - OAuth setup and thumbnail attach for YouTube publishing
 - [ ] **Phase 14: Vercel Dashboard UI** - Browser-based pipeline config, credit monitoring, and pipeline trigger
-- [ ] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard
+- [x] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard (completed 2026-03-28)
 - [ ] **Phase 17: Channel Branding** - YouTube channel data fetch, branding propagation to watermark/thumbnail, cached locally, and auto-generated intro/outro clips
 - [ ] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs
 
@@ -378,6 +378,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 12. Discord Approval Loops | 0/? | Not started | - |
 | 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
 | 14. Vercel Dashboard UI | 4/4 | In Progress | - |
-| 16. Smart Defaults | 2/3 | In Progress|  |
+| 16. Smart Defaults | 3/3 | Complete   | 2026-03-28 |
 | 17. Channel Branding | 0/? | Not started | - |
 | 18. AI Prompt Generation | 0/? | Not started | - |
