@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 16 of 18 (v1.2 — Smart Defaults)
-Plan: 1 of 1 completed in current phase
+Plan: 3 of 3 completed in current phase
 Status: In progress
-Last activity: 2026-03-28 — 16-01 complete: ENV_VAR_MAP and load_with_env_defaults added to PipelineConfig
+Last activity: 2026-03-28 — 16-03 complete: setup.py first-run CLI for env var scanning and starter YAML generation
 
-Progress: [█░░░░░░░░░] 10% (v1.2 milestone — 1/? plans complete)
+Progress: [███░░░░░░░] 30% (v1.2 milestone — 3/? plans complete)
 
 ## Performance Metrics
 
@@ -72,5 +72,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 16-01-PLAN.md — ENV_VAR_MAP + load_with_env_defaults on PipelineConfig
+Stopped at: Completed 16-03-PLAN.md — setup.py first-run CLI (env var scan, starter.yaml generation)
 Resume file: None
