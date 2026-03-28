@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 16 of 18 (v1.2 — Smart Defaults)
-Plan: — of — in current phase
-Status: Ready to plan
-Last activity: 2026-03-28 — v1.2 roadmap created (Phases 16-18: smart defaults, channel branding, AI prompt gen)
+Plan: 1 of 1 completed in current phase
+Status: In progress
+Last activity: 2026-03-28 — 16-01 complete: ENV_VAR_MAP and load_with_env_defaults added to PipelineConfig
 
-Progress: [░░░░░░░░░░] 0% (v1.2 milestone)
+Progress: [█░░░░░░░░░] 10% (v1.2 milestone — 1/? plans complete)
 
 ## Performance Metrics
 
@@ -36,6 +36,7 @@ Progress: [░░░░░░░░░░] 0% (v1.2 milestone)
 **Recent Trend:**
 - Last 5 plans: 08-01 (5 min), 08-02 (3 min), 08-03 (4 min), 08-04 (2 min), 14-04 (est. 6 min)
 - Trend: Stable
+| Phase 16 P03 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -50,6 +51,10 @@ Recent decisions affecting v1.2 work:
 - [v1.2 Roadmap]: Phase numbered 16/17/18 (not 15) — Phase 15 stub removed; continuous numbering from 14 preserved
 - [Phase 14]: YouTube quota reads from YOUTUBE_QUOTA_USED env var — pipeline must update env var after each upload
 - [Phase 14]: In-memory status log accepted for serverless warm-instance persistence — cold starts reset the log
+- [Phase 16-01]: ENV_VAR_MAP excludes OPENAI_API_KEY and REPLICATE_API_TOKEN — no corresponding PipelineConfig fields; add entries only when schema fields exist
+- [Phase 16-01]: suno.api_key provenance requires raw YAML pre-read — model validator injects env value before load_with_env_defaults loop can inspect it
+- [Phase 16-01]: load_with_env_defaults is the preferred runtime load path; from_yaml remains for tests and tools that don't need env pre-fill
+- [Phase 16]: KNOWN_ENV_VARS list-of-dicts preserves insertion order for stdout; None sections silently skip injection; exit code 0 always
 
 ### Pending Todos
 
@@ -67,5 +72,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: v1.2 roadmap written — Phases 16 (Smart Defaults), 17 (Channel Branding), 18 (AI Prompt Generation) created with full success criteria and 100% requirement coverage
+Stopped at: Completed 16-01-PLAN.md — ENV_VAR_MAP + load_with_env_defaults on PipelineConfig
 Resume file: None
