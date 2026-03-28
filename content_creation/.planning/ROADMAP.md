@@ -362,7 +362,12 @@ Plans:
 4. After tag-based generation, the profile YAML on disk contains the generated prompts under the sdxl.scene_templates key — the user can open the YAML, read every prompt, and edit them before re-running without tags
 5. Running the pipeline with --tags and no other prompt configuration produces a finished, assembled video — no intermediate manual step is required between tag input and video output
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+
+- [ ] 18-01-PLAN.md — generators/prompt_generator.py: PromptGenerator class with OpenAI-backed generate() returning structured prompt payload (positive, negative, 8 scene variants, music)
+- [ ] 18-02-PLAN.md — --tags CLI flag wired into study_with_me_generator.py with YAML write-back and graceful fallback to existing profile prompts
 
 ## Progress
 
