@@ -1,152 +1,82 @@
-# Requirements: Content Creation Toolkit
+# Requirements: Content Creation Toolkit v1.1
 
 **Defined:** 2026-03-28
 **Core Value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
 
-## v1 Requirements
+## v1.1 Requirements — AI Generation Quality
 
-Requirements for this milestone. Each maps to roadmap phases.
+### Prompt Engineering
 
-### Configuration
+- [ ] **PRMT-01**: Each profile (lofi-study, tech-tutorial, cinematic) has a YAML-defined prompt template with style-specific positive and negative prompts
+- [ ] **PRMT-02**: Negative prompts are short (5-8 terms) and SDXL-optimized — no SD1.5 mega-lists
+- [ ] **PRMT-03**: Quality presets (high/medium/fast) append quality-specific suffixes to prompts (e.g., "masterpiece, best quality" for high)
+- [ ] **PRMT-04**: Prompt templates support per-scene variation (weather, time-of-day) via template variables
+- [ ] **PRMT-05**: compel-based prompt weighting for emphasis control (e.g., "(warm lighting)1.3")
 
-- [ ] **CONF-01**: User can define scene prompts, styles, and moods in a YAML config file without editing Python source
-- [ ] **CONF-02**: User can load, edit, and save pipeline configs through a Gradio web UI on localhost
-- [ ] **CONF-03**: User can select a named profile (lofi-study, tech-tutorial, cinematic) that bundles prompts, effects, and post-production settings
-- [ ] **CONF-04**: Config schema is validated at load time with clear error messages for invalid fields
-- [ ] **CONF-05**: Both pipelines (study video, TikTok) load config from the same schema and file format
+### SDXL Generator
 
-### Post-Production
+- [ ] **SDXL-01**: SDXL generation extracted into generators/sdxl.py — importable by both pipelines
+- [ ] **SDXL-02**: Hash-based image caching (prompt + all params → cache key) skips regeneration of unchanged scenes
+- [ ] **SDXL-03**: Cache hit/miss progress indicator distinguishes cached vs. fresh images during generation
+- [ ] **SDXL-04**: Quality presets map to concrete SDXL params (steps: high=35, medium=25, fast=15; guidance_scale: high=8.0, medium=7.5, fast=7.0)
 
-- [ ] **POST-01**: Pipeline automatically applies watermark overlay to finished video
-- [ ] **POST-02**: Pipeline automatically burns subtitles into the video from generated SRT
-- [ ] **POST-03**: Pipeline automatically prepends intro and appends outro clips to the video
-- [ ] **POST-04**: Post-production steps are configurable per profile (enable/disable each step)
-- [ ] **POST-05**: Post-production runs on the output of both existing pipelines via a shared module
+### Suno Music
 
-### Thumbnails
+- [ ] **SUNO-01**: SunoClient abstraction class with generate_music() → audio file path interface
+- [ ] **SUNO-02**: Profile-matched genre selection (lofi-study→"lofi chill", cinematic→"orchestral cinematic", tech-tutorial→"upbeat electronic")
+- [ ] **SUNO-03**: Duration-aware generation matching video length (with stitching for videos > max Suno duration)
+- [ ] **SUNO-04**: Instrumental-only enforcement via make_instrumental flag
+- [ ] **SUNO-05**: Suno returns 2 tracks per prompt — pipeline uses all generated tracks (stitch for longer videos, or present both in approval gate for selection)
+- [ ] **SUNO-06**: Stable Audio fallback when Suno is unavailable or fails
+- [ ] **SUNO-07**: Async Suno submission before SDXL batch to hide latency
+- [ ] **SUNO-08**: Hard timeout on Suno polling (default 300s) to prevent pipeline hang
 
-- [ ] **THMB-01**: Pipeline extracts the sharpest frame from generated video as thumbnail candidate
-- [ ] **THMB-02**: Pipeline composites title text and channel branding onto the thumbnail image
-- [ ] **THMB-03**: Thumbnail output meets YouTube requirements (1280x720, JPEG/PNG, <2MB)
+### Config Extension
 
-### YouTube Publishing
-
-- [ ] **YT-01**: Pipeline uploads finished video to YouTube with title, description, tags, and category
-- [ ] **YT-02**: Pipeline uploads generated thumbnail to the published video
-- [ ] **YT-03**: OAuth 2.0 refresh token is persisted to disk so re-authentication is not required each run
-- [ ] **YT-04**: Upload uses resumable protocol with exponential backoff on failure
-- [ ] **YT-05**: Pipeline respects YouTube quota limits and warns when approaching daily cap
-
-### Notifications
-
-- [ ] **NOTF-01**: Pipeline sends Discord webhook notification when video generation completes
-- [ ] **NOTF-02**: Pipeline sends Slack webhook notification when video generation completes
-- [ ] **NOTF-03**: Pipeline sends error alert to Discord/Slack when generation or upload fails
-- [ ] **NOTF-04**: Notification includes video thumbnail preview and metadata summary
-- [ ] **NOTF-05**: User configures webhook URLs via environment variables or config file
-
-### Approval Gate
-
-- [ ] **APPR-01**: After generation, pipeline sends preview notification and pauses before publishing
-- [ ] **APPR-02**: User confirms publish via CLI command or flag file
-- [ ] **APPR-03**: Pipeline proceeds to YouTube upload only after approval is confirmed
-- [ ] **APPR-04**: Unapproved videos are retained locally and can be published later
-
-### Integration
-
-- [ ] **INTG-01**: Shared notify/publish module is importable by both study and TikTok pipelines
-- [ ] **INTG-02**: Existing CLI interfaces for both pipelines continue to work without the new features
-- [ ] **INTG-03**: New features are activated via config flags (opt-in, not forced)
-
-### Remotion Render Quality
-
-- [x] **REND-01**: Both Remotion compositions accept a profile prop that selects a pre-defined effect bundle (transitions, spring config, grain intensity, vignette strength, font family, CSS color filter)
-- [x] **REND-02**: StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation — no manual opacity crossfade
-- [x] **REND-03**: All element motion in both compositions uses spring() physics — no bare linear interpolate for entrances or exits
-- [ ] **REND-04**: Root.tsx computes StudyVideo durationInFrames via calculateMetadata() from sceneDurations prop — no hardcoded frame count
-- [x] **REND-05**: Python renderer passes profile prop, quality-tier CRF/x264-preset, --color-space bt709, and audio codec flags to every Remotion render invocation
-
-## v2 Requirements
-
-Deferred to future release. Tracked but not in current roadmap.
-
-### Enhanced Profiles
-
-- **PROF-01**: Color grade presets applied per profile via FFmpeg LUT filters
-- **PROF-02**: Per-profile pacing and transition timing configuration
-
-### Advanced Publishing
-
-- **ADVP-01**: YouTube scheduling with optimal post time selection
-- **ADVP-02**: Playlist management and auto-categorization
-- **ADVP-03**: Interactive Discord/Slack bot with approval buttons (requires persistent process)
-
-### Pipeline Resilience
-
-- **RESL-01**: Resumable pipeline state through post-production and upload stages
-- **RESL-02**: Concurrent generation queue with resource management
+- [ ] **CFGX-01**: SDXLSettings sub-model added to PipelineConfig (negative_prompt, steps, guidance_scale, enable_refiner)
+- [ ] **CFGX-02**: SunoSettings sub-model added to PipelineConfig (genre, make_instrumental, track_count, api_key via env var)
+- [ ] **CFGX-03**: Quality presets unified across image + music generation (single quality_preset drives both)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Web-hosted UI | Breaks local-GPU constraint; adds cloud infra, auth, HTTPS |
-| YouTube scheduling | Separate quota, timezone logic, analytics scope expansion |
-| Full channel management (playlists, end screens, analytics) | Scope creep; each adds quota cost and test surface |
-| Interactive approval bot (Discord/Slack) | Requires persistent process + public endpoint; impossible locally without ngrok |
-| Auto-scene detection / smart trimming | Heavy AI models, nondeterministic, deferred per user decision |
-| Multi-account YouTube publishing | Not needed for single creator workflow |
-| TikTok thumbnail/cover automation | TikTok Content API cover image surface is unstable |
-| Cloud deployment | Stays local for this milestone |
-| Real-time progress streaming to UI | Gradio progress bar is sufficient; WebSockets adds complexity |
-| Beat-sync transitions | Requires beat timestamp computation in Python; deferred to v2 |
-| LUT-based color grading in Remotion | No LUT support in Remotion; FFmpeg LUT is a v2 requirement (PROF-01) |
+| ControlNet/LoRA support | Complex, requires model-specific setup per style — defer to v2 |
+| Suno official API | Does not exist yet — built for third-party wrappers with abstraction |
+| Vocal detection/filtering | Low confidence approach, manual selection via approval gate sufficient for v1.1 |
+| SDXL refiner model | Adds 30%+ generation time for marginal quality gain — defer |
+| Beat-sync transitions | Requires beat timestamp computation — deferred to v2 per v1.0 decision |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONF-01 | Phase 1 | Pending |
-| CONF-02 | Phase 7 | Pending |
-| CONF-03 | Phase 1 | Pending |
-| CONF-04 | Phase 1 | Pending |
-| CONF-05 | Phase 1 | Pending |
-| POST-01 | Phase 2 | Pending |
-| POST-02 | Phase 2 | Pending |
-| POST-03 | Phase 2 | Pending |
-| POST-04 | Phase 2 | Pending |
-| POST-05 | Phase 2 | Pending |
-| THMB-01 | Phase 3 | Pending |
-| THMB-02 | Phase 3 | Pending |
-| THMB-03 | Phase 3 | Pending |
-| YT-01 | Phase 5 | Pending |
-| YT-02 | Phase 5 | Pending |
-| YT-03 | Phase 5 | Pending |
-| YT-04 | Phase 5 | Pending |
-| YT-05 | Phase 5 | Pending |
-| NOTF-01 | Phase 4 | Pending |
-| NOTF-02 | Phase 4 | Pending |
-| NOTF-03 | Phase 4 | Pending |
-| NOTF-04 | Phase 4 | Pending |
-| NOTF-05 | Phase 4 | Pending |
-| APPR-01 | Phase 4 | Pending |
-| APPR-02 | Phase 4 | Pending |
-| APPR-03 | Phase 4 | Pending |
-| APPR-04 | Phase 4 | Pending |
-| INTG-01 | Phase 6 | Pending |
-| INTG-02 | Phase 6 | Pending |
-| INTG-03 | Phase 6 | Pending |
-| REND-01 | Phase 8 | Complete |
-| REND-02 | Phase 8 | Complete |
-| REND-03 | Phase 8 | Complete |
-| REND-04 | Phase 8 | Pending |
-| REND-05 | Phase 8 | Complete |
+| PRMT-01 | — | Pending |
+| PRMT-02 | — | Pending |
+| PRMT-03 | — | Pending |
+| PRMT-04 | — | Pending |
+| PRMT-05 | — | Pending |
+| SDXL-01 | — | Pending |
+| SDXL-02 | — | Pending |
+| SDXL-03 | — | Pending |
+| SDXL-04 | — | Pending |
+| SUNO-01 | — | Pending |
+| SUNO-02 | — | Pending |
+| SUNO-03 | — | Pending |
+| SUNO-04 | — | Pending |
+| SUNO-05 | — | Pending |
+| SUNO-06 | — | Pending |
+| SUNO-07 | — | Pending |
+| SUNO-08 | — | Pending |
+| CFGX-01 | — | Pending |
+| CFGX-02 | — | Pending |
+| CFGX-03 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 35 total
-- Mapped to phases: 35
-- Unmapped: 0
+- v1.1 requirements: 20 total
+- Mapped to phases: 0
+- Unmapped: 20
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 — Phase 8 REND-01 through REND-05 added*
+*Last updated: 2026-03-28 after v1.1 milestone definition*
