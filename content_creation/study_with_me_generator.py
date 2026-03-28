@@ -38,7 +38,9 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance
 from tqdm import tqdm
 
+from concurrent.futures import ThreadPoolExecutor, Future
 from generators.sdxl import SDXLGenerator
+from generators.suno import SunoClient
 
 # Video rendering via Remotion (replaces MoviePy)
 # MoviePy imports removed — video composition handled by shared.remotion_renderer
@@ -812,6 +814,29 @@ def main():
     print("STARTING ENHANCED STUDY VIDEO GENERATION")
     print("=" * 60)
     
+    # Step 0: Submit Suno music generation in background (before SDXL to hide latency)
+    _suno_future: Optional[Future] = None
+    _suno_executor: Optional[ThreadPoolExecutor] = None
+
+    _suno_cfg = getattr(pipeline_config, 'suno', None) if pipeline_config else None
+    if _suno_cfg is not None and not args.no_music and not args.music_file:
+        if _suno_cfg.api_key:
+            print("[Music] Submitting Suno generation in background (async)...")
+            _suno_executor = ThreadPoolExecutor(max_workers=1)
+            _suno_client = SunoClient(_suno_cfg)
+            _music_prompt = (
+                getattr(pipeline_config, 'video', video_config).music_prompt
+                if pipeline_config else args.music_prompt
+            )
+            _suno_future = _suno_executor.submit(
+                _suno_client.generate_music,
+                _music_prompt,
+                total_seconds,
+                _suno_cfg.genre,
+            )
+        else:
+            print("[Music] SUNO_API_KEY not set — will use Stable Audio")
+
     # Step 1: Generate images
     image_paths = []
     if args.resume and "images" in progress:
@@ -916,15 +941,26 @@ def main():
             final_audio_path = None
     
     elif not (args.resume and "audio" in progress and audio_path.exists()):
-        print("[Audio] Generating enhanced AI music...")
+        print("[Audio] Resolving music track...")
         try:
-            enhanced_music = generate_enhanced_music(total_seconds, args.music_prompt, audio_config)
+            if _suno_future is not None:
+                # Collect Suno result (may already be ready after SDXL batch)
+                print("[Music] Waiting for Suno background task to complete...")
+                enhanced_music = _suno_future.result()  # blocks until ready
+                print("[Music] Suno track ready.")
+            else:
+                # Fallback: Stable Audio (no Suno config or no API key)
+                enhanced_music = generate_enhanced_music(total_seconds, args.music_prompt, audio_config)
+
             enhanced_music.export(audio_path, format="wav", bitrate=audio_config.bitrate)
             final_audio_path = audio_path
-            
-            # Save progress
+
+            # Save progress with suno_generation key
             save_progress(work_dir, "audio", {"path": str(audio_path)})
-            
+            save_progress(work_dir, "suno_generation", {
+                "source": "suno" if _suno_future is not None else "stable_audio",
+                "duration_seconds": total_seconds,
+            })
         except Exception as e:
             print(f"[ERROR] Audio generation failed: {e}")
             print("Continuing without audio...")
@@ -932,7 +968,11 @@ def main():
     else:
         print("[Audio] Using previously generated audio")
         final_audio_path = audio_path if audio_path.exists() else None
-    
+
+    # Cleanup background executor
+    if _suno_executor is not None:
+        _suno_executor.shutdown(wait=False)
+
     # Step 3: Build enhanced video
     print("[Video] Assembling enhanced video with all effects...")
     
