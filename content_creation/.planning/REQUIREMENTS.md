@@ -14,9 +14,9 @@
 ### Channel Branding
 
 - [x] **BRND-01**: Pipeline fetches YouTube channel name, avatar image, and description via YouTube Data API using existing OAuth credentials
-- [ ] **BRND-02**: Watermark text defaults to channel name when not explicitly set in config
-- [ ] **BRND-03**: Intro/outro clips auto-generated from channel avatar + name + description tagline (no manual video files needed)
-- [ ] **BRND-04**: Thumbnail branding uses channel avatar as corner logo overlay
+- [x] **BRND-02**: Watermark text defaults to channel name when not explicitly set in config
+- [x] **BRND-03**: Intro/outro clips auto-generated from channel avatar + name + description tagline (no manual video files needed)
+- [x] **BRND-04**: Thumbnail branding uses channel avatar as corner logo overlay
 - [x] **BRND-05**: Channel branding cached locally — re-fetched only on explicit refresh or config change
 
 ### AI Prompt Generation
@@ -44,9 +44,9 @@
 | DFLT-02 | Phase 16 | Complete |
 | DFLT-03 | Phase 16 | Complete |
 | BRND-01 | Phase 17 | Complete |
-| BRND-02 | Phase 17 | Pending |
-| BRND-03 | Phase 17 | Pending |
-| BRND-04 | Phase 17 | Pending |
+| BRND-02 | Phase 17 | Complete |
+| BRND-03 | Phase 17 | Complete |
+| BRND-04 | Phase 17 | Complete |
 | BRND-05 | Phase 17 | Complete |
 | AGEN-01 | Phase 18 | Pending |
 | AGEN-02 | Phase 18 | Pending |
