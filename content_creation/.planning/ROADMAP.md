@@ -315,7 +315,13 @@ Plans:
 3. Running the first-run setup command on a fresh checkout scans all known env vars, writes a starter YAML profile with every discoverable value pre-filled, and prints a list of any env vars that were not found so the user knows exactly what is missing
 4. A field present in the YAML profile always takes precedence over the environment variable — env vars are the fallback, not the override
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+- [ ] 16-01-PLAN.md — PipelineConfig.load_with_env_defaults() classmethod with ENV_VAR_MAP and provenance tracking
+- [ ] 16-02-PLAN.md — Dashboard GET route returns provenance map; ProfileEditor renders ENV badge next to env-sourced fields
+- [ ] 16-03-PLAN.md — setup.py CLI scans env vars, writes starter YAML profile, prints found/missing summary
 
 ### Phase 17: Channel Branding
 **Goal**: The pipeline fetches YouTube channel name, avatar, and description once via the existing OAuth credentials, caches the result locally, and automatically applies channel branding as the watermark text, thumbnail corner logo, and auto-generated intro/outro clips — no manual video files or branding config required
@@ -372,6 +378,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 12. Discord Approval Loops | 0/? | Not started | - |
 | 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
 | 14. Vercel Dashboard UI | 4/4 | In Progress | - |
-| 16. Smart Defaults | 0/? | Not started | - |
+| 16. Smart Defaults | 0/3 | Not started | - |
 | 17. Channel Branding | 0/? | Not started | - |
 | 18. AI Prompt Generation | 0/? | Not started | - |
