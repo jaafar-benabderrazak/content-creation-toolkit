@@ -180,10 +180,34 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 07-03: Add subprocess-based pipeline launcher with stdout tailing routed to Gradio Textbox output component
 - [ ] 07-04: Add auto-save to configs/last_run.yaml on each submit and upload result (YouTube URL or error) display
 
+### Phase 8: Remotion Compilation Quality
+
+**Goal**: Both Remotion compositions produce professional-quality video output — spring-physics motion, profile-driven effect bundles (transitions, grain, vignette, typography), audio visualization, and YouTube-optimized render flags — all driven by a profile prop passed from Python
+
+**Depends on**: Phase 7
+
+**Requirements**: REND-01, REND-02, REND-03, REND-04, REND-05
+
+**Success Criteria** (what must be TRUE):
+
+1. Both compositions accept a profile prop that selects distinct effect sets (transitions, spring config, grain intensity, vignette strength, font family, CSS color filter)
+2. StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation (fade/wipe/slide) — no manual opacity crossfade
+3. All element motion (parallax, zoom, title entrance, bullet reveals, timer pop-in) uses spring() — no bare linear interpolate for entrances
+4. FilmGrain renders animated SVG noise (seed={frame}) at profile-specified intensity; renders nothing when grainIntensity is 0
+5. Root.tsx computes StudyVideo duration via calculateMetadata() from the sceneDurations prop — no hardcoded 30*60*120
+6. Python renderer passes profile prop, quality-tier CRF/preset, --color-space bt709, and --audio-codec aac to every render
+
+**Plans**: 4 plans
+
+- [ ] 08-01-PLAN.md — npm package installation, profile system (3 profiles + index), fonts/index.ts, FilmGrain, Vignette, TextReveal, AudioVisualizer shared components
+- [ ] 08-02-PLAN.md — StudyVideo refactor (TransitionSeries, spring motion, profile-aware overlays) + Root.tsx calculateMetadata
+- [ ] 08-03-PLAN.md — TechTutorial refactor (spring title, TextReveal bullets, profile-aware overlays)
+- [ ] 08-04-PLAN.md — remotion_renderer.py extended with profile prop, quality flags, sceneDurations, WAV conversion helper
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -194,12 +218,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. YouTube Publisher | 0/5 | Not started | - |
 | 6. Pipeline Integration | 0/3 | Not started | - |
 | 7. Config UI | 0/4 | Not started | - |
-
-### Phase 8: the compilation via remotion should be top notch
-
-**Goal:** [To be planned]
-**Depends on:** Phase 7
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 8 to break down)
+| 8. Remotion Compilation Quality | 0/4 | Not started | - |

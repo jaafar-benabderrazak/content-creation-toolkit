@@ -58,6 +58,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **INTG-02**: Existing CLI interfaces for both pipelines continue to work without the new features
 - [ ] **INTG-03**: New features are activated via config flags (opt-in, not forced)
 
+### Remotion Render Quality
+
+- [ ] **REND-01**: Both Remotion compositions accept a profile prop that selects a pre-defined effect bundle (transitions, spring config, grain intensity, vignette strength, font family, CSS color filter)
+- [ ] **REND-02**: StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation — no manual opacity crossfade
+- [ ] **REND-03**: All element motion in both compositions uses spring() physics — no bare linear interpolate for entrances or exits
+- [ ] **REND-04**: Root.tsx computes StudyVideo durationInFrames via calculateMetadata() from sceneDurations prop — no hardcoded frame count
+- [ ] **REND-05**: Python renderer passes profile prop, quality-tier CRF/x264-preset, --color-space bt709, and audio codec flags to every Remotion render invocation
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -91,6 +99,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | TikTok thumbnail/cover automation | TikTok Content API cover image surface is unstable |
 | Cloud deployment | Stays local for this milestone |
 | Real-time progress streaming to UI | Gradio progress bar is sufficient; WebSockets adds complexity |
+| Beat-sync transitions | Requires beat timestamp computation in Python; deferred to v2 |
+| LUT-based color grading in Remotion | No LUT support in Remotion; FFmpeg LUT is a v2 requirement (PROF-01) |
 
 ## Traceability
 
@@ -126,12 +136,17 @@ Deferred to future release. Tracked but not in current roadmap.
 | INTG-01 | Phase 6 | Pending |
 | INTG-02 | Phase 6 | Pending |
 | INTG-03 | Phase 6 | Pending |
+| REND-01 | Phase 8 | Pending |
+| REND-02 | Phase 8 | Pending |
+| REND-03 | Phase 8 | Pending |
+| REND-04 | Phase 8 | Pending |
+| REND-05 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 30 total
-- Mapped to phases: 30
+- v1 requirements: 35 total
+- Mapped to phases: 35
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after roadmap creation*
+*Last updated: 2026-03-28 — Phase 8 REND-01 through REND-05 added*
