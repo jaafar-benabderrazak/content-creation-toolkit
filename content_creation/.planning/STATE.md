@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Phase 8 — Remotion Compilation Quality
+**Current focus:** Milestone v1.1 — AI Generation Quality
 
 ## Current Position
 
-Phase: 8 of 8 (The Compilation via Remotion Should Be Top-Notch)
-Plan: 4 of 4 in current phase
-Status: In Progress
-Last activity: 2026-03-28 — Completed 08-04: Python-Remotion bridge with profile-aware quality flags and WAV conversion
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.1
+Last activity: 2026-03-28 — Milestone v1.1 started (enhanced SDXL prompts + Suno music)
 
-Progress: [░░░░░░░░░░] ~5%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

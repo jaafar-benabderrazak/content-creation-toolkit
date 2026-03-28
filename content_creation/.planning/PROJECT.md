@@ -23,18 +23,28 @@ One command produces a publish-ready video — from prompt to YouTube upload —
 - ✓ Configurable video quality presets (1080p/720p/480p) — existing
 - ✓ Visual effects (parallax, dynamic lighting, time progression) — existing
 
-### Active
+### Active (v1.1 — AI Generation Quality)
 
-- [ ] Unified configuration UI for prompt/scene/style customization across all pipelines
-- [ ] YAML/JSON-backed prompt configs loadable from UI or file
-- [ ] Post-processing pipeline (color grade, transitions, intro/outro, watermark, subtitle burn-in)
-- [ ] AI thumbnail generation (best frame selection + text overlay + styling)
-- [ ] YouTube upload with title, description, tags, and thumbnail
-- [ ] Discord webhook notifications (generation complete, preview for approval, error alerts)
-- [ ] Slack webhook notifications (generation complete, preview for approval, error alerts)
-- [ ] Approval gate: send preview to Discord/Slack, wait for thumbs-up before publishing
-- [ ] Shared notification/publish layer usable by both pipelines
-- [ ] Template/edit profiles applied automatically (lofi study, tech tutorial, cinematic)
+- [ ] Enhanced SDXL prompt engineering with profile-specific prompt templates
+- [ ] Negative prompt support for SDXL to filter artifacts and improve quality
+- [ ] Smart image batching with caching (skip re-generation of unchanged scenes)
+- [ ] Suno API integration for music generation (replaces Stable Audio)
+- [ ] Profile-matched genre selection for Suno (lofi, cinematic, electronic)
+- [ ] Duration-aware music generation matching exact video length
+- [ ] Instrumental-only enforcement (no vocals)
+- [ ] Multiple track generation with selection support
+- [ ] Quality presets (low/medium/high) affecting generation params across image + music
+
+### Shipped (v1.0)
+
+- ✓ Pydantic config schema + YAML profiles + validation — Phase 1
+- ✓ Post-processing pipeline (watermark, subtitles, intro/outro) — Phase 2
+- ✓ Thumbnail generation (best frame + text overlay) — Phase 3
+- ✓ Discord/Slack notifications + approval gate — Phase 4
+- ✓ YouTube publisher (OAuth, resumable upload, quota guard) — Phase 5
+- ✓ Pipeline integration (shared runner wired into both pipelines) — Phase 6
+- ✓ Config UI (Gradio Blocks) — Phase 7
+- ✓ Top-notch Remotion video compilation — Phase 8
 
 ### Out of Scope
 
@@ -51,8 +61,9 @@ One command produces a publish-ready video — from prompt to YouTube upload —
 - Known tech debt: bare exceptions, deprecated PIL calls, hardcoded font paths, no tests (see .planning/codebase/CONCERNS.md)
 - GPU requirement: NVIDIA with 6GB+ VRAM for SDXL, runs on Windows 11 primarily
 - Current integrations: OpenAI, ElevenLabs, TikTok API, Hugging Face Hub
-- New integrations needed: YouTube Data API v3, Discord webhooks, Slack webhooks
+- New integrations needed: YouTube Data API v3, Discord webhooks, Slack webhooks, Suno API
 - Prompts currently hardcoded in Python source — major pain point driving the config UI requirement
+- Stable Audio replaced by Suno API for music generation in v1.1
 
 ## Constraints
 
