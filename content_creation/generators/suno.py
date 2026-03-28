@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # Module-level constants
 # ---------------------------------------------------------------------------
 
-SUNO_BASE_URL = os.environ.get("SUNO_BASE_URL", "https://api.sunoapi.org")
+SUNO_BASE_URL = os.environ.get("SUNO_BASE_URL", "https://api.kie.ai/api/v1")
 SUNO_MAX_TRACK_SECONDS = 240   # conservative; actual Suno v5 max ~4 min
 POLL_INITIAL_WAIT = 5          # seconds
 POLL_MAX_WAIT = 60             # cap for exponential backoff
@@ -124,7 +124,7 @@ class SunoClient:
     # ------------------------------------------------------------------
 
     def _submit(self, prompt: str, duration: int, genre: str) -> str:
-        """POST a generation request and return task_id.
+        """POST a generation request to kie.ai and return taskId.
 
         Raises
         ------
@@ -132,52 +132,68 @@ class SunoClient:
             On non-2xx HTTP response.
         """
         payload = {
-            "prompt": f"{genre} {prompt}",
-            "make_instrumental": self.suno_cfg.make_instrumental,
-            "duration": duration,
-            "mv": self.suno_cfg.model_version,
-            # Field name per sunoapi.org docs — may differ on kie.ai
-            "count": self.suno_cfg.track_count,
+            "prompt": f"{genre}, {prompt}",
+            "instrumental": self.suno_cfg.make_instrumental,
+            "model": self.suno_cfg.model_version,
+            "customMode": False,
+            "callBackUrl": "https://localhost/callback",  # required by kie.ai; we poll instead
         }
-        resp = self._session.post(f"{SUNO_BASE_URL}/api/v1/generate", json=payload)
+        resp = self._session.post(f"{SUNO_BASE_URL}/generate", json=payload)
         resp.raise_for_status()
-        return resp.json()["task_id"]  # Field name per sunoapi.org docs
+        result = resp.json()
+        task_id = result.get("data", {}).get("taskId")
+        if not task_id:
+            raise RuntimeError(f"No taskId in response: {result}")
+        self.logger.info("[Suno] Submitted task %s", task_id[:12])
+        return task_id
 
     def _poll_until_complete(self, task_id: str) -> List[str]:
-        """Poll until the task completes or POLL_HARD_TIMEOUT is exceeded.
+        """Poll kie.ai until the task completes or POLL_HARD_TIMEOUT is exceeded.
 
         Returns
         -------
         list[str]
-            All audio_urls from the completed task's data list.
+            All audioUrl values from the completed task's sunoData list.
 
         Raises
         ------
         RuntimeError
-            If Suno reports a task error status.
+            If kie.ai reports a failed status.
         TimeoutError
             If polling exceeds POLL_HARD_TIMEOUT seconds.
         """
         wait = POLL_INITIAL_WAIT
         elapsed = 0
         while elapsed < POLL_HARD_TIMEOUT:
-            resp = self._session.get(f"{SUNO_BASE_URL}/api/v1/task/{task_id}")
-            data = resp.json()
+            resp = self._session.get(
+                f"{SUNO_BASE_URL}/generate/record-info",
+                params={"taskId": task_id},
+            )
+            result = resp.json()
+            data = result.get("data", {})
             status = data.get("status", "")
-            if status == "completed":
-                # Field names per sunoapi.org docs — may differ on kie.ai
-                return [track["audio_url"] for track in data.get("data", [])]
-            if status == "error":
-                raise RuntimeError(f"Suno task failed: {data}")
+
+            if status in ("SUCCESS", "FIRST_SUCCESS"):
+                suno_data = data.get("response", {}).get("sunoData", [])
+                urls = [t["audioUrl"] for t in suno_data if t.get("audioUrl")]
+                if urls:
+                    self.logger.info("[Suno] Task %s complete — %d tracks", task_id[:12], len(urls))
+                    return urls
+                raise RuntimeError(f"Task succeeded but no audioUrl found: {data}")
+
+            if status in ("CREATE_TASK_FAILED", "GENERATE_AUDIO_FAILED"):
+                raise RuntimeError(f"Suno task failed: {status} — {data}")
+
             self.logger.info(
                 "[Suno] Polling task %s... status=%s elapsed=%ds",
-                task_id[:8],
+                task_id[:12],
                 status,
                 elapsed,
             )
             time.sleep(wait)
             elapsed += wait
             wait = min(wait * 2, POLL_MAX_WAIT)
+
         raise TimeoutError(
             f"Suno task {task_id} exceeded {POLL_HARD_TIMEOUT}s timeout"
         )
