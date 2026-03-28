@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 12: Discord Approval Loops** - Discord approval gate for images and video before YouTube publish
 - [ ] **Phase 13: YouTube Credential Setup and Thumbnail Publishing** - OAuth setup and thumbnail attach for YouTube publishing
 - [ ] **Phase 14: Vercel Dashboard UI** - Browser-based pipeline config, credit monitoring, and pipeline trigger
-- [x] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard (completed 2026-03-28)
+- [x] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard (completed 2026-03-28)
 - [ ] **Phase 17: Channel Branding** - YouTube channel data fetch, branding propagation to watermark/thumbnail, cached locally, and auto-generated intro/outro clips
 - [ ] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs
 
@@ -338,7 +338,14 @@ Plans:
 4. Re-running the pipeline a second time (without calling explicit refresh) does not make any YouTube API call — branding assets are read from the local cache
 5. Running the pipeline with --refresh-branding (or equivalent flag) discards the local cache, re-fetches channel assets from the YouTube Data API, and updates the cache before generation proceeds
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+
+- [ ] 17-01-PLAN.md — shared/branding.py with channel fetch, avatar download, local cache (7-day TTL + explicit refresh); BrandingSettings sub-model in pipeline_config.py
+- [ ] 17-02-PLAN.md — Watermark branding fallback in post_process.py; avatar corner logo overlay in thumbnail_gen.py
+- [ ] 17-03-PLAN.md — shared/branding_clips.py: FFmpeg-based intro/outro generation from channel avatar + name + tagline
+- [ ] 17-04-PLAN.md — pipeline_runner.py wiring: branding fetch before post-process, avatar_path forwarded to thumbnail, generated clips injected into concat step
 
 ### Phase 18: AI Prompt Generation
 **Goal**: The user supplies only a comma-separated tag string and a profile name; OpenAI generates a full SDXL positive prompt, negative prompt, and Suno music prompt matched to the profile's style, produces 8 scene-level variations, saves them to the profile YAML for inspection, and the pipeline runs end-to-end without any manual prompt editing
@@ -379,5 +386,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
 | 14. Vercel Dashboard UI | 4/4 | In Progress | - |
 | 16. Smart Defaults | 3/3 | Complete   | 2026-03-28 |
-| 17. Channel Branding | 0/? | Not started | - |
+| 17. Channel Branding | 0/4 | Not started | - |
 | 18. AI Prompt Generation | 0/? | Not started | - |
