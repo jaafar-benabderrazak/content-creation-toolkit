@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class SDXLSettings(BaseModel):
@@ -14,6 +14,21 @@ class SDXLSettings(BaseModel):
     width: int = Field(default=1024, ge=512, le=2048)
     height: int = Field(default=1024, ge=512, le=2048)
     quality_suffix: str = ""  # appended to positive prompt; e.g. "masterpiece, best quality, 8k"
+
+
+class SunoSettings(BaseModel):
+    genre: str  # required — profile-specific genre tag; e.g. "lofi chill" or "orchestral cinematic"
+    make_instrumental: bool = True
+    track_count: int = Field(default=2, ge=1, le=5)
+    model_version: str = "chirp-v5"  # overridden by quality_preset validator on PipelineConfig
+    api_key: Optional[str] = None  # loaded from SUNO_API_KEY env var; never hardcoded
+
+    @model_validator(mode='after')
+    def _load_api_key_from_env(self) -> 'SunoSettings':
+        import os
+        if self.api_key is None:
+            self.api_key = os.environ.get('SUNO_API_KEY')
+        return self
 
 
 class VideoSettings(BaseModel):
@@ -70,6 +85,25 @@ class PipelineConfig(BaseModel):
     post: PostSettings = Field(default_factory=PostSettings)
     publish: PublishSettings = Field(default_factory=PublishSettings)
     notify: NotifySettings = Field(default_factory=NotifySettings)
+    sdxl: Optional[SDXLSettings] = None
+    suno: Optional[SunoSettings] = None
+
+    @model_validator(mode='after')
+    def _apply_quality_preset(self) -> 'PipelineConfig':
+        preset = self.video.quality_preset
+        preset_map = {
+            'high':   {'steps': 35, 'guidance_scale': 8.0, 'model_version': 'chirp-v5',   'quality_suffix': 'masterpiece, best quality, 8k, photorealistic'},
+            'medium': {'steps': 25, 'guidance_scale': 7.5, 'model_version': 'chirp-v4.5', 'quality_suffix': 'high quality, detailed'},
+            'fast':   {'steps': 15, 'guidance_scale': 7.0, 'model_version': 'chirp-v4',   'quality_suffix': ''},
+        }
+        p = preset_map.get(preset, preset_map['medium'])
+        if self.sdxl is not None:
+            self.sdxl.steps = p['steps']
+            self.sdxl.guidance_scale = p['guidance_scale']
+            self.sdxl.quality_suffix = p['quality_suffix']
+        if self.suno is not None:
+            self.suno.model_version = p['model_version']
+        return self
 
     @classmethod
     def from_yaml(cls, path: Union[str, Path]) -> PipelineConfig:
