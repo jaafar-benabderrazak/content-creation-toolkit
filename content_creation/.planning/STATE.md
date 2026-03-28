@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 18 of 18 (v1.2 — AI Prompt Generation)
-Plan: 1 of 1 completed in current phase
+Plan: 2 of 2 completed in current phase
 Status: Phase complete
-Last activity: 2026-03-28 — 18-01 complete: PromptGenerator with OpenAI generate() and PromptGenerationError
+Last activity: 2026-03-28 — 18-02 complete: --tags CLI flag and PromptGenerator YAML write-back in study_with_me_generator.py
 
-Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans complete)
+Progress: [█████░░░░░] 50% (v1.2 milestone — 5/? plans complete)
 
 ## Performance Metrics
 
@@ -70,6 +70,9 @@ Recent decisions affecting v1.2 work:
 - [Phase 17]: YAML clip paths explicitly set take precedence over generated branding clips — user config wins
 - [Phase 18-01]: No module-level side effects — PromptGenerator instantiation is the API key check point, not import time
 - [Phase 18-01]: All OpenAI exceptions wrapped as PromptGenerationError — callers only handle one exception type
+- [Phase 18-02]: _run_prompt_generation uses lazy imports (yaml, generators.prompt_generator) — zero overhead when --tags is not used
+- [Phase 18-02]: YAML write-back uses yaml.safe_load → mutate → yaml.dump(sort_keys=False) — preserves field ordering in profile YAML
+- [Phase 18-02]: cinematic.yaml positive_prompt was already present; Task 2 was a verification pass with no file change
 
 ### Pending Todos
 
@@ -87,5 +90,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 18-01-PLAN.md — PromptGenerator with OpenAI generate() and PromptGenerationError (Phase 18 complete)
+Stopped at: Completed 18-02-PLAN.md — --tags CLI flag and PromptGenerator YAML write-back in study_with_me_generator.py (Phase 18 complete)
 Resume file: None

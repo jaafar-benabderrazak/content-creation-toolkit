@@ -25,7 +25,7 @@
 - [x] **AGEN-02**: Generated prompts respect the active profile's style (cinematic tags produce cinematic prompt style)
 - [x] **AGEN-03**: Tag-to-prompt generation produces scene variation prompts (8 variants from tags, not 1 repeated prompt)
 - [x] **AGEN-04**: Generated prompts are saved to the profile YAML so they're visible and editable before generation
-- [ ] **AGEN-05**: Pipeline can run end-to-end with just tags + profile name — no manual prompt editing required
+- [x] **AGEN-05**: Pipeline can run end-to-end with just tags + profile name — no manual prompt editing required
 
 ## Out of Scope
 
@@ -52,7 +52,7 @@
 | AGEN-02 | Phase 18 | Complete |
 | AGEN-03 | Phase 18 | Complete |
 | AGEN-04 | Phase 18 | Complete |
-| AGEN-05 | Phase 18 | Pending |
+| AGEN-05 | Phase 18 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 13 total
