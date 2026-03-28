@@ -91,6 +91,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:39:40Z
-Stopped at: Completed 09-02-PLAN.md — SDXL/Suno blocks added to all profile YAMLs
+Last session: 2026-03-28T17:40:35Z
+Stopped at: Completed 09-01-PLAN.md — SDXLSettings and SunoSettings sub-models added to PipelineConfig with quality_preset validator
 Resume file: None

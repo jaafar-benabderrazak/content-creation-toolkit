@@ -7,9 +7,9 @@
 
 ### Prompt Engineering
 
-- [ ] **PRMT-01**: Each profile (lofi-study, tech-tutorial, cinematic) has a YAML-defined prompt template with style-specific positive and negative prompts
-- [ ] **PRMT-02**: Negative prompts are short (5-8 terms) and SDXL-optimized — no SD1.5 mega-lists
-- [ ] **PRMT-03**: Quality presets (high/medium/fast) append quality-specific suffixes to prompts (e.g., "masterpiece, best quality" for high)
+- [x] **PRMT-01**: Each profile (lofi-study, tech-tutorial, cinematic) has a YAML-defined prompt template with style-specific positive and negative prompts
+- [x] **PRMT-02**: Negative prompts are short (5-8 terms) and SDXL-optimized — no SD1.5 mega-lists
+- [x] **PRMT-03**: Quality presets (high/medium/fast) append quality-specific suffixes to prompts (e.g., "masterpiece, best quality" for high)
 - [ ] **PRMT-04**: Prompt templates support per-scene variation (weather, time-of-day) via template variables
 - [ ] **PRMT-05**: compel-based prompt weighting for emphasis control (e.g., "(warm lighting)1.3")
 
@@ -33,9 +33,9 @@
 
 ### Config Extension
 
-- [ ] **CFGX-01**: SDXLSettings sub-model added to PipelineConfig (negative_prompt, steps, guidance_scale, enable_refiner)
-- [ ] **CFGX-02**: SunoSettings sub-model added to PipelineConfig (genre, make_instrumental, track_count, api_key via env var)
-- [ ] **CFGX-03**: Quality presets unified across image + music generation (single quality_preset drives both)
+- [x] **CFGX-01**: SDXLSettings sub-model added to PipelineConfig (negative_prompt, steps, guidance_scale, enable_refiner)
+- [x] **CFGX-02**: SunoSettings sub-model added to PipelineConfig (genre, make_instrumental, track_count, api_key via env var)
+- [x] **CFGX-03**: Quality presets unified across image + music generation (single quality_preset drives both)
 
 ## Out of Scope
 
@@ -51,9 +51,9 @@
 
 | Requirement | Phase | Status |
 | ----------- | ----- | ------ |
-| PRMT-01 | Phase 9 | Pending |
-| PRMT-02 | Phase 9 | Pending |
-| PRMT-03 | Phase 9 | Pending |
+| PRMT-01 | Phase 9 | Complete |
+| PRMT-02 | Phase 9 | Complete |
+| PRMT-03 | Phase 9 | Complete |
 | PRMT-04 | Phase 9 | Pending |
 | PRMT-05 | Phase 9 | Pending |
 | SDXL-01 | Phase 10 | Pending |
@@ -68,9 +68,9 @@
 | SUNO-06 | Phase 11 | Pending |
 | SUNO-07 | Phase 11 | Pending |
 | SUNO-08 | Phase 11 | Pending |
-| CFGX-01 | Phase 9 | Pending |
-| CFGX-02 | Phase 9 | Pending |
-| CFGX-03 | Phase 9 | Pending |
+| CFGX-01 | Phase 9 | Complete |
+| CFGX-02 | Phase 9 | Complete |
+| CFGX-03 | Phase 9 | Complete |
 
 **Coverage:**
 
