@@ -38,6 +38,8 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance
 from tqdm import tqdm
 
+from generators.sdxl import SDXLGenerator
+
 # Video rendering via Remotion (replaces MoviePy)
 # MoviePy imports removed — video composition handled by shared.remotion_renderer
 
@@ -186,126 +188,6 @@ WEATHER_EFFECTS = [
 ]
 
 # ---- Enhanced Image Generation -----------------------------------------------
-
-def generate_images_enhanced_sd(scenes: List[Dict], config: VideoConfig, out_dir: Path) -> List[Path]:
-    """Enhanced image generation with better models and settings"""
-    import torch
-    from diffusers import StableDiffusionXLPipeline, DPMSolverMultistepScheduler
-    
-    print(f"[SD] Loading Enhanced Stable Diffusion XL model...")
-    
-    # Use SDXL for better quality
-    model_id = "stabilityai/stable-diffusion-xl-base-1.0"
-    
-    if not torch.cuda.is_available():
-        print("[WARNING] CUDA not available. Using CPU (will be very slow)")
-        device = "cpu"
-        torch_dtype = torch.float32
-    else:
-        device = "cuda"
-        torch_dtype = torch.float16
-        
-        # Print GPU info
-        gpu_name = torch.cuda.get_device_name(0)
-        gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
-        print(f"[SD] Using GPU: {gpu_name} ({gpu_memory:.1f}GB VRAM)")
-    
-    # Load pipeline with optimizations
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        model_id,
-        torch_dtype=torch_dtype,
-        use_safetensors=True,
-        variant="fp16" if device == "cuda" else None
-    )
-    
-    # Use faster scheduler for better quality/speed balance
-    pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-    pipe = pipe.to(device)
-    
-    # Enable memory optimizations
-    if device == "cuda":
-        pipe.enable_model_cpu_offload()
-        pipe.enable_vae_slicing()
-        pipe.enable_attention_slicing(1)
-    
-    # Quality settings based on preset
-    if config.quality_preset == "high":
-        steps = 35
-        guidance = 8.0
-    elif config.quality_preset == "medium":
-        steps = 25
-        guidance = 7.5
-    else:  # fast
-        steps = 15
-        guidance = 7.0
-    
-    paths: List[Path] = []
-    negative_prompt = (
-        "blurry, low quality, distorted, deformed, bad anatomy, "
-        "watermark, signature, text, logo, ugly, duplicate, morbid"
-    )
-    
-    for i, scene_data in enumerate(tqdm(scenes, desc="Generating enhanced images")):
-        try:
-            # Build enhanced prompt
-            base_prompt = scene_data["prompt"]
-            style = random.choice(STYLE_VARIATIONS)
-            weather = random.choice(WEATHER_EFFECTS) if config.quality_preset == "high" else ""
-            
-            full_prompt = f"{base_prompt}, {style}"
-            if weather and scene_data["environment"] == "indoor":
-                full_prompt += f", {weather}"
-            
-            full_prompt += ", high resolution, detailed, professional photography, 8K"
-            
-            # Generate with enhanced settings
-            with torch.inference_mode():
-                image = pipe(
-                    prompt=full_prompt,
-                    negative_prompt=negative_prompt,
-                    num_inference_steps=steps,
-                    guidance_scale=guidance,
-                    width=config.image_size,
-                    height=config.image_size,
-                    generator=torch.manual_seed(42 + i)
-                ).images[0]
-            
-            # Post-process image for better quality
-            image = enhance_image_quality(image)
-            
-            # Save with high quality
-            path = out_dir / f"scene_{i:03d}.jpg"
-            image.save(path, "JPEG", quality=95, optimize=True)
-            paths.append(path)
-            print(f"[SD] Generated enhanced scene: {path}")
-            
-        except Exception as e:
-            print(f"[ERROR] Failed to generate image {i}: {e}")
-            # Create high-quality fallback
-            path = create_fallback_image(scene_data, i, config.image_size, out_dir)
-            paths.append(path)
-    
-    # Cleanup
-    del pipe
-    if device == "cuda":
-        torch.cuda.empty_cache()
-    
-    return paths
-
-def enhance_image_quality(image: Image.Image) -> Image.Image:
-    """Apply post-processing to enhance image quality"""
-    # Subtle sharpening
-    image = image.filter(ImageFilter.UnsharpMask(radius=1, percent=110, threshold=3))
-    
-    # Enhance contrast slightly
-    enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.05)
-    
-    # Enhance color saturation slightly
-    enhancer = ImageEnhance.Color(image)
-    image = enhancer.enhance(1.03)
-    
-    return image
 
 def create_fallback_image(scene_data: Dict, index: int, size: int, out_dir: Path) -> Path:
     """Create a high-quality fallback image"""
@@ -951,7 +833,28 @@ def main():
             scenes_data.append(base_scene)
         
         try:
-            new_paths = generate_images_enhanced_sd(scenes_data, video_config, img_dir)
+            # Build SDXLSettings from active config — use defaults if no config loaded
+            from config.pipeline_config import SDXLSettings
+            _sdxl_cfg = getattr(pipeline_config, 'sdxl', None) or SDXLSettings(
+                negative_prompt=(
+                    "blurry, low quality, distorted, deformed, bad anatomy, "
+                    "watermark, signature, text, logo, ugly, duplicate, morbid"
+                )
+            )
+            # Override steps/guidance from quality_preset (matches existing behavior)
+            preset = getattr(video_config, 'quality_preset', 'medium')
+            _steps_map = {'high': (35, 8.0), 'medium': (25, 7.5), 'fast': (15, 7.0)}
+            _s, _g = _steps_map.get(preset, (25, 7.5))
+            _sdxl_cfg.steps = _s
+            _sdxl_cfg.guidance_scale = _g
+
+            generator = SDXLGenerator(cache_dir=work_dir / ".cache" / "images")
+            new_paths = generator.generate_batch(
+                scenes=scenes_data,
+                sdxl_cfg=_sdxl_cfg,
+                profile=getattr(pipeline_config, 'profile', 'default') if pipeline_config else 'default',
+                out_dir=img_dir,
+            )
             image_paths.extend(new_paths)
             
             # Save progress
