@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.1 — AI Generation Quality
+**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 9: Config Extension and Prompt Templates)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 9 — Config Extension and Prompt Templates
 Plan: —
-Status: Defining requirements for v1.1
-Last activity: 2026-03-28 — Milestone v1.1 started (enhanced SDXL prompts + Suno music)
+Status: Roadmap defined, ready for Phase 9 planning
+Last activity: 2026-03-28 — v1.1 roadmap created (phases 9-11 derived from 20 requirements)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -54,22 +54,36 @@ Recent decisions affecting current work:
 - [Phase 08-the-compilation-via-remotion-should-be-top-notch]: Cast getPresentation return to any in StudyVideo.tsx — union of TransitionPresentation types not assignable to single typed slot
 - [Phase 08-the-compilation-via-remotion-should-be-top-notch]: _resolve_quality uses lofi-study defaults as fallback for unknown profiles
 - [Phase 08-the-compilation-via-remotion-should-be-top-notch]: WAV conversion caches result on disk; on ffmpeg failure returns original path for graceful degradation
+- [v1.1 Roadmap]: Phase 9 (config + prompts) must precede Phase 10 (SDXL extraction) — cache key SHA-256 hashes fully-resolved prompt strings; template schema must be stable before cache key is designed
+- [v1.1 Roadmap]: Phase 10 (SDXL extraction) must precede Phase 11 (Suno) — generators/ package structure established before second generator is added; SDXL is deterministic and verifiable, making it the safer first extraction
+- [v1.1 Roadmap]: Suno assigned to Phase 11 (last) — highest-risk component (unofficial API, ToS exposure, vocal bleed); fallback path tested against real Stable Audio output before Suno replaces it
+- [v1.1 Research]: Use CompelForSDXL (not Compel) — base Compel class does not produce pooled_prompt_embeds required by StableDiffusionXLPipeline
+- [v1.1 Research]: SDXL negative prompts must be short (under 30 tokens), style-focused, per-profile — SD1.5 mega-lists degrade SDXL output quality
+- [v1.1 Research]: Cache key must SHA-256 hash the full parameter dict (prompt + negative_prompt + quality_preset + profile + seed + model_version) — hashing only prompt text silently serves stale images after any other parameter change
+- [v1.1 Research]: Pin Suno third-party wrapper to exact version (== not >=); implement Stable Audio fallback before considering Suno integration done
+- [v1.1 Research]: Suno make_instrumental flag is probabilistic (~70-80% clean) — always generate 2-3 tracks and validate before passing to video assembly
+- [v1.1 Research]: Hard 300s polling timeout on Suno with exponential backoff (5s → 10s → 20s → cap 60s); on timeout fall back to Stable Audio
 
 ### Roadmap Evolution
 
 - Phase 8 added: Remotion compilation quality — top-notch video rendering with advanced effects
+- Phases 9-11 added: v1.1 AI Generation Quality milestone (config extension, SDXL caching, Suno integration)
 
 ### Pending Todos
 
-None yet.
+- Phase 11 pre-planning: validate Suno provider field names (sunoapi.org vs kie.ai) for make_instrumental, duration, task_id, status, audio_url before implementing SunoClient
+- Phase 11 pre-planning: investigate lightweight vocal detection options (librosa pitch detection vs pre-trained VAD model) — current approach is LOW confidence heuristic
+- Phase 10 pre-planning: confirm compel>=2.0.2 PyPI version compatibility with project's current diffusers install before pinning in requirements.txt
+- Phase 10 pre-planning: validate diskcache PIL Image serialization for SDXL 1024x1024 output format
 
 ### Blockers/Concerns
 
 - [Pre-Phase 5]: YouTube quota increase SLA is variable — if >6 uploads/day is required, file quota increase request with Google before committing to a release timeline
 - [Pre-Phase 7]: AnimateDiff Gradio version pin not yet inspected — determines isolation strategy; run `grep -i gradio AnimateDiff/requirements.txt` before Phase 7 planning
+- [Pre-Phase 11]: Suno has no official public API — all third-party wrappers violate Suno's ToS and can break silently on any frontend change; check suno.ai/developers for a first-party API before committing to a third-party wrapper
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 08-04-PLAN.md — Python-Remotion bridge with profile-aware quality flags, WAV conversion helper, bt709 color space
+Stopped at: v1.1 roadmap created — phases 9, 10, 11 defined with 20/20 requirement coverage
 Resume file: None

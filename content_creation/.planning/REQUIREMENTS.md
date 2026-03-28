@@ -40,7 +40,7 @@
 ## Out of Scope
 
 | Feature | Reason |
-|---------|--------|
+| ------- | ------ |
 | ControlNet/LoRA support | Complex, requires model-specific setup per style — defer to v2 |
 | Suno official API | Does not exist yet — built for third-party wrappers with abstraction |
 | Vocal detection/filtering | Low confidence approach, manual selection via approval gate sufficient for v1.1 |
@@ -50,33 +50,34 @@
 ## Traceability
 
 | Requirement | Phase | Status |
-|-------------|-------|--------|
-| PRMT-01 | — | Pending |
-| PRMT-02 | — | Pending |
-| PRMT-03 | — | Pending |
-| PRMT-04 | — | Pending |
-| PRMT-05 | — | Pending |
-| SDXL-01 | — | Pending |
-| SDXL-02 | — | Pending |
-| SDXL-03 | — | Pending |
-| SDXL-04 | — | Pending |
-| SUNO-01 | — | Pending |
-| SUNO-02 | — | Pending |
-| SUNO-03 | — | Pending |
-| SUNO-04 | — | Pending |
-| SUNO-05 | — | Pending |
-| SUNO-06 | — | Pending |
-| SUNO-07 | — | Pending |
-| SUNO-08 | — | Pending |
-| CFGX-01 | — | Pending |
-| CFGX-02 | — | Pending |
-| CFGX-03 | — | Pending |
+| ----------- | ----- | ------ |
+| PRMT-01 | Phase 9 | Pending |
+| PRMT-02 | Phase 9 | Pending |
+| PRMT-03 | Phase 9 | Pending |
+| PRMT-04 | Phase 9 | Pending |
+| PRMT-05 | Phase 9 | Pending |
+| SDXL-01 | Phase 10 | Pending |
+| SDXL-02 | Phase 10 | Pending |
+| SDXL-03 | Phase 10 | Pending |
+| SDXL-04 | Phase 10 | Pending |
+| SUNO-01 | Phase 11 | Pending |
+| SUNO-02 | Phase 11 | Pending |
+| SUNO-03 | Phase 11 | Pending |
+| SUNO-04 | Phase 11 | Pending |
+| SUNO-05 | Phase 11 | Pending |
+| SUNO-06 | Phase 11 | Pending |
+| SUNO-07 | Phase 11 | Pending |
+| SUNO-08 | Phase 11 | Pending |
+| CFGX-01 | Phase 9 | Pending |
+| CFGX-02 | Phase 9 | Pending |
+| CFGX-03 | Phase 9 | Pending |
 
 **Coverage:**
+
 - v1.1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after v1.1 milestone definition*
+*Last updated: 2026-03-28 after v1.1 roadmap creation (phases 9-11 assigned)*

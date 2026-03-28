@@ -4,6 +4,8 @@
 
 This milestone adds a shared publish/notify/post-processing layer to an existing two-pipeline video generation toolkit. Starting from a validated config schema, the build proceeds through post-processing, thumbnail generation, webhook notifications, YouTube publishing, pipeline hook injection, and finally a Gradio config UI — each phase independently testable, each unblocking the next. The result is one command that produces a publish-ready video with a human approval gate before anything reaches YouTube.
 
+v1.1 (AI Generation Quality) extends the foundation with profile-driven SDXL prompt templates, hash-based image caching, and Suno music integration replacing Stable Audio. Config schema extension comes first; Suno integration last (highest risk).
+
 ## Phases
 
 **Phase Numbering:**
@@ -19,6 +21,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: YouTube Publisher** - OAuth token persistence, resumable upload, quota guard, and thumbnail attach
 - [ ] **Phase 6: Pipeline Integration** - Hook injection at both pipeline tails wiring all shared services end-to-end
 - [ ] **Phase 7: Config UI** - Gradio Blocks interface exposing config load/save and subprocess-based pipeline launch
+- [x] **Phase 8: Remotion Compilation Quality** - Spring-physics motion, profile-driven effect bundles, and YouTube-optimized render flags
+- [ ] **Phase 9: Config Extension and Prompt Templates** - SDXLSettings/SunoSettings sub-models and per-profile YAML prompt templates that all v1.1 generators depend on
+- [ ] **Phase 10: SDXL Generator Extraction and Image Caching** - generators/sdxl.py module with hash-based cache eliminating redundant scene regeneration
+- [ ] **Phase 11: Suno Music Integration** - SunoClient with async submission, multi-track generation, vocal validation, and Stable Audio fallback
 
 ## Phase Details
 
@@ -199,15 +205,68 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 4 plans
 
-- [ ] 08-01-PLAN.md — npm package installation, profile system (3 profiles + index), fonts/index.ts, FilmGrain, Vignette, TextReveal, AudioVisualizer shared components
-- [ ] 08-02-PLAN.md — StudyVideo refactor (TransitionSeries, spring motion, profile-aware overlays) + Root.tsx calculateMetadata
-- [ ] 08-03-PLAN.md — TechTutorial refactor (spring title, TextReveal bullets, profile-aware overlays)
-- [ ] 08-04-PLAN.md — remotion_renderer.py extended with profile prop, quality flags, sceneDurations, WAV conversion helper
+- [x] 08-01-PLAN.md — npm package installation, profile system (3 profiles + index), fonts/index.ts, FilmGrain, Vignette, TextReveal, AudioVisualizer shared components
+- [x] 08-02-PLAN.md — StudyVideo refactor (TransitionSeries, spring motion, profile-aware overlays) + Root.tsx calculateMetadata
+- [x] 08-03-PLAN.md — TechTutorial refactor (spring title, TextReveal bullets, profile-aware overlays)
+- [x] 08-04-PLAN.md — remotion_renderer.py extended with profile prop, quality flags, sceneDurations, WAV conversion helper
+
+### Phase 9: Config Extension and Prompt Templates
+
+**Goal**: PipelineConfig holds all SDXL and Suno generation parameters as typed sub-models, and every profile YAML contains the prompt templates, negative prompts, and genre tags that generators read at runtime — no generation parameters hardcoded in Python source
+
+**Depends on**: Phase 8
+
+**Requirements**: CFGX-01, CFGX-02, CFGX-03, PRMT-01, PRMT-02, PRMT-03, PRMT-04, PRMT-05
+
+**Success Criteria** (what must be TRUE):
+
+1. User can change image generation style for a profile by editing a YAML file (positive prompt, negative prompt, quality suffix) without modifying any Python source file
+2. Each profile YAML contains a distinct short negative prompt (5-8 terms, SDXL-optimized) — loading a profile with a missing negative_prompt field raises a Pydantic validation error before generation starts
+3. Setting quality_preset: high in the config causes both SDXL (steps=35, guidance_scale=8.0) and Suno (higher model tier) to apply quality-appropriate parameters simultaneously from a single field
+4. A scene template with a {weather} or {time_of_day} variable in the YAML resolves to the correct string when rendered — unresolved variables raise a clear error, not a generation attempt with literal braces in the prompt
+5. A prompt assembled through compel weighting (e.g., "(warm lighting)1.3") produces valid prompt_embeds and pooled_prompt_embeds without a runtime error from CompelForSDXL
+
+**Plans**: TBD
+
+### Phase 10: SDXL Generator Extraction and Image Caching
+
+**Goal**: SDXL generation runs from an importable generators/sdxl.py module with a hash-based cache that skips scenes whose prompt and parameters have not changed since the last run — re-running an unchanged pipeline produces zero new GPU compute
+
+**Depends on**: Phase 9
+
+**Requirements**: SDXL-01, SDXL-02, SDXL-03, SDXL-04
+
+**Success Criteria** (what must be TRUE):
+
+1. Both the study video pipeline and TikTok pipeline import SDXLGenerator from generators/sdxl.py — no SDXL inference code remains inline in either pipeline file
+2. Running the pipeline twice with identical prompt, negative prompt, quality preset, profile, seed, and model version produces zero API/GPU calls on the second run; the progress indicator shows cache hits for every scene
+3. Changing any single generation parameter (e.g., quality_preset from medium to high) invalidates only that scene's cache entry — other scenes still show cache hits on the next run
+4. The .cache/images/ directory contains a JSON sidecar alongside each cached image recording the full parameter dict used to generate it — a human can read the sidecar and know exactly what produced that image
+
+**Plans**: TBD
+
+### Phase 11: Suno Music Integration
+
+**Goal**: The pipeline generates music via Suno matched to the active profile's genre and the video's exact duration, with Stable Audio as an automatic fallback, and Suno task submission runs in a background thread so it does not add wall-clock time to the pipeline
+
+**Depends on**: Phase 10
+
+**Requirements**: SUNO-01, SUNO-02, SUNO-03, SUNO-04, SUNO-05, SUNO-06, SUNO-07, SUNO-08
+
+**Success Criteria** (what must be TRUE):
+
+1. A study video run with Suno enabled produces music that matches the profile's genre tag (lofi chill / orchestral cinematic / upbeat electronic) and is instrumental — no audible vocal content passes through to the assembled video
+2. A video longer than Suno's single-generation maximum receives stitched audio covering its full duration — there is no silence gap or abrupt cut at the stitch point
+3. When Suno is unavailable (API timeout, HTTP error, or credentials missing), the pipeline falls back to Stable Audio and completes without manual intervention — a warning is printed identifying the fallback trigger
+4. Suno task submission begins before the SDXL image batch starts; by the time the last image is generated, Suno audio is already downloaded and ready — the user does not wait for Suno after images complete
+5. If Suno polling exceeds 300 seconds, the pipeline stops polling, activates the Stable Audio fallback, and continues — the pipeline never hangs indefinitely on a Suno server-side delay
+
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -219,3 +278,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Pipeline Integration | 0/3 | Not started | - |
 | 7. Config UI | 0/4 | Not started | - |
 | 8. Remotion Compilation Quality | 4/4 | Complete   | 2026-03-28 |
+| 9. Config Extension and Prompt Templates | 0/? | Not started | - |
+| 10. SDXL Generator Extraction and Image Caching | 0/? | Not started | - |
+| 11. Suno Music Integration | 0/? | Not started | - |
