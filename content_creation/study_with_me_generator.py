@@ -642,6 +642,50 @@ def build_enhanced_video(
     final_video.write_videofile(str(out_path), **codec_settings)
     print("[Video] Enhanced video rendering completed!")
 
+# ---- Prompt Generation Helper -----------------------------------------------
+
+def _run_prompt_generation(tags: str, config_path: str, config) -> None:
+    """Generate SDXL + Suno prompts from tags via OpenAI and write them to the profile YAML.
+
+    Falls back silently to existing profile prompts if OPENAI_API_KEY is absent or the API call fails.
+    """
+    from generators.prompt_generator import PromptGenerator, PromptGenerationError
+    import yaml
+
+    profile_style = config.video.style_prompt
+    try:
+        pg = PromptGenerator()
+        print(f"[Tags] Generating prompts for tags: {tags!r} (profile style: {profile_style[:40]}...)")
+        result = pg.generate(tags=tags, profile_style=profile_style)
+    except PromptGenerationError as exc:
+        print(f"[Tags] Prompt generation failed — using existing profile prompts. Reason: {exc}")
+        return
+
+    # Read the raw YAML, inject generated values, write back
+    with open(config_path, "r", encoding="utf-8") as f:
+        raw = yaml.safe_load(f) or {}
+
+    # Ensure sdxl block exists
+    if "sdxl" not in raw or raw["sdxl"] is None:
+        raw["sdxl"] = {}
+    raw["sdxl"]["positive_prompt"] = result["positive_prompt"]
+    raw["sdxl"]["negative_prompt"] = result["negative_prompt"]
+    raw["sdxl"]["scene_templates"] = result["scene_templates"]
+
+    # Ensure suno block exists
+    if "suno" not in raw or raw["suno"] is None:
+        raw["suno"] = {}
+    raw["suno"]["prompt_tags"] = result["music_prompt"]
+
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+    print(f"[Tags] Prompts written to {config_path}")
+    print(f"[Tags]   positive_prompt: {result['positive_prompt'][:60]}...")
+    print(f"[Tags]   scene_templates: {len(result['scene_templates'])} variants")
+    print(f"[Tags]   music_prompt:    {result['music_prompt'][:60]}...")
+
+
 # ---- Enhanced Main Function -------------------------------------------------
 
 def main():
@@ -704,6 +748,13 @@ def main():
                        help="Keep generated assets for future use")
     parser.add_argument("--config", type=str, default=None,
                        help="Path to YAML config file (PipelineConfig format)")
+    parser.add_argument(
+        "--tags",
+        type=str,
+        default=None,
+        help="Comma-separated tags for AI prompt generation (e.g. 'lofi, rain, cozy, study'). "
+             "Requires --config. OpenAI generates SDXL and Suno prompts before image generation.",
+    )
 
     args = parser.parse_args()
 
@@ -713,6 +764,11 @@ def main():
         from config import PipelineConfig
         pipeline_config = PipelineConfig.from_yaml(args.config)
         print(f"[Config] Loaded profile: {pipeline_config.profile}")
+
+    if args.tags and pipeline_config is not None:
+        _run_prompt_generation(args.tags, args.config, pipeline_config)
+    elif args.tags and pipeline_config is None:
+        print("[Tags] --tags requires --config. Skipping prompt generation.")
     
     # Setup configurations
     resolution_map = {
