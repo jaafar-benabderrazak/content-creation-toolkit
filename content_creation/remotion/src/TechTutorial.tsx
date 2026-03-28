@@ -2,11 +2,18 @@ import React from "react";
 import {
   AbsoluteFill,
   Audio,
+  Easing,
   Img,
   interpolate,
+  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { getProfile } from "./profiles/index";
+import { FilmGrain } from "./components/FilmGrain";
+import { Vignette } from "./components/Vignette";
+import { TextReveal } from "./components/TextReveal";
+import { spaceGrotesk, jetBrainsMono } from "./fonts/index";
 
 interface TechTutorialProps {
   backgroundImage: string;
@@ -14,6 +21,7 @@ interface TechTutorialProps {
   title: string;
   bullets: string[];
   subtitlesSrt: string;
+  profile?: string;
 }
 
 export const TechTutorial: React.FC<TechTutorialProps> = ({
@@ -21,21 +29,25 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
   audioFile,
   title,
   bullets,
+  profile,
 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // Title fade in
-  const titleOpacity = interpolate(frame, [0, 30], [0, 1], {
-    extrapolateRight: "clamp",
-  });
-  const titleY = interpolate(frame, [0, 30], [30, 0], {
-    extrapolateRight: "clamp",
-  });
+  // Profile resolution
+  const profileConfig = getProfile(profile ?? "tech-tutorial");
+  const fontFamily =
+    profileConfig.fontFamily === "JetBrains Mono" ? jetBrainsMono : spaceGrotesk;
 
-  // Bullets stagger in
-  const bulletDelay = 45; // frames between each bullet
-  const bulletStart = 60; // frames before first bullet
+  // Title entrance via spring
+  const titleSpring = spring({
+    frame,
+    fps,
+    config: profileConfig.springConfig,
+    durationInFrames: 25,
+  });
+  const titleOpacity = titleSpring;
+  const titleY = interpolate(titleSpring, [0, 1], [30, 0]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0f0f23" }}>
@@ -49,6 +61,7 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
               height: "100%",
               objectFit: "cover",
               position: "absolute",
+              filter: profileConfig.cssColorFilter,
             }}
           />
           <AbsoluteFill
@@ -81,46 +94,51 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
             transform: `translateY(${titleY}px)`,
             lineHeight: 1.2,
             textShadow: "0 4px 20px rgba(0,0,0,0.5)",
+            fontFamily,
           }}
         >
           {title}
         </div>
 
-        {/* Bullets */}
+        {/* Bullets — TextReveal per bullet with per-word stagger */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {bullets.map((bullet, i) => {
-            const start = bulletStart + i * bulletDelay;
-            const opacity = interpolate(frame, [start, start + 20], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-            const x = interpolate(frame, [start, start + 20], [40, 0], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-
+            const bulletStart = 60 + i * 45;
             return (
               <div
                 key={i}
                 style={{
                   fontSize: 42,
                   color: "rgba(255, 255, 255, 0.95)",
-                  opacity,
-                  transform: `translateX(${x}px)`,
                   display: "flex",
                   alignItems: "center",
                   gap: 16,
+                  fontFamily,
                 }}
               >
                 <span style={{ color: "#60a5fa", fontSize: 36 }}>▸</span>
-                {bullet}
+                <TextReveal
+                  text={bullet}
+                  startFrame={bulletStart}
+                  springConfig={profileConfig.springConfig}
+                  staggerFrames={4}
+                  wordStyle={{ fontSize: 42, color: "rgba(255, 255, 255, 0.95)" }}
+                />
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Fade out at end */}
+      {/* Vignette overlay */}
+      <Vignette strength={profileConfig.vignetteStrength} />
+
+      {/* Film grain — only when profile has grainIntensity > 0 */}
+      {profileConfig.grainIntensity > 0 && (
+        <FilmGrain intensity={profileConfig.grainIntensity} instanceId="techtutorial" />
+      )}
+
+      {/* Fade out at end — eased */}
       <AbsoluteFill
         style={{
           backgroundColor: "black",
@@ -128,7 +146,11 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
             frame,
             [durationInFrames - 30, durationInFrames],
             [0, 1],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+            {
+              easing: Easing.out(Easing.cubic),
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            }
           ),
         }}
       />

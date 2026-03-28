@@ -1,3 +1,4 @@
+import React from "react";
 import { Composition } from "remotion";
 import { StudyVideo } from "./StudyVideo";
 import { TechTutorial } from "./TechTutorial";
@@ -7,7 +8,8 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="StudyVideo"
-        component={StudyVideo}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        component={StudyVideo as any}
         durationInFrames={30 * 60 * 120} // 120 minutes at 30fps
         fps={30}
         width={1920}
@@ -25,7 +27,8 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="TechTutorial"
-        component={TechTutorial}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        component={TechTutorial as any}
         durationInFrames={30 * 60} // 1 minute default, overridden by props
         fps={30}
         width={1080}
@@ -36,6 +39,7 @@ export const RemotionRoot: React.FC = () => {
           title: "",
           bullets: [] as string[],
           subtitlesSrt: "",
+          profile: "tech-tutorial",
         }}
       />
     </>
