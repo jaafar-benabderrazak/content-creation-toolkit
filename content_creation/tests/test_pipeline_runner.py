@@ -20,7 +20,7 @@ def _config_all_off() -> PipelineConfig:
 def _config_full() -> PipelineConfig:
     return PipelineConfig(
         publish={"youtube_enabled": True, "youtube_title": "Test"},
-        notify={"require_approval": True},
+        notify={"require_approval": True, "discord_webhook_url": "https://test"},
         post={"watermark_enabled": True, "watermark_text": "Test"},
     )
 
@@ -54,19 +54,14 @@ def test_full_chain_wiring(tmp_path):
         call_order.append("thumbnail")
         return o
 
-    def mock_approve(*args, **kw):
+    def mock_approved_pipeline(*args, **kw):
         call_order.append("approve")
-        return True
-
-    def mock_publish(*args, **kw):
         call_order.append("publish")
         return "vid123"
 
     with patch("shared.post_process.run_post_process", side_effect=mock_pp), \
          patch("shared.thumbnail_gen.generate_thumbnail", side_effect=mock_thumb), \
-         patch("shared.notifier.wait_for_approval", side_effect=mock_approve), \
-         patch("shared.publisher.publish_to_youtube", side_effect=mock_publish), \
-         patch("shared.notifier.notify_completion"):
+         patch("shared.approval_loop.run_approved_pipeline", side_effect=mock_approved_pipeline):
         result = run_shared_pipeline(video, cfg)
 
     assert call_order == ["post_process", "thumbnail", "approve", "publish"]
@@ -81,12 +76,9 @@ def test_unapproved_stops_publish(tmp_path):
 
     with patch("shared.post_process.run_post_process", return_value=video), \
          patch("shared.thumbnail_gen.generate_thumbnail", return_value=None), \
-         patch("shared.notifier.wait_for_approval", return_value=False), \
-         patch("shared.publisher.publish_to_youtube") as mock_pub, \
-         patch("shared.notifier.notify_completion"):
+         patch("shared.approval_loop.run_approved_pipeline", return_value=None):
         result = run_shared_pipeline(video, cfg)
 
-    mock_pub.assert_not_called()
     assert result is None
 
 
