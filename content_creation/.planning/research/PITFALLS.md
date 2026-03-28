@@ -1,332 +1,289 @@
 # Pitfalls Research
 
-**Domain:** Content creation automation — YouTube publishing, webhook notifications, config UI, post-processing, thumbnail generation added to existing Python video generation toolkit
+**Domain:** AI content generation pipeline — music API integration, SDXL prompt engineering, image caching
 **Researched:** 2026-03-28
-**Confidence:** MEDIUM-HIGH (YouTube API and Gradio pitfalls HIGH; webhook approval-gate and post-processing pitfalls MEDIUM)
-
----
+**Confidence:** MEDIUM (Suno API unofficial status makes official docs unavailable; SDXL and caching patterns are HIGH confidence from verified sources)
 
 ## Critical Pitfalls
 
-### Pitfall 1: OAuth2 Refresh Token Silently Expiring in "Testing" Mode
+### Pitfall 1: Suno Has No Official Public API — Every Wrapper Is a Reverse-Engineered ToS Violation
 
 **What goes wrong:**
-YouTube Data API OAuth2 apps left in "Testing" status on the Google Cloud Console issue refresh tokens that expire after 7 days. Uploads work during development, then start failing in production with `google.auth.exceptions.RefreshError: Token has been expired or revoked`. The app must re-run the OAuth consent flow interactively every week, which breaks any unattended pipeline.
+All third-party "Suno API" packages (gcui-art/suno-api, sunoapi.org, apiframe.ai, AIML API) work by reverse-engineering Suno's private web endpoints. There is no officially published developer API. Any change Suno makes to its web frontend can silently break integrations with zero notice, no changelog, and no migration path. The integration can go from working to dead overnight.
 
 **Why it happens:**
-Google's OAuth policy for "External" apps in "Testing" status deliberately limits refresh token lifetime to 7 days. Developers test locally, get tokens, move on — and don't notice expiry until the pipeline runs unattended days later. Moving the app to "Production" status requires a Google verification review for sensitive scopes, which developers defer.
+Suno's developer-facing marketing material implies API access exists. Search results surface third-party wrappers as if they are official. Developers assume "Suno API" is a real product.
 
 **How to avoid:**
-- Immediately after OAuth integration works: submit the Google Cloud project for "Production" verification, or switch the OAuth consent screen to "Internal" if using a Google Workspace account (internal apps get long-lived tokens without review)
-- Store the `token.json` / credential file path in config, not hardcoded
-- Add a startup check that proactively refreshes the token before each upload attempt and logs clearly when refresh fails
-- Never gate an unattended pipeline on a token obtained in Testing mode
+- Pick one third-party wrapper and version-lock it (`==` not `>=` in requirements)
+- Wrap ALL Suno calls in a single `SunoClient` class so the swap surface is one file, not scattered across the pipeline
+- Build against a stable third-party provider (AIML API, apiframe.ai) rather than the raw gcui-art wrapper — providers absorb breakage faster
+- Write integration tests that hit a local mock, not Suno directly, so pipeline CI does not depend on external availability
+- Design the music layer with a swappable interface from day one: `generate_music(prompt, duration, genre) -> AudioSegment` — if Suno breaks, the swap cost is one implementation class
 
 **Warning signs:**
-- Upload works in initial dev session but fails the following week with no code changes
-- `RefreshError` or `invalid_grant` in logs
-- Having to re-run OAuth flow more than once during development
+- HTTP 403 or 429 responses that previously worked
+- `session_id` or cookie-related authentication errors in the wrapper
+- Changelog silence from the wrapper repo while issues pile up
 
-**Phase to address:** YouTube publishing phase (before any unattended upload logic is written)
+**Phase to address:**
+Suno integration phase. Establish the abstraction boundary before writing any Suno-specific code. Test the fallback (silence or pre-bundled track) before shipping.
 
 ---
 
-### Pitfall 2: YouTube Quota Exhaustion Blocking the Entire Project Quota Pool
+### Pitfall 2: Instrumental Mode Is Not Guaranteed — Vocal Bleed Will Contaminate Study Videos
 
 **What goes wrong:**
-Every `videos.insert` call costs 1,600 quota units out of a default 10,000 units/day. That is a hard limit of ~6 uploads per day. Quota resets at midnight Pacific Time, not per-user. All API keys in the same Google Cloud project share this pool — creating additional API keys does not multiply quota. A batch test run or a pipeline bug that retries failed uploads can exhaust the day's quota in minutes, blocking all API calls (including reads) for 24 hours.
+Suno's `make_instrumental=True` flag reduces vocal probability but does not enforce silence. Vocal artifacts ("humming," ambient vocal pads, mumbled phrases) regularly appear even with the flag set. For study content where silence or purely ambient music is the product promise, any vocal bleed is a direct quality defect visible to viewers.
 
 **Why it happens:**
-Developers underestimate the per-upload cost and run tests against the real quota. The 1,600-unit cost for `videos.insert` is not prominently documented in most tutorials.
+The model does not separate vocal from instrumental at generation time — it generates a single audio stream that statistically leans instrumental. There is no post-processing isolation step. The hit rate for truly clean instrumentals is ~70-80% per generation.
 
 **How to avoid:**
-- Run all upload tests against a dedicated test Google Cloud project separate from the production project
-- Implement a quota tracker: before each upload attempt, check whether units remain (calculate locally by tracking calls with timestamps)
-- Add a guard in the upload function: refuse to upload if estimated remaining quota < 1,600 units
-- Request a quota increase via the Google Cloud Console before going to production if the pipeline needs >6 uploads/day
+- Always generate 2-3 tracks per request and select the cleanest one programmatically or via listening pass
+- Run a basic vocal detection heuristic on generated output before accepting it (librosa pitch detection or a lightweight classifier)
+- Keep a bank of 3-5 pre-validated fallback tracks per genre profile for when generation fails the quality check
+- Expose track selection to the human approval gate in Discord/Slack — include audio preview URLs in the notification
 
 **Warning signs:**
-- `quotaExceeded` or `dailyLimitExceeded` 403 errors from any API call (including metadata reads) after a batch test run
-- Upload function silently swallowed in a broad `except Exception` (already a pattern in this codebase — see CONCERNS.md)
+- Single-track generation with no selection step in the implementation
+- No audio validation before the track gets handed to the video assembly pipeline
+- Approval gate that shows video preview but not the isolated audio
 
-**Phase to address:** YouTube publishing phase (before writing any retry or test-upload logic)
+**Phase to address:**
+Suno integration phase. Build track selection and validation before connecting to video pipeline.
 
 ---
 
-### Pitfall 3: Gradio CUDA/GPU Operations Hanging When `queue=True`
+### Pitfall 3: Async Polling Without Timeout Bounds Hangs the Entire Pipeline
 
 **What goes wrong:**
-Gradio's default event handler queue (`queue=True`) runs callbacks in a thread pool. PyTorch CUDA operations invoked inside those threads hang indefinitely at certain kernel calls on Windows. This means any Gradio "Generate" button that triggers SDXL or audio model inference will freeze the UI permanently with no error output. The pipeline already runs on Windows 11 with NVIDIA GPU.
+Suno generation is async: the API returns a task ID immediately, then the caller polls a status endpoint until `complete`. If polling is implemented naively (tight loop or no max-wait), a failed generation (status stuck at `processing`) hangs the pipeline indefinitely. On a 2-4 hour video generation run, a hung music step that never resolves kills the whole job.
 
 **Why it happens:**
-PyTorch's CUDA context is not thread-safe in all configurations. Gradio's thread pool executor creates workers that don't own a CUDA context, causing blocking synchronization. This is a known open issue in Gradio (gradio-app/gradio#12492, gradio-app/gradio#6609) as of late 2025.
+Developers implement `while status != "complete": sleep(5)` and ship it. The happy path works. The failure path (Suno server-side error, quota exceeded, timeout on their end) is never tested.
 
 **How to avoid:**
-- Do not run heavy GPU inference (SDXL, Stable Audio, model loading) directly inside Gradio event handler callbacks
-- Instead, have the Gradio button handler enqueue a job to a separate subprocess or background thread that already owns a CUDA context, then use Gradio's progress/state polling to update the UI
-- If direct invocation is required, use `queue=False` on the specific event (accepts reduced concurrency)
-- Test GPU path explicitly through the Gradio UI before considering the config UI phase complete
+- Implement a hard timeout: `max_poll_attempts = 60` (5-minute wall clock at 5s intervals) with an explicit `TimeoutError` raise
+- Use exponential backoff from attempt 3 onward: 5s, 10s, 20s, cap at 60s
+- Log every poll attempt with elapsed time — makes debugging hung runs trivial
+- Treat timeout as a generation failure, not a crash: fall back to cached track, log warning, continue pipeline
 
 **Warning signs:**
-- "Generate" button spins indefinitely with no log output
-- Gradio process shows GPU memory allocated but no forward-pass logs
-- Works fine running the generator script directly from CLI but hangs inside Gradio
+- Poll loop with no `max_attempts` or `timeout` variable
+- No logging inside the poll loop
+- No test for the `status == "error"` response from the API
 
-**Phase to address:** Config UI phase (design the UI-to-pipeline bridge before wiring up GPU calls)
+**Phase to address:**
+Suno integration phase. Timeout and fallback must be implemented before the happy path is considered done.
 
 ---
 
-### Pitfall 4: Resumable Upload Session URI Expiring Mid-Pipeline
+### Pitfall 4: Prompt Hash Cache Key Does Not Include All Generation Parameters — Stale Images Served
 
 **What goes wrong:**
-YouTube's resumable upload protocol issues a session URI that has a finite lifetime. If the upload is paused for too long (e.g., waiting for an approval gate, or a slow GPU generation step running before the upload was initiated), the session URI expires and subsequent `PUT` requests return `404 Not Found`. The upload must restart from scratch, consuming another 1,600 quota units.
+Image caching skips re-generation when a cache hit is found. If the cache key only hashes the scene text prompt but not the quality preset, negative prompt template, SDXL seed, or profile name, then changing any of those parameters will silently serve the old image. The video looks correct locally but contains images generated with the previous profile settings.
 
 **Why it happens:**
-The pipeline design initiates the OAuth flow or upload session early in the pipeline, then other steps (post-processing, thumbnail generation, approval) run before the actual upload bytes are sent. Session URIs are not permanent.
+Cache key design starts simple: `hash(prompt_text)`. Over time, additional parameters are added to generation but not to the cache key. The bug is invisible — the pipeline reports "cache hit, skipping" and the developer assumes that is correct behavior.
 
 **How to avoid:**
-- Initiate the resumable upload session only after all pre-upload steps (post-processing, thumbnail, approval) are complete — immediately before sending bytes
-- Implement exponential backoff (1s → 2s → 4s → up to 64s) for 5xx errors, but do not retry 404 (expired session) — restart the full session instead
-- Use `MediaFileUpload` with `chunksize` explicitly set; handle `HttpError` and distinguish 404 (expired) from 5xx (retryable)
+Build the cache key as a hash of a normalized dict containing every parameter that affects the output:
+```python
+import hashlib, json
+
+def make_cache_key(prompt: str, negative_prompt: str, quality_preset: str,
+                   profile: str, seed: int | None) -> str:
+    params = {
+        "prompt": prompt.strip().lower(),
+        "negative_prompt": negative_prompt.strip().lower(),
+        "quality_preset": quality_preset,
+        "profile": profile,
+        "seed": seed,
+        "model": "sdxl-base-1.0",  # bump this string when upgrading models
+    }
+    return hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()
+```
+Store the full parameter dict alongside the cached image in a JSON sidecar so cache entries are human-inspectable.
 
 **Warning signs:**
-- Upload function receives `404` from `next_chunk()` despite the video file existing
-- Upload process succeeds on small test files but fails on large (>1 GB) production videos
-- Long delays between pipeline steps before upload begins
+- Cache key is just `hash(scene["prompt"])`
+- No sidecar metadata file next to cached images
+- No way to force-invalidate cache for a specific profile without wiping everything
+- Images look slightly wrong after a profile tweak but the pipeline reports 100% cache hits
 
-**Phase to address:** YouTube publishing phase (upload function design)
+**Phase to address:**
+Image caching phase. Design the key schema before writing the first cache write path.
 
 ---
 
-### Pitfall 5: Discord/Slack Approval Gate Implemented as Synchronous Polling
+### Pitfall 5: Negative Prompt Templates That Work for SD1.5 Break SDXL Quality
 
 **What goes wrong:**
-The approval gate (send preview, wait for thumbs-up before publishing) gets implemented as a loop that polls a webhook response URL or checks for a Discord reaction. This blocks the Python main thread for potentially minutes to hours. On a single-process local machine, this freezes the entire pipeline and prevents any other operation. If the process is killed, the approval state is lost.
+Developers port existing negative prompt strings from SD1.5 workflows into SDXL. SDXL has substantially better anatomy and coherence out of the box, so aggressive SD1.5-era negative prompts ("bad anatomy, extra limbs, malformed hands, fused fingers, ...") actively suppress stylistic variation and produce sterile, over-constrained output. Study video backgrounds become bland and repetitive.
 
 **Why it happens:**
-Outgoing webhooks (Discord/Slack) are fire-and-forget. Getting a "human approved" signal back requires either: (a) a listener server, (b) polling a Discord/Slack API endpoint, or (c) a file/flag checked by a separate process. Developers default to option (b) as a blocking loop.
+SD1.5 negative prompt template collections are widely shared and reused. SDXL-specific guidance is less discoverable. The mistake is hard to see without A/B comparison.
 
 **How to avoid:**
-- For v1 (local, single-creator): implement approval as a CLI prompt (`input("Approve? [y/n]")`) after the webhook notification is sent — simpler, no polling, no server
-- If webhook-driven approval is required: write a flag file to disk when the notification fires; use a separate watcher process or a simple `while` loop with `time.sleep(5)` and a hard timeout (e.g., 30 minutes), not a tight spin
-- Document the approval timeout behavior explicitly — what happens if nobody responds?
+- SDXL negative prompts should be short and style-focused, not anatomy-focused: `"cartoon, anime, 3d render, watermark, logo, text"`
+- Profile-specific negative prompts should only add terms that conflict with the profile's aesthetic intent (e.g., for `lofi` profile: add `"harsh lighting, clinical, sterile"`)
+- Never copy-paste an SD1.5 mega-negative-prompt into SDXL templates
+- Test each profile's positive+negative combination with 5 sample generations before locking the template
 
 **Warning signs:**
-- Approval function blocks the process with no timeout
-- No way to cancel/skip approval once started
-- Process must be killed with Ctrl+C to abandon an upload
+- Negative prompt longer than 30 tokens for SDXL
+- Negative prompt includes anatomy terms (`bad hands`, `extra fingers`) in profiles that don't generate people
+- All profiles share an identical negative prompt string with no profile-specific tuning
 
-**Phase to address:** Notifications/approval phase
-
----
-
-## Moderate Pitfalls
-
-### Pitfall 6: YouTube Thumbnail Upload Failing on Shorts or Unverified Channels
-
-**What goes wrong:**
-`thumbnails.set` returns a `403 forbidden` with reason `"The caller does not have permission"` in two cases: (1) the video is identified as a YouTube Short (vertical format, <60s), or (2) the channel is not phone/ID verified. Custom thumbnails are disabled for Shorts regardless of API permissions.
-
-**How to avoid:**
-- Detect Short vs. long-form before calling `thumbnails.set`: check aspect ratio and duration of output video
-- Verify the YouTube channel has custom thumbnail permissions enabled (channel settings → verify phone number)
-- Wrap `thumbnails.set` in explicit error handling that distinguishes permission errors from network errors; log clearly which case occurred
-
-**Phase to address:** Thumbnail generation phase
+**Phase to address:**
+SDXL prompt engineering phase. Template design must include validation images for each profile before the template is committed to YAML config.
 
 ---
 
-### Pitfall 7: MoviePy v1 vs v2 API Break in Post-Processing
+### Pitfall 6: Replacing Stable Audio Without Preserving the AudioSegment Contract Breaks Downstream Callers
 
 **What goes wrong:**
-MoviePy 2.0 renamed core methods (`subclip()` → `subclipped()`, `resize()` → `resized()`, `set_position()` → `with_position()`). The existing codebase uses moviepy and may be pinned to v1 or unpinned. Adding new post-processing code using v2 API against an environment running v1 causes `AttributeError` at runtime with no clear version context in the traceback. The existing codebase's dependency situation (deprecated moviepy noted in CONCERNS.md) compounds this.
-
-**How to avoid:**
-- Pin `moviepy` to a specific major version in requirements.txt before writing post-processing code
-- Run `import moviepy; print(moviepy.__version__)` in the target environment before writing any post-processing code and pick the API version accordingly
-- Do not mix v1 and v2 API calls in the same file
-
-**Phase to address:** Post-processing phase (first action: pin and audit moviepy version)
-
----
-
-### Pitfall 8: Discord Webhook File Attachment Size Limit Causing Silent Failures
-
-**What goes wrong:**
-Discord webhooks accept file attachments up to 25 MB (standard servers) or 500 MB (Nitro boosted servers). Preview videos for approval sent as attachments will fail silently if the file exceeds the limit — the webhook returns `400 Request Entity Too Large` which, if swallowed by a broad `except`, looks like a successful notification. The creator sees no Discord message and assumes the pipeline is stuck.
-
-**How to avoid:**
-- For preview notifications: send a low-res proxy (720p or lower) or a GIF preview, not the full production video
-- Check file size before attempting webhook attachment; if over 20 MB (safe threshold), send only a thumbnail image + metadata text instead
-- Never use bare `except` on webhook calls (this codebase already has this pattern — fixing it in CONCERNS.md should apply to all new code too)
-
-**Phase to address:** Notifications phase
-
----
-
-### Pitfall 9: Gradio Version Conflict with Existing AnimateDiff Dependency
-
-**What goes wrong:**
-AnimateDiff's requirements pin an old version of `gradio` (likely 3.x or early 4.x). Installing Gradio 5.x or 6.x for the new config UI breaks AnimateDiff's web UI if it has its own Gradio components. The version conflict either forces the new UI to use old Gradio (losing features), or breaks AnimateDiff.
+`generate_enhanced_music()` currently returns a `pydub.AudioSegment`. If Suno integration returns a file path (string) or raw bytes instead, every downstream caller (`crossfade`, `mix_with_video`, `audio validation`, etc.) breaks silently at runtime, often producing silent audio or crashes during video assembly.
 
 **Why it happens:**
-Gradio releases major versions with breaking changes every 6-12 months (4.0, 5.0, 6.0 all in the record). AnimateDiff's `requirements.txt` may not be maintained to track these.
+Suno APIs return an audio URL, not raw audio. Developers fetch the URL and store the file path, then forget to convert to `AudioSegment` before returning. The contract divergence is not caught until assembly.
 
 **How to avoid:**
-- Before designing the config UI: check the exact Gradio version AnimateDiff pins: `cat AnimateDiff/requirements.txt | grep gradio`
-- If there is a conflict: isolate AnimateDiff in its own virtual environment or accept a specific Gradio version for both
-- Design the config UI to work on whatever Gradio version the environment already has — do not assume Gradio 5+ features
+- Define an explicit interface contract: `generate_music(...) -> AudioSegment` — any Suno implementation must convert the downloaded file before returning
+- Write a unit test that asserts the return type before the Suno integration is merged
+- The existing `generate_enhanced_music` signature is the right model — preserve it as the interface, implement Suno behind it
 
-**Phase to address:** Config UI phase (environment audit before any UI code)
+**Warning signs:**
+- Suno integration function returns `str` (path) or `bytes`
+- No type annotation on the music generation function
+- Download and return are handled in the same function without a conversion step
+
+**Phase to address:**
+Suno integration phase. The existing function signature is already correct — protect it with a type annotation and a test.
 
 ---
 
-### Pitfall 10: Config YAML/JSON Not Validated Against Schema — Silent Bad Configs
+### Pitfall 7: Profile-to-Genre Mapping Hard-Coded In Logic Instead of Config — Unmaintainable
 
 **What goes wrong:**
-YAML/JSON-backed prompt configs loaded from disk are passed directly into pipeline functions. A typo in a field name (e.g., `duraion` instead of `duration`) silently uses a default or None value. The pipeline runs to completion but produces a video with wrong parameters. The creator only discovers the error after watching the output.
+`if profile == "lofi": genre = "lofi hip hop"` blocks proliferate across the pipeline. Adding a new profile or changing a genre mapping requires code changes. The existing codebase already has this problem with style variations (`STYLE_VARIATIONS`, `WEATHER_EFFECTS`) hardcoded in the generator. Repeating the pattern for music genre mapping compounds the problem.
 
-**How it happens:**
-Python dict access with `.get()` returns `None` for missing keys silently. No schema validation is applied at load time.
+**Why it happens:**
+Quick implementation shortcuts. Config-driven design requires more upfront structure.
 
 **How to avoid:**
-- Define a Pydantic model or dataclass for every config schema; validate loaded YAML/JSON against it at load time and raise immediately on unknown/missing fields
-- All config load functions must fail loudly (not silently use defaults) when required fields are absent
+- Genre mapping belongs in the YAML profile config (already designed in v1.1 requirements)
+- Profile config should contain: `music.genre`, `music.tempo_hint`, `music.style_tags` as explicit fields
+- Suno prompt construction reads these fields — no conditionals in Python for per-profile logic
+- New profile = new YAML entry, zero code change
 
-**Phase to address:** Config UI phase (schema-first design — define schemas before building the UI)
+**Warning signs:**
+- `if profile ==` anywhere in the music generation code path
+- Genre strings hardcoded in Python rather than loaded from config
+- Style tags for Suno constructed with string concatenation in the generator function
+
+**Phase to address:**
+SDXL prompt engineering phase (establish config-driven template pattern) before the Suno integration phase (apply same pattern to music).
 
 ---
 
 ## Technical Debt Patterns
 
-Shortcuts relevant to the new milestone capabilities.
-
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Storing OAuth token.json in project root | Easy to find | Accidentally committed to git; credential leak | Never — use a config dir outside the repo |
-| Single YouTube API project for dev + prod | No project management overhead | One test run can exhaust prod quota for 24 hours | Never once production uploads start |
-| Bare `except` on API calls (already in codebase) | Faster to write | Swallows quota errors, upload failures, webhook 429s silently | Never |
-| Gradio `gr.Interface` instead of `gr.Blocks` for config UI | Faster initial setup | Cannot add conditional UI, multi-step workflows, or progress bars | Only for trivial single-function UIs |
-| Sending full-res video as Discord preview | No extra ffmpeg pass | Exceeds 25 MB limit on any video >2 min; webhook silently fails | Never |
-| Hard-coding webhook URLs in source | Fast wiring during dev | URLs in version control; rotation requires code changes | Never — use env vars |
-
----
+| Single cache key from prompt text only | Fast to implement | Silent stale images after any parameter change | Never — always include all generation parameters |
+| Suno integration directly in the generator file | No new files needed | Swap cost is high when Suno breaks; untestable in isolation | Never — always isolate in a client class |
+| Polling without timeout in async generation | Simpler code | Pipeline hangs permanently on any Suno server-side failure | Never — always bound poll loops |
+| Copying SD1.5 negative prompts to SDXL | Existing templates reused | Over-constrained output; bland images | Never — SDXL requires separate template design |
+| Return file path from music generator instead of AudioSegment | Avoids extra conversion step | Breaks all downstream callers | Never — contract must match existing interface |
+| Per-profile genre mapping in Python if/else | Works immediately | Every new profile requires code change | MVP only if config infrastructure not yet built; must be migrated before ship |
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| YouTube Data API v3 | Treating quota as "per key" — creating multiple API keys to multiply quota | Quota is per Google Cloud project, not per key. Use separate projects for dev/prod. |
-| YouTube Data API v3 | Calling `thumbnails.set` before the video finishes processing on YouTube's side | Video processing is async; poll `videos.list` for `processingStatus == "succeeded"` before setting thumbnail |
-| YouTube OAuth2 | Storing token in memory only; losing it on process restart | Persist `token.json` to disk (or a configured path) and reload at startup |
-| Discord webhooks | Not handling `429 Retry-After` header | Read `Retry-After` from response header; sleep for that duration before retrying. Failed requests still consume rate limit. |
-| Discord webhooks | Sending a new message for each pipeline event with no context | Use message edits/updates to the same message to avoid channel spam during a single pipeline run |
-| Slack webhooks | Assuming Incoming Webhook URL is stable long-term | Slack deactivates webhooks when the installing user leaves a workspace; document the URL source and owner |
-| Gradio | Expecting `gr.State` to persist across browser refresh | Gradio session state is ephemeral; config state must be explicitly saved to disk to survive UI restarts |
-
----
+| Suno API (any wrapper) | Treating wrapper version as stable; no version pin | Pin exact wrapper version; monitor repo for breaking changes |
+| Suno API | Polling without backoff or timeout | Exponential backoff, 5-minute hard timeout, explicit error on timeout |
+| Suno API | Single track generation with no quality check | Generate 2-3 tracks, validate for vocal bleed, select best |
+| Suno API | Expecting `make_instrumental=True` to be absolute | Treat as probabilistic; add validation step |
+| SDXL via diffusers | Loading model fresh on every pipeline run | Model is already loaded once per run in current code — preserve this; do not add a second load for the new prompt system |
+| SDXL | Negative prompt from SD1.5 template | SDXL-specific short negative prompts; test per profile |
+| Image cache | Cache key from prompt text only | Hash all generation parameters into key |
+| Image cache | No cache invalidation path when model changes | Include model version string in cache key; provide `--clear-cache` flag |
 
 ## Performance Traps
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Running thumbnail frame extraction on full-res video in Python | Takes 2-3 minutes for a 60-min video | Use ffmpeg's `-ss` seek flag (input-side) + `thumbnail` filter; do not decode entire video in Python | Any video >10 min |
-| Uploading thumbnail as a separate API call in a naive retry loop | Double-counts quota if first call returned ambiguous error | Check `videos.list` thumbnail field after upload to verify before retrying `thumbnails.set` | First upload with network hiccup |
-| Loading post-processing clips into memory with MoviePy for 120-min videos | OOM (existing concern in CONCERNS.md — frame buffering) | Use ffmpeg subprocess calls for long-form post-processing; reserve MoviePy for clips <10 min | Any video >30 min on 16 GB RAM system |
-| Triggering SDXL model reload on each "preview" click in Gradio config UI | 60-90 second delay per click | Load model once at Gradio app startup into `gr.State` or module-level variable; share across requests | First user of config UI |
-
----
+| Fetching Suno audio URL synchronously in the main generation loop | Pipeline blocks for 2-3 minutes waiting for Suno | Download in background thread; continue other pipeline steps | Every run — latency is 1-3 minutes per generation |
+| Generating N images sequentially then checking cache | Cache checked too late; model already loaded | Check cache before loading SDXL model | Already an issue per CONCERNS.md — do not worsen it with new caching code |
+| Re-hashing all prompts on every run even when cache is warm | Negligible at 24 images; detectable at 200+ | Cache the hash computation itself in a manifest file | At 100+ images per run |
+| Downloading Suno audio file on every test run | Slow tests; Suno quota consumed | Mock the HTTP layer in tests; never hit live API in CI | From the first test run |
 
 ## Security Mistakes
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| YouTube OAuth `client_secret.json` in project root without `.gitignore` entry | Credential exposure in version control | Add `client_secret*.json` and `token.json` to `.gitignore` immediately; store outside project root |
-| Discord/Slack webhook URLs in source code or config files tracked by git | Anyone with repo access can post to the channel | Store webhook URLs in `.env`; `.env` already in use in this project — extend it |
-| No HMAC validation on incoming Slack interaction payloads (if implementing interactive approval) | Any HTTP client can fake an approval | Validate Slack's `X-Slack-Signature` header using the signing secret for any endpoint that accepts approval signals |
-| Logging full API responses that may contain OAuth tokens | Token leakage in log files | Sanitize log output; never log `Authorization` headers or `access_token` fields |
-
----
+| Suno API key in .env with no scope restriction | Key can be used for unauthorized generation if .env leaks | Document key rotation procedure; never log the key; add to .gitignore audit |
+| User-supplied style prompt passed directly to Suno style tag | Prompt injection; unexpected or policy-violating content generated | Validate style prompt against allowlist or character set before sending; length cap |
+| Cached images served without checking if the source profile is still valid | Deleted or renamed profile silently uses stale cache | Cache manifest should record the profile name; invalidate if profile no longer exists |
 
 ## UX Pitfalls
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Config UI submits generation and provides no progress feedback for 2-4 hour runs | Creator thinks the UI is frozen; kills process mid-generation | Use Gradio's `gr.Progress` or streaming generator to emit timestamped status updates every ~30 seconds |
-| Approval notification contains no preview of what is being approved | Creator must find the file manually to review | Include a frame grab (image) or the thumbnail in the Discord/Slack message alongside the title/description |
-| Config UI resets all fields on every page load (ephemeral Gradio state) | Creator must re-enter all settings for each run | Auto-save config to a `last_run.yaml` file; reload it on startup |
-| YouTube upload success/failure reported only in terminal, not in Gradio UI | Creator using the UI never sees upload status | Route upload result (video URL or error) back to a Gradio output component after pipeline completes |
-
----
+| No progress indication during Suno polling (2-3 min wait) | Pipeline appears frozen; user kills process | Log poll status every 30s: "[Music] Waiting for Suno... (45s elapsed)" |
+| Approval gate shows video but not the music track separately | Reviewer cannot evaluate audio quality without watching the whole video | Include direct audio file URL/path in Discord/Slack notification message |
+| Cache hit/miss ratio not reported at end of run | User cannot tell if caching is working | Log summary: "Images: 18/24 from cache (6 generated)" at end of image step |
+| Vocal bleed discovered after full video render | 2-4 hour run wasted | Validate music before starting video assembly; fail fast |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **YouTube OAuth setup:** Token persisted to disk and reloaded on restart — verify by restarting the process and uploading without re-authorizing
-- [ ] **YouTube upload:** Video actually appears on the channel as "public" (not stuck at "processing" or defaulting to "private") — verify in YouTube Studio
-- [ ] **Thumbnail:** Custom thumbnail visible on the video in YouTube Studio — `thumbnails.set` returns 200 but YouTube can still reject the image silently
-- [ ] **Discord notification:** Message appears in the correct channel with the preview image attached — test with a >25 MB and a <25 MB file to validate the size guard
-- [ ] **Slack notification:** Webhook URL still active — Slack deactivates stale webhooks; test the URL before relying on it
-- [ ] **Config UI:** Loaded YAML config round-trips correctly (save → reload → same values) — validation schema catches missing required fields
-- [ ] **Post-processing:** Subtitle burn-in renders correctly on Windows (font path issue from CONCERNS.md); test on target machine not just developer terminal
-- [ ] **Approval gate:** Pipeline does not hang forever if nobody approves — there is a timeout and a fallback behavior
-- [ ] **Gradio GPU path:** "Generate" button works end-to-end through UI, not just via CLI script
-
----
+- [ ] **Suno integration:** Verify `make_instrumental=True` actually produces a vocal-free track — listen to the output, do not just check the flag is set
+- [ ] **Async polling:** Verify the poll loop has a hard timeout — read the code, not the tests (tests likely mock the response)
+- [ ] **Image cache:** Verify cache key includes negative prompt, quality preset, and profile — print the key for two different presets and confirm they differ
+- [ ] **AudioSegment contract:** Verify `generate_music()` returns `pydub.AudioSegment`, not a file path — add a `assert isinstance(result, AudioSegment)` check
+- [ ] **Profile-genre mapping:** Verify genre values are read from YAML config, not from Python if/else — grep for `if profile ==` in music generation code
+- [ ] **Suno wrapper version:** Verify the wrapper package is pinned to an exact version in requirements.txt — `==` not `>=`
+- [ ] **Vocal bleed validation:** Verify there is a validation step between music download and music use in video assembly
+- [ ] **Fallback music path:** Verify the pipeline completes successfully when Suno returns an error — test with a mocked failure response
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| OAuth refresh token expired (Testing mode) | LOW | Re-run OAuth consent flow to get new token; then immediately move app to Production status |
-| YouTube quota exhausted | MEDIUM | Wait until midnight PT for reset; switch to separate dev Google Cloud project immediately to prevent recurrence |
-| Resumable upload session expired | LOW | Re-initiate upload session (costs 1,600 quota units again); add session-freshness check before upload |
-| Discord message failed silently due to file size | LOW | Add file-size check; regenerate notification with thumbnail image only |
-| MoviePy v1/v2 API mismatch | MEDIUM | Pin version, audit all moviepy calls in new post-processing code against pinned version's docs |
-| Gradio UI frozen (CUDA/queue issue) | MEDIUM | Restart Gradio process; refactor GPU calls out of event handler into subprocess |
-| Config YAML produced wrong video (schema not validated) | HIGH | Add Pydantic validation to config loader; re-run pipeline with corrected config |
-
----
+| Suno wrapper breaks due to upstream API change | HIGH | Swap to alternative provider (AIML API / apiframe.ai); update `SunoClient` implementation only; all callers unaffected if abstraction was built |
+| Cache serves stale images after parameter change | MEDIUM | Wipe cache directory for affected profile; regenerate; add missing parameters to cache key |
+| Hung poll loop discovered in production | LOW | Add timeout + kill-switch; no architecture change needed |
+| Vocal bleed in shipped video | HIGH | Manual replacement of audio track in post; implement validation gate to prevent recurrence |
+| SD1.5 negative prompts degrading SDXL quality | LOW | Replace template strings in YAML config; regenerate affected images |
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| OAuth2 refresh token expiry (Testing mode) | YouTube publishing | Run unattended upload 8+ days after OAuth setup — token must still work |
-| YouTube quota exhaustion | YouTube publishing | Separate dev/prod projects confirmed; quota guard function present |
-| Gradio CUDA hang with queue=True | Config UI | Click Generate through Gradio UI, GPU runs without hang; progress appears |
-| Resumable upload session expiry | YouTube publishing | Simulate a delayed upload (sleep before sending bytes); confirm session-freshness check fires |
-| Approval gate blocking main thread | Notifications/approval | Approval gate has a documented timeout; pipeline continues (or aborts cleanly) after timeout |
-| Thumbnail upload failing on Shorts | Thumbnail generation | Short vs. long-form detection present; `thumbnails.set` not called for Shorts |
-| MoviePy v1/v2 API break | Post-processing | `moviepy` version pinned in requirements.txt; no deprecated v1 method calls in new code |
-| Discord 25 MB attachment limit | Notifications/approval | File-size guard present; notification test with >25 MB file sends thumbnail-only fallback |
-| Gradio version conflict with AnimateDiff | Config UI | `AnimateDiff/requirements.txt` Gradio version audited before writing any UI code |
-| Config YAML missing field validation | Config UI | Pydantic schema defined; loading a config with a missing required field raises immediately |
-| OAuth credentials committed to git | YouTube publishing | `client_secret*.json` and `token.json` in `.gitignore`; `git log --all -- token.json` returns nothing |
-| Subtitle/font path failure on Windows | Post-processing | Text overlay renders with correct font on Windows target machine, not fallback default font |
-
----
+| Suno unofficial API — breakage risk | Suno integration phase | `SunoClient` abstraction class exists; wrapper version pinned |
+| Vocal bleed from instrumental mode | Suno integration phase | Track validation step present; fallback tracks defined |
+| Async polling without timeout | Suno integration phase | `max_poll_attempts` variable present in poll loop; timeout raises explicit exception |
+| Cache key missing generation parameters | Image caching phase | Cache key function hashes full parameter dict; sidecar JSON written |
+| SD1.5 negative prompts used in SDXL | SDXL prompt engineering phase | Per-profile negative prompts in YAML; anatomy terms absent from SDXL profiles |
+| AudioSegment contract broken by Suno return | Suno integration phase | Type annotation on `generate_music`; return type assertion in tests |
+| Profile-genre mapping hardcoded in Python | SDXL prompt engineering phase (config pattern) | No `if profile ==` in music code; genre read from config object |
 
 ## Sources
 
-- [YouTube Data API v3 — Resumable Uploads](https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol) — HIGH confidence (official docs)
-- [YouTube Data API v3 — Videos: insert](https://developers.google.com/youtube/v3/docs/videos/insert) — HIGH confidence (official docs)
-- [YouTube Data API v3 — Errors reference](https://developers.google.com/youtube/v3/docs/errors) — HIGH confidence (official docs)
-- [YouTube Data API v3 — OAuth 2.0 authentication](https://developers.google.com/youtube/v3/guides/authentication) — HIGH confidence (official docs)
-- [OAuth2 refresh token expiration and YouTube API — Google Developer Forums](https://discuss.google.dev/t/oauth2-refresh-token-expiration-and-youtube-api-v3/160874) — MEDIUM confidence (Google forum, multiple corroborating sources)
-- [Napkyn — Why Your YouTube API Refresh Token Keeps Expiring](https://www.napkyn.com/blog/youtube-api-refresh-token-expiring-fix) — MEDIUM confidence (verified against official behavior)
-- [Discord webhook rate limits — official Discord docs](https://discord.com/developers/docs/topics/rate-limits) — HIGH confidence (official docs)
-- [Discord rate limits — webhooks guide](https://birdie0.github.io/discord-webhooks-guide/other/rate_limits.html) — MEDIUM confidence
-- [Gradio — State in Blocks](https://www.gradio.app/guides/state-in-blocks) — HIGH confidence (official docs)
-- [Gradio — Running Background Tasks](https://www.gradio.app/guides/running-background-tasks) — HIGH confidence (official docs)
-- [Gradio — CUDA hang issue #12492](https://github.com/gradio-app/gradio/issues/12492) — HIGH confidence (maintainer-confirmed GitHub issue)
-- [Gradio — UI freeze with generators issue #6609](https://github.com/gradio-app/gradio/issues/6609) — HIGH confidence (GitHub issue)
-- [Gradio — GPU memory not released issue #6971](https://github.com/gradio-app/gradio/issues/6971) — HIGH confidence (GitHub issue)
-- [Gradio 6 Migration Guide](https://www.gradio.app/main/guides/gradio-6-migration-guide) — HIGH confidence (official docs)
-- [google-api-python-client — Media Upload](https://googleapis.github.io/google-api-python-client/docs/media.html) — HIGH confidence (official docs)
-- [MoviePy — PyPI](https://pypi.org/project/moviepy/) — HIGH confidence (official)
-- [YouTube API quota exceeded — community thread](https://support.google.com/youtube/thread/378827800/can-no-longer-upload-videos-with-youtube-data-api-v3-despite-having-massive-quota) — MEDIUM confidence (community-verified behavior)
-- Codebase analysis: `.planning/codebase/CONCERNS.md` — HIGH confidence (direct codebase audit)
+- [The Suno API Reality — AIML API Blog](https://aimlapi.com/blog/the-suno-api-reality) — unofficial API risks, legal status, wrapper fragility (MEDIUM confidence — authoritative third-party analysis)
+- [Suno API Review 2026 — AIML API Blog](https://aimlapi.com/blog/suno-api-review) — rate limits (20 req/10s), polling patterns, generation latency (MEDIUM confidence)
+- [gcui-art/suno-api GitHub](https://github.com/gcui-art/suno-api) — most widely used unofficial wrapper (MEDIUM confidence — unofficial tool)
+- [Suno Terms of Service](https://suno.com/terms-of-service) — ToS restrictions on commercial use and API access (HIGH confidence — official)
+- [How to Write Negative Prompts for SDXL — Layer.ai](https://help.layer.ai/en/articles/8120630-how-to-write-negative-prompts-relevant-for-sdxl-only) — SDXL-specific negative prompt guidance (MEDIUM confidence)
+- [SDXL Best Practices — Neurocanvas](https://neurocanvas.net/blog/sdxl-best-practices-guide/) — SDXL prompt structure, negative prompt scope (MEDIUM confidence)
+- [Stable Diffusion Prompt Guide — Stable Diffusion Art](https://stable-diffusion-art.com/prompt-guide/) — negative prompt mechanics (MEDIUM confidence)
+- [Cache Invalidation Strategies — Cachee.ai](https://cachee.ai/blog/posts/2025-12-20-cache-invalidation-strategies-that-actually-work.html) — cache key design, fingerprint patterns (MEDIUM confidence)
+- [Suno AI vocal bleed / instrumental reliability — aimusicservice.com](https://aimusicservice.com/blogs/news/how-to-fix-suno-and-udio-ai-song-mistakes) — documented limitation (LOW confidence — community source)
+- `.planning/codebase/CONCERNS.md` — existing codebase bugs and tech debt (HIGH confidence — direct codebase audit)
 
 ---
-*Pitfalls research for: content creation automation (YouTube publishing, webhook notifications, config UI, post-processing, thumbnail generation)*
+*Pitfalls research for: AI generation quality milestone — Suno API, SDXL prompt engineering, image caching*
 *Researched: 2026-03-28*

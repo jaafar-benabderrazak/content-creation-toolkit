@@ -1,8 +1,8 @@
 # Feature Research
 
-**Domain:** Video content creation automation pipeline (local, single-creator, Python)
+**Domain:** AI content generation pipeline — prompt engineering, music generation, quality presets, image caching
 **Researched:** 2026-03-28
-**Confidence:** MEDIUM — primary sources are YouTube Data API v3 official docs, Discord/Slack official docs, and multiple corroborated WebSearch findings. Approval-gate-over-webhook pattern is confirmed as feasible but implementation specifics are LOW confidence (no direct reference implementation found).
+**Confidence:** MEDIUM (codebase patterns HIGH; Suno API status LOW due to no official public API)
 
 ---
 
@@ -10,37 +10,31 @@
 
 ### Table Stakes (Users Expect These)
 
-Features this toolkit must have for the new milestone to feel complete. Missing any of these makes the system feel half-built.
+Features that any serious AI generation pipeline must have. Missing these = the tool feels like a prototype.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| YouTube upload (title, description, tags, category) | Any publishing pipeline without actual publishing is a preview tool | MEDIUM | `videos.insert` costs 1,600 quota units. 10,000 units/day default = ~6 uploads/day. Resumable upload required for all files >5 MB |
-| Custom thumbnail upload to YouTube | YouTube itself surfaces thumbnails as a primary discovery signal; auto-generated thumbnails are visibly worse | LOW | `thumbnails.set` costs ~50 units. Requires 1280×720 px, JPEG/PNG, max 2 MB. Cannot be set on Shorts |
-| OAuth 2.0 token persistence (refresh token storage) | Re-authenticating every run breaks automation entirely | MEDIUM | Must use `access_type=offline`, store refresh token to disk/file, handle `RefreshError` and re-auth flow. Scope: `youtube.upload` not full `youtube` |
-| Resumable upload with retry/exponential backoff | Large video files fail on flaky connections without recovery; non-resumable = restart from zero | MEDIUM | Use `MediaFileUpload(chunksize=-1, resumable=True)` + `next_chunk()` loop with exponential backoff on `TransportError` |
-| Discord webhook notification on completion | Creator needs to know generation is done without polling the terminal | LOW | Webhooks are send-only HTTP POST. Rate limit: 30 messages/minute. No bot, no OAuth. Just a URL |
-| Slack webhook notification on completion | Same as Discord — creator may use Slack instead | LOW | Incoming webhooks via Block Kit or simple JSON payload. Same pattern as Discord |
-| Error alert notifications (Discord/Slack) | Silent failures leave the creator unaware for hours | LOW | Same channel/webhook, different message format. Include pipeline stage and error summary |
-| Prompt/config externalized to YAML or JSON | Prompts hardcoded in Python source = requires code edit per video; unworkable for regular use | MEDIUM | Load at runtime; support both file path and UI-provided override. Gradio can read/write YAML via standard Python |
-| Gradio config UI exposing prompt and style fields | CLI-only config with YAML is still developer-facing; Gradio makes it accessible for non-code changes | MEDIUM | Gradio already a dep via AnimateDiff. Use `gr.Textbox`, `gr.Dropdown`, `gr.File` for config load/save |
-| Post-production: watermark overlay | Branded output is baseline for any public content | LOW | FFmpeg overlay filter or MoviePy `CompositeVideoClip`. Trivial to add once pipeline exists |
-| Post-production: subtitle burn-in | Subtitles are required for accessibility and engagement on short-form; YouTube auto-captions are unreliable | MEDIUM | FFmpeg `subtitles` filter or MoviePy + pysrt. Requires generated .srt from TTS script |
-| Post-production: intro/outro append | Channel identity; every professional channel has it | LOW | FFmpeg concat or MoviePy concatenation. Intro/outro are static video files |
+| Per-scene positive prompt templates | Hardcoded prompts produce identical images; scene variation is the baseline user expectation | LOW | Codebase already has per-scene dict with `"prompt"` keys; needs extraction to config/YAML |
+| Negative prompt support | SDXL without negatives produces artifacts (watermarks, bad anatomy, jpeg noise); users expect clean outputs | LOW | Codebase has a single inline negative string; needs to become configurable |
+| Quality preset tiers (low/medium/high) | Speed vs quality trade-off is a day-one need; no preset = users tweak inference params manually | LOW | `quality_preset` field already exists in `VideoConfig` and `AudioConfig`; needs to gate all generation params uniformly |
+| Instrumental-only music | Vocal tracks clash with study/ambient video content; vocal music is the wrong default | LOW | Suno supports instrumental mode via `make_instrumental` flag in third-party wrappers |
+| Deterministic output path (cache key) | Re-running a pipeline that regenerates unchanged scenes is unusable for iteration | MEDIUM | Requires content-hash of prompt + seed + model params per scene |
+| Music duration matching video length | Music that ends before video or loops awkwardly breaks the product | MEDIUM | Suno v5 supports up to 8 min; `extend_audio` endpoint chains segments for longer durations |
 
 ---
 
 ### Differentiators (Competitive Advantage)
 
-Features beyond baseline that match the project's core value ("one command to publish-ready").
+Features that put this pipeline ahead of a manual Stable Diffusion + Suno workflow.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Human approval gate via Discord/Slack before publish | Prevents publishing mistakes without requiring manual terminal intervention; aligns with async creator workflow | HIGH | Discord webhooks are send-only. True interactive approval (Approve/Reject buttons) requires either: (a) a Discord bot with slash commands/interactions, or (b) polling a Slack webhook response URL. For v1, a simpler pattern works: send preview + prompt manual command or flag file to confirm. See dependency notes |
-| Template/edit profiles (lofi-study, tech-tutorial, cinematic) | Eliminates per-video reconfiguration; profile bundles color grade preset, font, watermark, pacing | MEDIUM | Implement as named YAML config bundles. One profile = one YAML file under `profiles/`. Loaded by both pipelines |
-| Best-frame thumbnail extraction + text overlay | Avoids extra SD generation cost; uses existing video frames; deterministic | MEDIUM | OpenCV or MoviePy for frame scoring (sharpness, brightness variance). PIL/Pillow for text overlay. Output: 1280×720 JPEG |
-| Color grade preset per profile | Consistent visual identity across videos; differentiates from raw AI output | MEDIUM | FFmpeg `curves` or `eq` filter for simple LUT-style grading. Full LUT (.cube) via `lut3d` filter. Apply per profile |
-| Shared notification/publish layer (both pipelines use same module) | Prevents divergence where study pipeline and TikTok pipeline behave differently in production | LOW | Extract `publisher.py` and `notifier.py` as shared modules imported by both pipeline entry points |
-| Resumable pipeline state (generation can restart mid-stage) | Already exists for generation; extending to post-production and publish stages prevents full reruns | MEDIUM | Existing progress tracking mechanism; extend checkpoint markers to cover post-prod and upload stages |
+| Profile-matched prompt templates | "lofi" profile auto-selects warm bokeh scenes; "cinematic" selects dramatic lighting — no manual prompt tuning per video type | MEDIUM | Requires a prompt library keyed by profile slug; templates parameterized with time-of-day, weather, scene type slots |
+| Negative prompt library by category | Categorized negatives (anatomy, quality, watermark, NSFW) that can be composed by preset tier — high preset adds anatomy fixes, fast preset skips them | LOW | Per-SDXL-model tuning: SDXL needs shorter negatives than SD 1.5; EasyNegative embedding covers quality tokens in a single token |
+| Smart scene caching (skip-if-unchanged) | If a scene's prompt + seed + quality preset hasn't changed, skip generation and reuse cached PNG — cuts re-run time from 15 min to 2 min | MEDIUM | Hash = SHA256(prompt + negative_prompt + seed + steps + cfg_scale + model_id); store in `.cache/images/{hash}.png` |
+| Multi-track Suno generation with selection | Generate 2-3 candidate tracks, persist all, allow selection before video compilation — avoids re-generation lottery | MEDIUM | Suno API returns multiple `clips`; store all, add `selected_track_index` to config |
+| Profile-matched Suno genre tags | "lofi" profile → `"lofi hip hop, piano, rain, 70 bpm"`; "cinematic" → `"orchestral, dramatic, no vocals, 120 bpm"` — no manual tag entry | LOW | Maps profile slug to Suno `tags` parameter string; lives in profile YAML |
+| Quality preset affecting all generation axes | Single `quality_preset=high` sets: SDXL steps=40, cfg=7.5, SDXL resolution=1024, Suno output=WAV, video CRF=18 — not just one param | MEDIUM | Requires a `QualityProfile` dataclass that all generators read from; prevents drift where image is high quality but audio is low quality |
 
 ---
 
@@ -48,91 +42,73 @@ Features beyond baseline that match the project's core value ("one command to pu
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Full Discord/Slack bot for approval (interactive buttons in v1) | Feels like the right UX for approval workflows | Requires persistent process, OAuth bot registration, gateway connection, hosting. Doubles the operational surface for a local tool. Discord's interaction endpoint must be publicly reachable — impossible in local-only context without ngrok | v1: send preview notification + require creator to run `publish --approve <job_id>` CLI command or place a flag file. v2: consider bot if remote access is needed |
-| YouTube scheduling / optimal post time | Creators want to maximize reach | Requires YouTube scheduling API (separate quota), timezone logic, analytics read access. Out of scope per PROJECT.md | Immediate upload is the v1 contract; scheduling deferred to v2 |
-| Web-hosted UI | More accessible than local Gradio | Adds cloud infra, auth, secrets management, HTTPS, port exposure. Breaks local-GPU constraint | Local Gradio on `localhost:7860` is the contract for v1 |
-| Full channel management (playlists, end screens, cards, analytics) | Single API, why not use all of it? | Each feature adds quota cost, OAuth scope expansion, and test surface. YouTube audit requirements get stricter with broader scopes | Add only what drives value: `videos.insert` + `thumbnails.set` is the minimum |
-| Real-time progress streaming to UI | Looks impressive | Requires WebSockets or SSE in Gradio, significantly increases complexity for incremental benefit | Gradio's existing progress bar component (`gr.Progress`) is sufficient; polling works for local use |
-| Auto-scene detection and smart trimming | AI-driven editing sounds like a differentiator | Requires video understanding models (heavy), is highly subjective, and produces unpredictable cuts. Already deferred in PROJECT.md | Manual scene config in YAML profiles is deterministic and faster |
-| Multi-channel / multi-account YouTube publishing | Power creator workflow | OAuth token management multiplies in complexity; quota per project means juggling GCP projects | One account, one project, one credential file in v1 |
-| TikTok thumbnail support via automation | TikTok has cover image support | TikTok Content API cover image is set differently and the API surface changes frequently. Out of scope for this milestone | TikTok pipeline already posts directly; add cover support only if TikTok API stabilizes |
+| Suno official API integration presented as stable | Suno is the best-quality music generator; devs want clean SDK | Suno has **no official public API** as of 2026-03-28. Every wrapper is reverse-engineered from browser sessions, violates ToS, and can break without notice | Use third-party wrapper (gcui-art/suno-api or piapi.ai) but wrap in an abstraction layer with a fallback to Stable Audio; document the ToS risk explicitly |
+| Long negative prompt lists copied from SD 1.5 guides | More negatives = more control (intuition) | SDXL handles anatomy better natively; SD 1.5 negative lists applied to SDXL thin out "avoidance energy" and degrade quality. Each extra token dilutes guidance | Cap negative prompts at 10-15 tokens for SDXL; use EasyNegative embedding for quality baseline |
+| Per-frame image generation | Maximum scene variation | 30 frames/sec × N minutes = thousands of SDXL inference calls; completely unworkable locally | Generate 1 image per scene (10-15 scenes per video); animate with parallax/Ken Burns in Remotion |
+| Real-time image preview in Gradio during generation | Better UX | GPU is occupied during generation; Gradio streaming of diffusion progress requires significant threading complexity for marginal value | Show progress bar with step count; show final image when done |
+| Automatic genre detection from script content | Zero-config music | Requires an LLM call to classify script mood, adds latency and another API call, fails on short scripts | Profile-matched genre tags in YAML are explicit, predictable, and work offline |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[YAML/JSON Config Files]
-    └──required by──> [Gradio Config UI]  (UI reads/writes YAML; can't expose what doesn't exist)
-    └──required by──> [Template/Edit Profiles]  (profiles ARE YAML files)
+[Quality Preset Tiers]
+    └──gates──> [SDXL inference params (steps, cfg, resolution)]
+    └──gates──> [Suno output format (MP3 vs WAV)]
+    └──gates──> [Video encoder params (CRF, bitrate)]
 
-[Template/Edit Profiles]
-    └──required by──> [Color Grade Preset Per Profile]
-    └──required by──> [Post-Production Pipeline]  (profile drives which post-prod steps run)
+[Prompt Template Library]
+    └──requires──> [Profile system (existing: pipeline_config.py)]
+                       └──requires──> [Profile YAML schema (existing: Phase 1 output)]
 
-[Post-Production Pipeline]
-    └──required by──> [Best-Frame Thumbnail Extraction]  (runs after video is assembled)
-    └──required by──> [Subtitle Burn-In]  (needs assembled video)
-    └──required by──> [Watermark Overlay]  (needs assembled video)
-    └──required by──> [Intro/Outro Append]  (needs assembled video)
+[Negative Prompt Library]
+    └──enhances──> [Prompt Template Library] (same call site, composed together)
 
-[Post-Production Pipeline]
-    └──required by──> [YouTube Upload]  (upload the finished artifact)
-    └──required by──> [Thumbnail Upload to YouTube]  (thumbnail must exist before thumbnails.set call)
+[Smart Image Caching]
+    └──requires──> [Prompt Template Library] (need stable prompt string to hash)
+    └──requires──> [Quality Preset Tiers] (preset must be part of cache key)
 
-[YouTube Upload]
-    └──required by──> [OAuth 2.0 Token Persistence]  (upload fails without valid token)
-    └──required by──> [Resumable Upload + Retry]  (upload needs this to be reliable)
-    └──required by──> [Thumbnail Upload to YouTube]  (needs videoId from upload response)
+[Suno Integration]
+    └──requires──> [Profile-Matched Genre Tags] (otherwise generation is unguided)
+    └──requires──> [Duration-Aware Generation] (Suno v5 max 8min; long videos need segment chaining)
 
-[Discord/Slack Notifications]
-    └──required by──> [Human Approval Gate v1]  (approval gate sends preview via notification)
-
-[Human Approval Gate v1]
-    └──required by──> [YouTube Upload]  (publish only fires after approval confirmed)
-
-[Shared Notify/Publish Layer]
-    └──enhances──> [Discord/Slack Notifications]  (one implementation, both pipelines)
-    └──enhances──> [YouTube Upload]  (one implementation, both pipelines)
+[Multi-Track Selection]
+    └──requires──> [Suno Integration]
+    └──enhances──> [Profile-Matched Genre Tags] (generates N candidates per genre config)
 ```
 
 ### Dependency Notes
 
-- **YAML Config required before Gradio UI:** The UI is a frontend for config files. Building the UI first without a schema results in a UI that doesn't persist anything. Define config schema first.
-- **Post-production required before YouTube upload:** Upload operates on the final video artifact. Post-prod must output a single file before upload fires.
-- **Thumbnail required before thumbnails.set:** `thumbnails.set` requires a `videoId` (from the upload response) and a local image file. Thumbnail generation must complete before the upload call returns and before thumbnails.set is called.
-- **OAuth token persistence blocks all YouTube features:** Without stored refresh token, the entire YouTube surface requires re-auth on every run. This is the first YouTube feature to implement.
-- **Approval gate in v1 does not require a bot:** Send preview URL/file via webhook, then gate publish on CLI flag or file presence. No interactive button infrastructure needed.
+- **Smart caching requires stable prompt strings:** Prompts must be fully resolved (template vars substituted, style appended) before hashing. Hashing the template key is wrong — different profiles expand to different prompts.
+- **Quality preset must be a single source of truth:** If `steps` is set in three places (VideoConfig, AudioConfig, CLI arg), presets drift. Introduce a `QualityProfile` lookup dict that all generators read.
+- **Suno integration is not a hard dependency for music:** The existing Stable Audio path must remain as fallback. Suno ToS risk means the integration could break. Abstraction layer is not optional.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v1) — This Milestone
+This is a subsequent milestone (v1.1), not a greenfield MVP. "Launch with" = what ships in this milestone.
 
-- [ ] **YAML config schema + file-based loading** — all other config-dependent features require this foundation
-- [ ] **Gradio UI with form fields for prompt/style/pipeline config** — replaces hardcoded Python; minimum: text fields, dropdowns, load/save config buttons
-- [ ] **Post-production pipeline: watermark + subtitle burn-in + intro/outro** — baseline for public-ready output; apply to both study and TikTok pipelines
-- [ ] **Best-frame thumbnail extraction with text overlay** — leverages existing frames; avoids additional SD generation
-- [ ] **YouTube upload with OAuth persistence + resumable + thumbnail set** — core publishing feature; must handle token refresh silently
-- [ ] **Discord webhook notification (generation complete + error alerts)** — minimum viable monitoring
-- [ ] **Slack webhook notification (same events)** — parity with Discord; shared module
-- [ ] **Human approval gate: preview notification + CLI confirm before publish** — prevents accidental publish without requiring bot infrastructure
-- [ ] **Shared notify/publish module** — both pipelines must import the same code; no divergent implementations
+### Ship in v1.1
 
-### Add After Validation (v1.x)
+- [ ] **Prompt template library in YAML/JSON** — extract hardcoded scene prompts from `study_with_me_generator.py` into profile-specific template files; parameterize with `style`, `time_of_day`, `weather` slots
+- [ ] **Negative prompt config** — move inline negative string to profile YAML; add category-based composition (quality + anatomy tiers per quality preset)
+- [ ] **Quality preset as unified gate** — `QualityProfile` dataclass controls SDXL steps/cfg/resolution + Suno format + video CRF from one config value
+- [ ] **Smart image cache (hash-based skip)** — SHA256(prompt + seed + steps + cfg + model_id) → `.cache/images/{hash}.png`; skip generation if file exists
+- [ ] **Suno integration with instrumental enforcement** — third-party wrapper; `make_instrumental=True`; genre tags from profile YAML; fallback to Stable Audio on failure
+- [ ] **Profile-matched Suno genre tags** — `lofi`, `cinematic`, `electronic` profiles each define a `music_tags` string in YAML
 
-- [ ] **Template/edit profiles (lofi-study, tech-tutorial, cinematic YAML bundles)** — add after basic post-production is working and profiles can be tested against real outputs
-- [ ] **Color grade presets per profile** — add once profile system is in place; low effort when framework exists
-- [ ] **Resumable pipeline state through post-prod and upload stages** — add when failed runs become common enough to justify; existing generation resumption already works
+### Add After Validation (v1.2+)
+
+- [ ] **Multi-track generation with selection** — generate 2-3 Suno candidates, persist all, expose selection in Gradio UI; trigger: cache fills up with unusable single-track generations
+- [ ] **Duration-aware segment chaining** — for videos >8 minutes, chain Suno `extend_audio` calls; trigger: first long-form video exceeds 8 min
 
 ### Future Consideration (v2+)
 
-- [ ] **Interactive approval bot (Discord/Slack)** — defer until remote operation or team use requires it; local CLI gate is sufficient for single creator
-- [ ] **YouTube scheduling / optimal post timing** — defer per PROJECT.md; adds API scope and complexity without v1 value
-- [ ] **Full channel management (playlists, end screens, analytics)** — defer; scope creep for a generation toolkit
-- [ ] **Auto-scene detection / smart trimming** — defer per PROJECT.md; AI video understanding is heavy and nondeterministic
-- [ ] **Multi-account YouTube publishing** — defer; not needed for single creator
+- [ ] **FLUX model support** — FLUX.2 Pro/Dev as SDXL alternative; FLUX uses natural-language prompts (full sentences), not keyword stacks; requires different template format
+- [ ] **Per-scene negative prompt override** — some scenes (outdoor, no people) don't need anatomy negatives; adds config complexity; defer until base library is established
+- [ ] **Negative embedding support (EasyNegative)** — single-token quality baseline; requires embedding file management and ComfyUI-style loading; low ROI vs explicit token list for v1.1
 
 ---
 
@@ -140,65 +116,46 @@ Features beyond baseline that match the project's core value ("one command to pu
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| YAML config schema + loading | HIGH | LOW | P1 |
-| Gradio config UI | HIGH | MEDIUM | P1 |
-| OAuth 2.0 token persistence | HIGH | MEDIUM | P1 — blocks all YouTube features |
-| YouTube upload (resumable) | HIGH | MEDIUM | P1 |
-| Thumbnail extraction + overlay | HIGH | MEDIUM | P1 |
-| Thumbnail upload to YouTube | HIGH | LOW | P1 — depends on upload |
-| Post-production: watermark | MEDIUM | LOW | P1 |
-| Post-production: subtitle burn-in | HIGH | MEDIUM | P1 |
-| Post-production: intro/outro | MEDIUM | LOW | P1 |
-| Discord webhook notifications | MEDIUM | LOW | P1 |
-| Slack webhook notifications | MEDIUM | LOW | P1 |
-| Human approval gate (CLI pattern) | HIGH | LOW | P1 |
-| Shared notify/publish module | MEDIUM | LOW | P1 — prevents divergence |
-| Template/edit profiles | MEDIUM | MEDIUM | P2 |
-| Color grade presets | MEDIUM | MEDIUM | P2 |
-| Resumable pipeline state (extended) | MEDIUM | MEDIUM | P2 |
-| Interactive approval bot | LOW | HIGH | P3 |
-| YouTube scheduling | LOW | HIGH | P3 |
-| Multi-account publishing | LOW | HIGH | P3 |
-
-**Priority key:**
-- P1: Must have for this milestone
-- P2: Add after P1 validated
-- P3: Future consideration
+| Prompt template library (YAML extraction) | HIGH | LOW | P1 |
+| Negative prompt config | HIGH | LOW | P1 |
+| Quality preset unified gate | HIGH | LOW | P1 |
+| Smart image cache | HIGH | MEDIUM | P1 |
+| Suno integration + instrumental | HIGH | MEDIUM | P1 |
+| Profile-matched genre tags | MEDIUM | LOW | P1 |
+| Multi-track Suno selection | MEDIUM | MEDIUM | P2 |
+| Duration-aware segment chaining | LOW | HIGH | P2 |
+| FLUX model support | MEDIUM | HIGH | P3 |
+| Negative embedding (EasyNegative) | LOW | MEDIUM | P3 |
 
 ---
 
 ## Competitor Feature Analysis
 
-| Feature | Typical SaaS tools (Opus Clip, Zebracat) | Open-source AI-Content-Studio | Our Approach |
-|---------|------------------------------------------|-------------------------------|--------------|
-| Config UI | Web-based, hosted | None (hardcoded) | Local Gradio — no cloud infra |
-| Publishing | Automated, immediate | Automated, CLI | Gated: approval before publish |
-| Thumbnail | AI-generated (cloud) | None | Best-frame extraction, local |
-| Notifications | Email, in-app | None | Discord + Slack webhooks |
-| Approval gate | None (auto-publish) | None | CLI gate after preview notification |
-| Post-production | Automatic transitions, captions | FFmpeg basic | Profiles-driven: per-pipeline presets |
-| Platform support | YouTube + TikTok + Instagram | YouTube only | YouTube + TikTok (existing) |
-| Infra requirement | Cloud, subscription | Local | Local GPU, no subscription |
+Reference tools analyzed for pattern discovery (not direct competitors — this is a local single-creator tool):
+
+| Feature | ComfyUI workflows | A1111 (WebUI) | This project's approach |
+|---------|-------------------|---------------|-------------------------|
+| Prompt templates | JSON workflow files; PromptStylers extension for style injection | Prompt presets saved per checkpoint | YAML profile files keyed by profile slug; profile auto-selects scene templates |
+| Negative prompts | `easy_negative` node; embedding support (`embedding:EasyNegative`) | Negative embedding via textual inversion; preset negative text per checkpoint | Config field per profile; category composition (quality + anatomy) gated by quality preset |
+| Quality presets | Sampler/steps nodes with named workflows | `--quality` CLI flag maps to steps; checkpoint-specific configs | Single `QualityProfile` dataclass consumed by all generators |
+| Image caching | ComfyUI caches node outputs by content hash natively | No native caching; re-generates on every run | Explicit SHA256 per-scene cache in `.cache/images/`; checked before every `pipe()` call |
+| Music generation | ACE-Step / MusicGen nodes in ComfyUI | No native audio; separate tool | Suno via third-party wrapper with Stable Audio fallback |
 
 ---
 
 ## Sources
 
-- [YouTube Data API v3 — Upload a Video (official)](https://developers.google.com/youtube/v3/guides/uploading_a_video) — HIGH confidence
-- [YouTube Data API v3 — Resumable Uploads (official)](https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol) — HIGH confidence
-- [YouTube Data API v3 — Thumbnails: set (official)](https://developers.google.com/youtube/v3/docs/thumbnails/set) — HIGH confidence
-- [YouTube Data API v3 — Quota and compliance (official)](https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits) — HIGH confidence
-- [Discord Webhooks — Official documentation](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) — HIGH confidence
-- [Discord Webhook Resource — Developer docs](https://discord.com/developers/docs/resources/webhook) — HIGH confidence
-- [Slack — Approval workflow development guide (official)](https://api.slack.com/best-practices/blueprints/approval-workflows) — HIGH confidence
-- [YouTube upload API guide — 2026 (Postproxy)](https://postproxy.dev/blog/youtube-upload-api-guide/) — MEDIUM confidence (corroborates official docs)
-- [Python YouTube upload with OAuth 2.0 reauthentication (Medium, 2025)](https://python.plainenglish.io/uploading-videos-to-youtube-using-python-and-oauth-2-0-a-step-by-step-guide-with-reauthentication-fea2602e6f3d) — MEDIUM confidence
-- [MoviePy documentation](https://zulko.github.io/moviepy/) — HIGH confidence (official)
-- [FFmpeg subtitle burn-in guide](https://www.ffmpeg.media/articles/subtitles-burn-in-soft-subs-format-conversion) — MEDIUM confidence
-- [n8n — Interactive Slack approval + webhooks](https://n8n.io/workflows/5049-interactive-slack-approval-and-data-submission-system-with-webhooks/) — LOW confidence (pattern reference only)
-- [YouTube automation 2026 — Thinkpeak](https://thinkpeak.ai/youtube-automations-2026-guide/) — LOW confidence (trend reference)
+- Codebase: `study_with_me_generator.py` — existing scene dict structure, inline negative prompt, `quality_preset` field (HIGH confidence)
+- Codebase: `config/pipeline_config.py` — `style_prompt`, `music_prompt`, `quality_preset` fields (HIGH confidence)
+- SDXL negative prompt best practices: [Stable Diffusion Negative Prompts Guide](https://freeaipromptmaker.com/blog/2025-11-29-stable-diffusion-negative-prompts-guide), [SDXL Best Practices](https://neurocanvas.net/blog/sdxl-best-practices-guide/), [Negative Prompts 2026](https://www.aiphotogenerator.net/blog/2026/02/negative-prompts-stable-diffusion-guide) (MEDIUM confidence — multiple sources agree)
+- Suno API status: [AI/ML API — Suno API Reality](https://aimlapi.com/blog/the-suno-api-reality), [gcui-art/suno-api GitHub](https://github.com/gcui-art/suno-api), [Suno API Review 2026](https://evolink.ai/blog/suno-api-review-complete-guide-ai-music-generation-integration) (MEDIUM confidence — no official API confirmed by multiple sources; feature capabilities LOW confidence as third-party wrappers can diverge)
+- Suno v5 capabilities: [Suno AI Guide 2026](https://aitoolsdevpro.com/ai-tools/suno-guide/), [AI/ML API Suno Review](https://aimlapi.com/blog/suno-api-review) (LOW confidence — third-party summaries, not official docs)
+- Prompt template patterns: [LTX Studio Prompt Guide](https://ltx.studio/blog/ai-image-prompt-guide), [Upsampler Prompt Guide](https://upsampler.com/blog/ai-image-generation-prompt-guide) (LOW confidence — pattern discovery only)
+- ComfyUI prompt systems: [ComfyUI PromptStylers](https://github.com/wolfden/ComfyUi_PromptStylers), [ComfyUI Wiki — Prompt Techniques](https://comfyui-wiki.com/en/interface/prompt) (MEDIUM confidence)
+- Image caching patterns: No authoritative source found for hash-based scene caching in Python SDXL pipelines. Pattern derived from ComfyUI's native node caching behavior + general content-addressable storage patterns. (LOW confidence — flag for phase-specific research)
+- MusicGen inference params: [HuggingFace MusicGen docs](https://huggingface.co/docs/transformers/main/model_doc/musicgen), [AWS MusicGen inference](https://aws.amazon.com/blogs/machine-learning/inference-audiocraft-musicgen-models-using-amazon-sagemaker/) (HIGH confidence for MusicGen; not directly applicable to Suno)
 
 ---
 
-*Feature research for: Video content creation automation pipeline*
+*Feature research for: AI generation quality — prompt engineering, music, quality presets, image caching*
 *Researched: 2026-03-28*

@@ -1,200 +1,169 @@
 # Project Research Summary
 
-**Project:** Content Creation Pipeline — Publishing & Post-Processing Milestone
-**Domain:** Local Python video generation pipeline — config UI, post-processing, YouTube publishing, webhook notifications
+**Project:** content_creation — AI Generation Quality (v1.1 milestone)
+**Domain:** AI-powered video generation pipeline — SDXL image generation, Suno music integration, prompt engineering, quality presets, image caching
 **Researched:** 2026-03-28
-**Confidence:** HIGH (stack and architecture verified against official sources and direct codebase inspection; pitfalls HIGH for YouTube/Gradio, MEDIUM for webhook approval patterns)
+**Confidence:** MEDIUM (architecture and caching patterns HIGH; Suno API MEDIUM due to no official public API)
 
 ## Executive Summary
 
-This milestone adds a shared publish/notify/post-processing layer to an existing two-pipeline video generation toolkit (study-with-me generator + faceless TikTok pipeline). Both pipelines currently produce MP4 files with no automated delivery path. The expert pattern for this type of local, single-operator automation is a thin shared services layer injected at the tail of each pipeline's `main()` function, leaving all existing generation logic untouched. The shared layer covers post-processing (watermark, subtitle burn-in, intro/outro via FFmpeg), thumbnail generation (OpenCV sharpness scoring + Pillow text overlay), YouTube upload via the official Data API v3, and Discord/Slack webhook notifications with a file-based human approval gate.
+This milestone (v1.1) upgrades an existing video generation pipeline by introducing three interconnected capabilities: config-driven SDXL prompt templates with profile-specific negative prompts, a Suno music API integration replacing Stable Audio, and a hash-based image cache that eliminates redundant generation on re-runs. The existing stack (PyTorch, diffusers, MoviePy, pydub, Remotion, Pydantic) remains unchanged; net new dependencies are `compel` (SDXL dual-encoder prompt weighting), `diskcache` (persistent SQLite-backed image cache), and `tenacity` (retry/polling for the Suno async API). Architecture research confirms that extracting AI generation into a `generators/` module — `generators/sdxl.py` and `generators/suno.py` — is the correct structural move to prevent the existing `study_with_me_generator.py` from becoming a 1000+ line monolith and to enable code reuse when the TikTok pipeline needs the same capabilities.
 
-The recommended approach is to build config infrastructure first (Pydantic model + YAML profiles), then shared services in dependency order (post-process → thumbnail → notifier → publisher), and expose everything through a Gradio 5.x config UI last. Gradio must run in a separate venv from AnimateDiff, which pins Gradio 3.36.1. The Gradio UI launches pipelines as subprocesses rather than calling them in-process, which is required to avoid GPU memory conflicts and CUDA thread-safety issues on Windows. The entire config layer uses Pydantic for schema validation — silent bad configs are a documented failure mode if YAML is loaded without validation.
+The recommended approach is strictly config-driven: all SDXL prompt templates, negative prompts, Suno genre tags, and quality preset parameters live in per-profile YAML files, not Python source. A `QualityProfile` dataclass becomes the single source of truth for all generation axes (SDXL steps/cfg/resolution, Suno model version and output format, video encoder CRF). The `SunoClient` abstraction layer is non-optional given that Suno has no official public API — every available wrapper reverse-engineers Suno's private web endpoints, which can break without notice. A stable-audio fallback path must coexist with Suno integration from day one.
 
-The two critical risks are YouTube API quota exhaustion (1,600 units per upload against a 10,000-unit daily limit, shared across all API keys in the same Google Cloud project) and OAuth refresh token expiry when the Google Cloud app is left in "Testing" mode (7-day limit). Both require addressing before any unattended upload logic is written. A third systemic risk is the existing codebase pattern of bare `except` clauses, which silently swallows quota errors, upload failures, and webhook rate-limit responses — all new code in the shared layer must use explicit exception handling.
+The primary risk is Suno API fragility: all third-party Suno wrappers violate Suno's ToS and can fail silently on any frontend change. Secondary risks are image cache key staleness (if the cache key excludes any generation-determining parameter, stale images are served silently), and vocal bleed from Suno's `make_instrumental` flag (which is probabilistic, not deterministic, with a clean hit rate of ~70-80%). Both risks have clear mitigations: pin the Suno wrapper to an exact version, wrap all Suno calls behind a `generate_music() -> AudioSegment` interface with an explicit Stable Audio fallback, hash all generation parameters into the cache key (not just prompt text), and always generate 2-3 Suno tracks with a validation step before passing audio to video assembly.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack (MoviePy 1.0.x, OpenCV 4.x, Pillow 12.1.1, FFmpeg system, pydub) must not be upgraded during this milestone. MoviePy 2.x breaks the `moviepy.editor` import path and renames all `.set_*` methods to `.with_*` — both existing pipelines use the v1 API extensively. Post-processing should route long-form video operations through FFmpeg subprocesses rather than MoviePy to avoid OOM on 120-minute files.
-
-Five new libraries are needed: `google-api-python-client==2.193.0` + `google-auth-oauthlib==1.3.0` + `google-auth-httplib2==0.3.0` (YouTube upload), `slack-sdk==3.41.0` (Slack webhooks), and `discord-webhook==1.4.1` (Discord webhooks). Gradio 5.x (>=5.0,<6.0) is required for the config UI in an isolated venv. Gradio 6.x has breaking changes to `gr.ChatInterface` and `gr.Dataframe`; do not use for this milestone.
+The existing stack requires no changes. Three libraries are added. `compel>=2.0.2` provides SDXL-correct prompt weighting via `CompelForSDXL`, which handles SDXL's dual-encoder architecture and produces both `prompt_embeds` and `pooled_prompt_embeds` required by `StableDiffusionXLPipeline` — the base `Compel` class will not work for SDXL. `diskcache>=5.6.3` provides a SQLite-backed, process-restart-safe image cache keyed by SHA-256 of all generation parameters; it is simpler than Redis for local use and well-precedented in the SD community. `tenacity>=8.2.3` wraps the Suno async polling loop with exponential backoff and configurable timeout, eliminating the hung-pipeline failure mode. `requests>=2.31` (likely already present) handles all Suno REST calls.
 
 **Core technologies:**
-- `google-api-python-client` 2.193.0: YouTube Data API v3 upload client — only supported method for programmatic upload; handles resumable protocol automatically
-- `google-auth-oauthlib` 1.3.0: OAuth 2.0 installed-app flow — required; service accounts do not work for user channel uploads
-- `slack-sdk` 3.41.0: Slack webhook client — provides error handling and Block Kit formatting over raw `requests.post()`
-- `discord-webhook` 1.4.1: Discord webhook with embed support — avoids full bot framework for a notification-only use case
-- Gradio 5.x (isolated venv): Config UI — already a project dependency; 5.x avoids AnimateDiff conflict and Gradio 6.x breaking changes
-- MoviePy 1.0.x (existing, stay): Video composition — upgrading to 2.x requires rewriting both existing pipelines
-- FFmpeg subprocess: Subtitle burn-in and long-form post-processing — avoids MoviePy 1.x ImageMagick dependency for TextClip
+- `compel>=2.0.2`: SDXL prompt weighting — only library supporting `CompelForSDXL` with pooled embedding output; syntax `word++`/`word--` has minimal overhead
+- `diskcache>=5.6.3`: Persistent image cache — SQLite-backed, survives process restarts, hash-keyed entries, 10GB size limit configurable
+- `tenacity>=8.2.3`: Suno polling retry — exponential backoff with cap at 30s; mandatory for a generation path that takes 30s–3min
+- Suno third-party wrapper (`sunoapi.org` or `kie.ai`): REST music generation — standard Bearer auth, version-pinned; `sunoapi.org` most documented; `kie.ai` supports Suno V5/V4.5
+
+**Critical version requirement:** `compel>=2.0.2` requires `diffusers>=0.26.3` (existing codebase uses 0.26.3 — compatible). Use `CompelForSDXL`, not `Compel`.
 
 ### Expected Features
 
-**Must have (table stakes) — v1 this milestone:**
-- YAML config schema + Pydantic validation — all other features depend on this; must come first
-- YouTube upload with resumable protocol + OAuth token persistence — core delivery mechanism; token refresh must work silently after initial setup
-- Custom thumbnail upload via `thumbnails.set` — discovery signal; auto-generated thumbnails are visibly inferior
-- Post-processing: watermark overlay + subtitle burn-in + intro/outro append — baseline for public-ready output
-- Best-frame thumbnail extraction with text overlay — uses existing frames via OpenCV sharpness scoring; no extra SD generation
-- Discord webhook notifications (generation complete + error alerts)
-- Slack webhook notifications (same events, shared module)
-- Human approval gate: webhook preview notification + file-based gate before publish — prevents accidental publish without bot infrastructure
-- Shared `notifier.py` + `publisher.py` modules imported by both pipelines — no divergent implementations
-- Gradio 5.x config UI exposing prompt, style, publish, and notify fields
+**Must have (table stakes for v1.1):**
+- Per-profile SDXL prompt templates in YAML — hardcoded prompts produce identical images across runs; this is the day-one expectation
+- Configurable negative prompts per profile — SDXL without profile-specific negatives produces watermarks, bland aesthetics, or style contamination
+- Quality preset as unified gate — `QualityProfile` setting must control all generation axes simultaneously (SDXL steps, resolution, Suno model, video CRF); partial control causes quality drift between pipeline stages
+- Hash-based image cache — re-generating 24 scenes at 45s each on every run (18 min) is not viable for iterative content creation
+- Suno integration with `make_instrumental=True` and profile-matched genre tags from YAML — not hardcoded in Python
+- Stable Audio fallback path — mandatory given Suno's ToS and API fragility
 
-**Should have (v1.x after validation):**
-- Template/edit profiles (lofi-study, tech-tutorial, cinematic YAML bundles)
-- Color grade presets per profile (FFmpeg curves/LUT filter)
-- Extended pipeline resumability through post-prod and upload stages
+**Should have (differentiators for v1.1):**
+- Multi-track generation (2-3 candidates) with validation gate before video assembly — mitigates vocal bleed risk
+- Parallel Suno task submission before SDXL batch — hides 60-180s Suno latency behind SDXL's 18-min batch; net user impact: zero added wait time
+- JSON sidecar files alongside cached images — human-inspectable cache, enables targeted invalidation by profile
+
+**Defer (v1.2+):**
+- Duration-aware segment chaining for videos >8 min (`extend_audio` endpoint) — trigger: first long-form video exceeds Suno v5's 8-min cap
+- Multi-track UI selection in Gradio — trigger: cache fills with single-track generations that don't survive quality checks
 
 **Defer (v2+):**
-- Interactive Discord/Slack approval bot with reaction/button handling — requires persistent process and public endpoint; overkill for single-operator local tool
-- YouTube scheduling / optimal post timing — adds API scope complexity without v1 value
-- Full channel management (playlists, end screens, analytics) — scope creep
-- Multi-account YouTube publishing — single creator, single credential file in v1
+- FLUX model support — different prompt format (natural language vs keyword stacks); requires new template schema
+- EasyNegative embedding support — requires embedding file management; low ROI vs explicit YAML token list for v1.1
 
 ### Architecture Approach
 
-The architecture uses a four-layer model: Config Layer (Pydantic `PipelineConfig` + YAML profiles) → existing Pipeline Scripts (unchanged, hook added at `main()` tail) → Shared Services Layer (`shared/post_process.py`, `shared/publisher.py`, `shared/notifier.py`, `shared/thumbnail_gen.py`) → Config UI (`gradio_app.py` launching pipelines as subprocesses). Dependencies are strictly one-directional: shared/ imports nothing from pipeline scripts; Gradio communicates with pipelines only via subprocess and filesystem (YAML configs, output paths). OAuth credentials live in a gitignored `credentials/` directory.
+The recommended architecture extracts AI generation into a new `generators/` package (`generators/sdxl.py`, `generators/suno.py`) that the existing `study_with_me_generator.py` delegates to. `PipelineConfig` gains two sub-models (`SDXLSettings`, `SunoSettings`) that each generator receives as typed arguments — generators must not import `PipelineConfig` directly to keep the boundary clean. The `shared/remotion_renderer.py` and `shared/pipeline_runner.py` layers require no changes. Suno task submission happens immediately after config load (before SDXL starts) so that Suno's 60-180s polling wait is absorbed into SDXL's generation time via `concurrent.futures.ThreadPoolExecutor`. The `generate_enhanced_music()` contract (`-> AudioSegment`) is preserved as the interface; Suno implementation sits behind it with Stable Audio as fallback.
 
 **Major components:**
-1. `config/pipeline_config.py` — Pydantic `PipelineConfig` with nested `VideoSettings`, `PublishSettings`, `NotifySettings`; YAML round-trip via `from_yaml()` / `to_yaml()`
-2. `config/profiles/` — Named YAML preset files (lofi_study, tech_tutorial, cinematic); loaded by profile name
-3. `shared/post_process.py` — FFmpeg subprocess for color grade, watermark overlay, intro/outro concat, subtitle burn-in
-4. `shared/thumbnail_gen.py` — OpenCV frame extraction with Laplacian sharpness scoring; Pillow text overlay; 1280×720 JPEG output
-5. `shared/notifier.py` — Discord + Slack webhook send; file-based approval gate with 1-hour timeout
-6. `shared/publisher.py` — YouTube OAuth token load/refresh; `videos.insert` resumable upload; `thumbnails.set`; separate `--setup` CLI for one-time OAuth consent
-7. `gradio_app.py` — Gradio Blocks UI; loads/saves `PipelineConfig` to YAML; launches pipelines via `subprocess.Popen`; tails subprocess stdout for progress
+1. `config/pipeline_config.py` + profile YAMLs — central schema extension; `SDXLSettings` and `SunoSettings` sub-models added; all prompt templates, negative prompts, genre tags, and quality parameters live here
+2. `generators/sdxl.py` (`SDXLGenerator`) — SDXL prompt assembly from profile templates; batched image generation with hash-based cache lookup/store; refactored from existing inline code in `study_with_me_generator.py`
+3. `generators/suno.py` (`SunoClient`) — REST POST/poll/download client; exponential backoff polling; `make_instrumental` enforcement; AudioSegment conversion before return; Stable Audio fallback on failure
+4. `study_with_me_generator.py` (refactored) — orchestrator; delegates to generators; adds `suno_generation` and `image_cache` keys to `progress.json` for resumability
+
+**Suggested build order:** Config extension → `generators/sdxl.py` extraction (verifiable: images identical to pre-refactor) → `generators/suno.py` (test standalone against real API key before wiring) → wire Suno into study generator with threading → update profile YAMLs.
 
 ### Critical Pitfalls
 
-1. **OAuth refresh token expiry in Testing mode** — Google limits refresh tokens to 7 days for "External" apps in "Testing" status. Address immediately after OAuth integration: move app to "Production" status or use a Google Workspace internal app. Add a startup token validity check before every upload attempt.
+1. **Suno ToS/API fragility** — Wrap ALL Suno calls in `SunoClient`; pin wrapper to exact version (`==` not `>=`); implement Stable Audio fallback before considering Suno integration done; mock the HTTP layer in all tests (never hit live API in CI).
 
-2. **YouTube quota exhaustion from test uploads** — `videos.insert` costs 1,600 of the 10,000 daily units, shared across all API keys in the same GCP project. Use a separate GCP project for development. Add a pre-upload quota guard that refuses to upload when estimated remaining units < 1,600.
+2. **Cache key missing generation parameters** — Cache key must SHA-256 hash the full parameter dict: `prompt + negative_prompt + quality_preset + profile + seed + model_version`. Hashing only the prompt text silently serves stale images after any other parameter changes. Write a JSON sidecar with every cached image.
 
-3. **Gradio CUDA hang with `queue=True` on Windows** — PyTorch CUDA operations inside Gradio thread-pool callbacks hang indefinitely (confirmed GitHub issues #12492, #6609). Never call GPU inference directly from Gradio event handlers. Launch pipelines as subprocesses; Gradio only monitors progress.
+3. **Vocal bleed from `make_instrumental=True`** — The flag is probabilistic (~70-80% clean). Always generate 2-3 tracks; run a validation step (librosa pitch detection or listening pass) before passing audio to video assembly. Maintain a bank of 3-5 pre-validated fallback tracks per profile.
 
-4. **Resumable upload session expiry** — YouTube session URIs expire if upload bytes are not sent promptly after session initiation. Initiate the upload session only after post-processing, thumbnail generation, and approval are all complete — immediately before sending bytes. Distinguish `404` (expired session, restart) from `5xx` (retryable).
+4. **Async polling without timeout bounds** — Implement a hard 5-minute timeout with exponential backoff (5s → 10s → 20s → cap at 60s). On timeout, fall back to cached track and continue pipeline. A `while status != "complete"` loop with no max-attempts hangs the entire pipeline on any Suno server-side failure.
 
-5. **Config YAML loaded without schema validation** — Silent bad configs (typo in field name uses `None` silently) run the pipeline to completion with wrong parameters. Pydantic validation must raise immediately on load for missing or unknown fields. Schema-first design: define `PipelineConfig` before writing any config-loading code.
+5. **SD1.5 negative prompts in SDXL** — SDXL handles anatomy better natively; porting SD1.5 mega-negative-prompts degrades SDXL output quality. SDXL negatives must be short (under 30 tokens), style-focused (`"cartoon, anime, watermark, logo, text"`), and tuned per profile. Never share a single negative prompt across all profiles.
 
-6. **Bare `except` swallowing API failures** — Existing codebase has this pattern. All new code in shared/ must use explicit exception types (`HttpError`, `TransportError`, `RefreshError`). Silent swallow of quota errors, 429 rate limits, or webhook failures is not acceptable in a notification/publish layer.
+---
 
 ## Implications for Roadmap
 
-Based on combined research findings, the component dependency graph from ARCHITECTURE.md dictates a clear build order. The suggested 7-phase structure below respects hard dependencies (config before everything, publisher last among shared services) while grouping related concerns.
+Based on combined research findings and the dependency graph established in FEATURES.md, the following phase structure is recommended.
 
-### Phase 1: Config Foundation
-**Rationale:** Every other component depends on `PipelineConfig` and YAML profiles. Building UI or shared services before this results in ad-hoc config structures that require rewriting. Schema-first is also the primary defense against the silent bad-config pitfall.
-**Delivers:** `config/pipeline_config.py` (Pydantic model), `config/profiles/` (3 starter YAML files), `.env` extension for webhook URLs and credential paths, `.gitignore` updates for `credentials/` and `configs/`
-**Addresses:** YAML config schema + loading (P1 feature), template profiles foundation
-**Avoids:** Config YAML missing field validation pitfall; credentials committed to git
+### Phase 1: Config Foundation and Prompt Templates
+**Rationale:** All other features depend on a stable config schema and resolved prompt template structure. `SDXLSettings`/`SunoSettings` sub-models must exist before generators can read from config. YAML prompt templates must be stable before the cache key can be designed (the hash must be computed from the fully-resolved prompt string, not the template key). Zero runtime risk — config extension has no impact until generators use it.
+**Delivers:** Extended `PipelineConfig` with `SDXLSettings` and `SunoSettings`; updated `lofi_study.yaml`, `cinematic.yaml`, `tech_tutorial.yaml` with per-profile SDXL prompts, negative prompts, Suno genre tags, and quality preset parameters
+**Addresses:** Prompt template library (P1), negative prompt config (P1), profile-matched genre tags (P1), quality preset as unified gate (P1)
+**Avoids:** Pitfall 5 (SD1.5 negatives in SDXL), Pitfall 7 (profile-genre mapping hardcoded in Python)
 
-### Phase 2: Post-Processing Pipeline
-**Rationale:** Post-processing is a prerequisite for YouTube upload (publisher operates on final artifact) and for thumbnail generation (runs after video is assembled). It has no external auth dependencies — testable fully offline.
-**Delivers:** `shared/post_process.py` — watermark overlay, subtitle burn-in (FFmpeg), intro/outro append; tested against both pipeline output formats
-**Uses:** FFmpeg subprocess, MoviePy 1.0.x (existing), Pillow (existing)
-**Implements:** Post-processing shared service layer
-**Avoids:** MoviePy v1/v2 API mismatch pitfall (pin and audit version first); OOM on long-form video (use FFmpeg subprocess, not MoviePy for >10-min content)
+### Phase 2: SDXL Generator Extraction and Image Caching
+**Rationale:** Extracting existing SDXL code into `generators/sdxl.py` is verifiable (images must be identical to pre-refactor) and creates the module boundary needed before any new generation logic is added. Image caching is implemented here because its cache key design depends on the prompt template structure from Phase 1 being finalized. Caching must be implemented before Suno integration (Phase 3) to avoid redundant generation during Suno debugging.
+**Delivers:** `generators/sdxl.py` with `SDXLGenerator.build_prompt()` template method and `generate_batch()` with hash-based cache; `.cache/images/` directory with JSON sidecar files; `study_with_me_generator.py` delegating to `SDXLGenerator`
+**Uses:** `compel>=2.0.2` (prompt weighting), `diskcache>=5.6.3` (image cache), `hashlib` (SHA-256 cache keys)
+**Avoids:** Pitfall 4 (incomplete cache key), Pitfall 5 (SDXL negative prompt design validated against sample images per profile)
 
-### Phase 3: Thumbnail Generation
-**Rationale:** Thumbnail must exist before `thumbnails.set` is called in the publisher. OpenCV + Pillow — no external auth. Builds on post-processing phase (thumbnail generated from the processed video, not the raw render).
-**Delivers:** `shared/thumbnail_gen.py` — OpenCV best-frame extraction via sharpness scoring, Pillow text overlay, 1280×720 JPEG output; Short vs. long-form detection to gate `thumbnails.set` eligibility
-**Uses:** OpenCV 4.x (existing), Pillow 12.1.1 (existing)
-**Avoids:** Thumbnail upload failing on Shorts pitfall; frame extraction performance trap (FFmpeg `-ss` seek, not full decode)
-
-### Phase 4: Notifications + Approval Gate
-**Rationale:** Notifier can be built and tested without OAuth (webhook URLs are just HTTP POST). The approval gate behavior must be established before the publisher is wired up — publisher fires only after gate is passed. Discord and Slack are built together into one shared module to prevent divergent implementations.
-**Delivers:** `shared/notifier.py` — Discord embed + Slack Block Kit notifications; file-based approval gate with 1-hour timeout; preview image attached to notification; explicit file-size guard (25 MB threshold) for Discord attachments
-**Uses:** `discord-webhook==1.4.1`, `slack-sdk==3.41.0`
-**Avoids:** Approval gate blocking main thread indefinitely pitfall; Discord 25 MB attachment limit silent failure; webhook URLs in source code (use `.env`)
-
-### Phase 5: YouTube Publisher
-**Rationale:** Publisher is the most complex external integration (OAuth, resumable upload, quota management, thumbnail attach). All prerequisites (processed video, thumbnail, approval) must exist before wiring this up. Separating `--setup` CLI for OAuth from the publish function prevents the anti-pattern of triggering OAuth inside Gradio.
-**Delivers:** `shared/publisher.py` — OAuth token persistence and silent refresh; `videos.insert` resumable upload with exponential backoff; `thumbnails.set` with explicit Short detection; quota guard (refuse upload if < 1,600 units estimated); separate `python shared/publisher.py --setup` for one-time consent flow
-**Uses:** `google-api-python-client==2.193.0`, `google-auth-oauthlib==1.3.0`, `google-auth-httplib2==0.3.0`
-**Avoids:** OAuth Testing mode 7-day expiry pitfall; quota exhaustion pitfall; resumable session expiry pitfall; credentials committed to git
-
-### Phase 6: Pipeline Integration
-**Rationale:** Hook injection into existing pipeline scripts is the lowest-risk step — three to four lines at each `main()` tail. Deferred until all shared services are tested independently. Existing CLI behavior remains unchanged; new behavior is additive.
-**Delivers:** Hook at tail of `study_with_me_generator.py main()` and `faceless_tiktok_pipeline main()` calling `run_post_process` → `notify_and_gate` → `publish_to_youtube`; config argument added to each pipeline's CLI (`--config path/to/config.yaml`); end-to-end test of the full chain
-**Avoids:** Modifying pipeline internals anti-pattern; single monolithic god-config anti-pattern
-
-### Phase 7: Config UI (Gradio)
-**Rationale:** Gradio UI is last because it exposes what already exists. Building it before shared services produces a UI with no real behavior to wire. The Gradio venv isolation and subprocess-launch pattern must be resolved before writing any UI code — the environment audit comes first.
-**Delivers:** `gradio_app.py` — Gradio Blocks with tabs for VideoSettings, PublishSettings, NotifySettings; load/save YAML config (profile dropdown + custom save); subprocess-based pipeline launch with stdout tailing for progress; auto-save to `configs/last_run.yaml` on each submit; upload result (YouTube URL or error) routed back to Gradio output component
-**Uses:** Gradio 5.x (isolated venv, `>=5.0,<6.0`)
-**Avoids:** Gradio CUDA hang pitfall (subprocess launch, never direct GPU call in handler); Gradio version conflict with AnimateDiff (audit `AnimateDiff/requirements.txt` before writing any code); Gradio ephemeral state pitfall (auto-save to disk)
+### Phase 3: Suno Integration with Fallback and Validation
+**Rationale:** Suno is the highest-risk component (unofficial API, ToS exposure, vocal bleed). It is implemented last so the SDXL and caching foundation is stable before introducing the external dependency. The `generate_music() -> AudioSegment` interface contract already exists from Stable Audio — Suno sits behind it without changing callers. Stable Audio fallback and track validation must be implemented and tested before this phase is considered complete.
+**Delivers:** `generators/suno.py` (`SunoClient`) with submit/poll/download/convert pipeline; `tenacity`-backed polling with 5-minute hard timeout; 2-3 track generation with vocal validation gate; Stable Audio fallback on failure; `SunoClient` wired into `study_with_me_generator.py` with Suno task submitted in background thread before SDXL loop; `progress.json` extended with `suno_generation` key for resumability
+**Uses:** `tenacity>=8.2.3` (polling retry), `requests>=2.31` (REST client), `concurrent.futures.ThreadPoolExecutor` (parallel Suno/SDXL)
+**Avoids:** Pitfall 1 (Suno fragility — abstraction layer, exact version pin, fallback), Pitfall 2 (vocal bleed — multi-track + validation), Pitfall 3 (hung poll loop — timeout + backoff), Pitfall 6 (AudioSegment contract preserved)
 
 ### Phase Ordering Rationale
 
-- Config (Phase 1) before everything — all shared modules import `PipelineConfig`; no config = no contract
-- Post-process (Phase 2) before thumbnail (Phase 3) — thumbnail operates on processed video; dependency is explicit in FEATURES.md
-- Notifications (Phase 4) before publisher (Phase 5) — approval gate result is the input that gates the publish call
-- Publisher (Phase 5) before integration (Phase 6) — hook injection only makes sense when all shared functions exist and are tested
-- Gradio (Phase 7) last — it is a frontend for the entire system; building it first produces a UI stub with nothing behind it
-- Each phase through Phase 5 is independently testable without Gradio, which isolates the Gradio venv conflict to a single phase
+- Config must precede generators because generators are parameterized by config sub-models; out-of-order implementation causes scattered hardcoded values that must be refactored
+- SDXL extraction precedes Suno integration because the `generators/` package structure must be established before a second generator is added; also, SDXL is deterministic and verifiable, making it a safer first extraction
+- Suno is last because it is the highest-risk component; implementing it on top of a stable foundation allows the fallback path to be tested against real Stable Audio output before Suno replaces it
+- The parallel Suno/SDXL thread pattern (submit Suno task before SDXL batch) is only possible after both generators are independently stable; this optimization is implemented in Phase 3's wiring step
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 5 (YouTube Publisher):** YouTube's quota increase request process and timeline for production apps is not well-documented. If >6 uploads/day is a requirement, verify quota increase SLA before committing to a release timeline.
-- **Phase 7 (Config UI):** Gradio venv isolation strategy (Option A: separate venv + JSON handoff vs. Option C: patch AnimateDiff) requires an environment audit of the actual `AnimateDiff/requirements.txt` Gradio pin before the approach can be confirmed. This is a pre-condition for Phase 7.
+- **Phase 3 (Suno Integration):** Suno API provider selection (sunoapi.org vs kie.ai) requires validation of current pricing, `make_instrumental` support, `duration` parameter field names, and exact response schema before implementation. Field names differ between providers. Check `suno.ai/developers` for a first-party API release before committing to a third-party wrapper.
+- **Phase 3 (vocal validation):** librosa-based pitch detection for vocal bleed is a heuristic; confidence LOW. Phase planning should investigate lightweight vocal detection options (librosa, a pre-trained VAD model) before committing to an implementation approach.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Config Foundation):** Pydantic YAML config is a well-established pattern; implementation is straightforward.
-- **Phase 2 (Post-Processing):** FFmpeg subprocess calls for watermark, subtitle, and concat are fully documented; MoviePy 1.x behavior is known.
-- **Phase 3 (Thumbnail Generation):** OpenCV Laplacian sharpness scoring + Pillow overlay is a standard pipeline; no novel integration.
-- **Phase 4 (Notifications):** Discord and Slack webhook patterns are thoroughly documented; file-based gate requires no research.
-- **Phase 6 (Pipeline Integration):** Three lines of code at each `main()` tail; no research needed.
+- **Phase 1 (Config Foundation):** Pydantic sub-model extension and YAML profile structure follow established patterns from the existing codebase; no research needed.
+- **Phase 2 (SDXL + Caching):** `compel` and `diskcache` patterns are HIGH confidence from official documentation; extraction refactor follows standard module boundary patterns; no research needed beyond verifying `compel` version compatibility at milestone start.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All library versions verified against PyPI; MoviePy 1.x vs 2.x breaking changes confirmed against official migration guide; Gradio 6.x breaking changes confirmed against official migration guide |
-| Features | HIGH | YouTube API v3 features verified against official docs; Discord/Slack patterns verified against official docs; approval gate pattern is LOW confidence (no reference implementation found, but the file-based approach is simple enough that confidence gap is acceptable) |
-| Architecture | HIGH | Direct codebase inspection; all patterns verified against official sources; build order derivable from explicit dependency graph in ARCHITECTURE.md |
-| Pitfalls | MEDIUM-HIGH | YouTube API and Gradio pitfalls are HIGH (confirmed GitHub issues, official docs, and community reports); webhook approval-gate and post-processing pitfalls are MEDIUM (corroborated but fewer primary sources) |
+| Stack | MEDIUM-HIGH | `compel`, `diskcache`, `tenacity` additions are HIGH confidence from official sources; Suno provider selection (sunoapi.org vs kie.ai) is MEDIUM — third-party wrappers only |
+| Features | MEDIUM | Codebase patterns (table stakes features) HIGH; Suno v5 capabilities (duration, model versions) LOW — based on third-party summaries without official docs |
+| Architecture | HIGH | Existing codebase verified directly; generator extraction pattern well-established; Suno REST pattern corroborated across multiple third-party providers |
+| Pitfalls | MEDIUM-HIGH | SDXL and caching pitfalls HIGH from verified sources; Suno vocal bleed MEDIUM (community source); ToS risk HIGH from official Suno ToS |
 
-**Overall confidence:** HIGH
+**Overall confidence:** MEDIUM-HIGH
 
 ### Gaps to Address
 
-- **AnimateDiff Gradio version pin:** Exact version pinned in `AnimateDiff/requirements.txt` was not inspected. Run `grep -i gradio AnimateDiff/requirements.txt` before Phase 7. This determines whether Option A (separate venv) or Option C (patch) is the correct isolation strategy.
-- **YouTube quota increase timeline:** If the production use case requires >6 uploads/day, a quota increase request must be filed with Google and the review timeline is variable. Validate requirement against the 6/day limit before Phase 5.
-- **Windows font path for subtitle burn-in:** CONCERNS.md notes an existing font-path issue on Windows. FFmpeg subtitle filter on Windows requires explicit font path in the `subtitles` filter argument (`force_style='FontName=...'`). Needs validation on the target machine in Phase 2.
-- **Slack `files.upload` deprecation:** Slack deprecated `files.upload` in March 2025. If video preview file sharing via Slack is needed in Phase 4, use `files_upload_v2` via `slack-sdk`. Text-only + thumbnail image notifications are unaffected.
+- **Suno provider field names:** The exact JSON field names for `make_instrumental`, `duration`, `task_id`, `status`, and `audio_url` differ between sunoapi.org and kie.ai. Verify against live documentation before implementing `SunoClient`. If a first-party Suno API has launched at `suno.ai/developers`, prefer it and the third-party pattern is moot.
+- **compel version at milestone start:** Confirm `compel` PyPI version is still `>=2.0.2` and compatible with the project's current `diffusers` install before pinning in requirements.txt.
+- **diskcache PIL Image serialization:** Test that `diskcache` correctly pickles SDXL 1024x1024 PIL Image objects (expected to work; not yet validated against project's specific output format).
+- **Image caching in Python SDXL pipelines:** No authoritative source found for hash-based scene caching outside of ComfyUI's native node pattern. The approach is derived from general content-addressable storage patterns. Flag for validation during Phase 2 implementation.
+- **Vocal detection approach for Suno output:** The multi-track + listening-pass strategy is well-motivated; the programmatic heuristic (librosa pitch detection) has LOW confidence as a reliable vocal bleed detector. Validate or substitute during Phase 3 planning.
+
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- YouTube Data API v3 official docs (upload, resumable, thumbnails.set, quota, errors, OAuth) — developers.google.com/youtube/v3
-- google-auth-oauthlib `InstalledAppFlow` docs — googleapis.dev
-- Gradio 5 announcement — huggingface.co/blog/gradio-5
-- Gradio 6 Migration Guide — gradio.app/main/guides/gradio-6-migration-guide
-- Gradio GitHub issues #12492, #6609, #6971 (CUDA hang, queue freeze, GPU memory) — confirmed by maintainers
-- Slack SDK Webhook Client docs — slack.dev/python-slack-sdk/webhook
-- Slack files_upload deprecation — docs.slack.dev
-- MoviePy 2.x migration guide — zulko.github.io/moviepy/getting_started/updating_to_v2
-- discord-webhook PyPI — pypi.org/project/discord-webhook
-- Discord webhook rate limits — discord.com/developers/docs/topics/rate-limits
-- Codebase direct inspection: `study_with_me_generator.py`, `faceless_tech_ai_tik_tok_fully_automated_python_pipeline.py`, `.planning/codebase/CONCERNS.md`
-- PyPI version verification for all recommended packages — confirmed 2026-03-28
+- `damian0815/compel` GitHub — `CompelForSDXL` usage, SDXL dual-encoder support
+- Hugging Face diffusers docs — official compel integration with `StableDiffusionXLPipeline`
+- `grantjenks/python-diskcache` GitHub + PyPI — diskcache 5.6.3, SQLite-backed, size limits
+- Suno Terms of Service (`suno.com/terms-of-service`) — ToS restrictions on API access and commercial use
+- Existing codebase (`study_with_me_generator.py`, `config/pipeline_config.py`, `shared/remotion_renderer.py`) — verified 2026-03-28
+- `.planning/codebase/CONCERNS.md` — existing codebase bugs and tech debt
 
 ### Secondary (MEDIUM confidence)
-- OAuth2 refresh token expiration in YouTube API — Google Developer Forums + Napkyn blog (corroborates official 7-day Testing mode policy)
-- YouTube upload guide 2026 — Postproxy blog (corroborates official resumable upload protocol)
-- Python YouTube upload with OAuth 2.0 reauthentication — Medium 2025 (corroborates token persistence pattern)
-- Discord webhook file size limits — birdie0 guide (corroborates Discord official behavior)
-- Pydantic YAML config — pydantic-yaml PyPI (official package, well-supported)
+- `sunoapi.org` documentation — Suno API quickstart, Bearer auth, polling pattern
+- `aimlapi.com` — Suno API Reality blog post; provider landscape; ToS analysis
+- `kie.ai` docs — `make_instrumental`, Suno V5/V4.5 support, `duration` parameter
+- Layer.ai — SDXL-specific negative prompt guidance
+- Neurocanvas — SDXL best practices, prompt structure
+- Segmind — SDXL prompt guide (natural language over tags)
+- Cache invalidation strategy patterns — Cachee.ai blog
 
 ### Tertiary (LOW confidence)
-- YouTube API quota exhausted community thread — support.google.com (community-verified behavior, not official doc)
-- n8n Slack approval workflow — pattern reference only, not a direct implementation source
-- Pipeline design pattern — startdataengineering.com (WebSearch only; pattern is standard)
+- `gcui-art/suno-api` GitHub — `make_instrumental`, `duration` parameter reference; unofficial tool, fragility risk documented
+- Third-party Suno feature summaries (aitoolsdevpro.com, aimlapi.com review) — Suno v5 capabilities; not from official Suno docs
+- Suno vocal bleed / instrumental reliability — aimusicservice.com community source
+- Prompt template patterns — LTX Studio, Upsampler guides; pattern discovery only, not authoritative
 
 ---
 *Research completed: 2026-03-28*
