@@ -23,17 +23,24 @@ One command produces a publish-ready video — from prompt to YouTube upload —
 - ✓ Configurable video quality presets (1080p/720p/480p) — existing
 - ✓ Visual effects (parallax, dynamic lighting, time progression) — existing
 
-### Active (v1.1 — AI Generation Quality)
+### Active (v1.2 — Smart Automation)
 
-- [ ] Enhanced SDXL prompt engineering with profile-specific prompt templates
-- [ ] Negative prompt support for SDXL to filter artifacts and improve quality
-- [ ] Smart image batching with caching (skip re-generation of unchanged scenes)
-- [ ] Suno API integration for music generation (replaces Stable Audio)
-- [ ] Profile-matched genre selection for Suno (lofi, cinematic, electronic)
-- [ ] Duration-aware music generation matching exact video length
-- [ ] Instrumental-only enforcement (no vocals)
-- [ ] Multiple track generation with selection support
-- [ ] Quality presets (low/medium/high) affecting generation params across image + music
+- [ ] Smart defaults — pre-fill config with known env values (Discord URL, API keys, channel info)
+- [ ] YouTube channel branding — fetch channel name, avatar, description via YouTube API
+- [ ] Auto-generate intro/outro/watermark from channel branding (name, logo, vibe)
+- [ ] AI prompt generation — user provides tags only, OpenAI generates full SDXL + Suno prompts
+- [ ] Tag-based pipeline — single command with tags produces a complete video
+
+### Shipped (v1.1 — AI Generation Quality)
+
+- ✓ SDXLSettings/SunoSettings sub-models + quality presets — Phase 9
+- ✓ Profile YAML prompt templates with negative prompts — Phase 9
+- ✓ PromptTemplate with variable substitution + compel weighting — Phase 9
+- ✓ SDXL generator extraction + hash-based image caching — Phase 10
+- ✓ Suno music integration via kie.ai with fallback — Phase 11
+- ✓ Discord approval loops for images/video — Phase 12
+- ✓ YouTube credential setup + auto-publish — Phase 13
+- ✓ Vercel dashboard UI — Phase 14
 
 ### Shipped (v1.0)
 

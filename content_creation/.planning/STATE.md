@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Phase 14 — Vercel Dashboard UI (plan 4/4 complete)
+**Current focus:** Milestone v1.2 — Smart Automation
 
 ## Current Position
 
-Phase: 14 — Vercel Dashboard UI for Pipeline Config, Token/Credit Monitoring, and Top-Up Controls
-Plan: 04 complete (4/4 plans done in phase)
-Status: 14-04 done — pipeline trigger webhook, /api/status POST+GET, GenerationLog polling component, /status page
-Last activity: 2026-03-28 — 14-04 complete: store.ts in-memory log, /api/status (POST webhook auth + GET), /api/trigger, GenerationLog 3s polling, /status page with trigger button
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.2
+Last activity: 2026-03-28 — Milestone v1.2 started (smart defaults, channel branding, AI prompt gen)
 
-Progress: [████░░░░░░] 40% (v1.1 milestone)
+Progress: [░░░░░░░░░░] 0% (v1.2 milestone)
 
 ## Performance Metrics
 
@@ -119,3 +119,4 @@ Recent decisions affecting current work:
 Last session: 2026-03-28T21:58:09Z
 Stopped at: Completed 14-04-PLAN.md — pipeline trigger + status monitor: /api/status, /api/trigger, GenerationLog, /status page
 Resume file: None
+
