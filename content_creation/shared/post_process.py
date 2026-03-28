@@ -123,11 +123,23 @@ def run_post_process(video_path: Path, config: PipelineConfig) -> Path:
     work_dir = video_path.parent
     step = 0
 
+    # Resolve watermark text: YAML config > channel branding fallback
+    watermark_text = post.watermark_text
+    if post.watermark_enabled and not watermark_text:
+        if hasattr(config, 'branding') and config.branding.branding_enabled:
+            try:
+                from shared.branding import fetch_channel_branding
+                branding = fetch_channel_branding(refresh=False)
+                watermark_text = branding.channel_name
+                logger.info(f"[PostProcess] Watermark text from channel branding: {watermark_text}")
+            except Exception as e:
+                logger.warning(f"[PostProcess] Could not load branding for watermark: {e}")
+
     # Step 1: Watermark
-    if post.watermark_enabled and post.watermark_text:
+    if post.watermark_enabled and watermark_text:
         step += 1
         out = work_dir / f"_pp_step{step}_watermark{video_path.suffix}"
-        current = apply_watermark(current, out, post.watermark_text, post.watermark_position)
+        current = apply_watermark(current, out, watermark_text, post.watermark_position)
 
     # Step 2: Subtitles
     if post.subtitles_enabled:
