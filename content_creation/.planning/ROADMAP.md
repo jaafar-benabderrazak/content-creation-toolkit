@@ -226,7 +226,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 4. A scene template with a {weather} or {time_of_day} variable in the YAML resolves to the correct string when rendered — unresolved variables raise a clear error, not a generation attempt with literal braces in the prompt
 5. A prompt assembled through compel weighting (e.g., "(warm lighting)1.3") produces valid prompt_embeds and pooled_prompt_embeds without a runtime error from CompelForSDXL
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+- [ ] 09-01-PLAN.md — SDXLSettings and SunoSettings sub-models added to pipeline_config.py; quality_preset validator drives steps/guidance_scale/model_version simultaneously
+- [ ] 09-02-PLAN.md — All three profile YAMLs extended with sdxl (positive_prompt, negative_prompt, scene_templates) and suno (genre, prompt_tags) blocks
+- [ ] 09-03-PLAN.md — PromptTemplate.render() with variable substitution and ValueError on unresolved vars; build_compel_prompt() helper; pytest TDD suite
 
 ### Phase 10: SDXL Generator Extraction and Image Caching
 
@@ -278,6 +282,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Pipeline Integration | 0/3 | Not started | - |
 | 7. Config UI | 0/4 | Not started | - |
 | 8. Remotion Compilation Quality | 4/4 | Complete   | 2026-03-28 |
-| 9. Config Extension and Prompt Templates | 0/? | Not started | - |
+| 9. Config Extension and Prompt Templates | 0/3 | Not started | - |
 | 10. SDXL Generator Extraction and Image Caching | 0/? | Not started | - |
 | 11. Suno Music Integration | 0/? | Not started | - |
