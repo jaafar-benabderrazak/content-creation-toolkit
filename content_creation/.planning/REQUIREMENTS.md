@@ -15,10 +15,10 @@
 
 ### SDXL Generator
 
-- [ ] **SDXL-01**: SDXL generation extracted into generators/sdxl.py — importable by both pipelines
-- [ ] **SDXL-02**: Hash-based image caching (prompt + all params → cache key) skips regeneration of unchanged scenes
-- [ ] **SDXL-03**: Cache hit/miss progress indicator distinguishes cached vs. fresh images during generation
-- [ ] **SDXL-04**: Quality presets map to concrete SDXL params (steps: high=35, medium=25, fast=15; guidance_scale: high=8.0, medium=7.5, fast=7.0)
+- [x] **SDXL-01**: SDXL generation extracted into generators/sdxl.py — importable by both pipelines
+- [x] **SDXL-02**: Hash-based image caching (prompt + all params → cache key) skips regeneration of unchanged scenes
+- [x] **SDXL-03**: Cache hit/miss progress indicator distinguishes cached vs. fresh images during generation
+- [x] **SDXL-04**: Quality presets map to concrete SDXL params (steps: high=35, medium=25, fast=15; guidance_scale: high=8.0, medium=7.5, fast=7.0)
 
 ### Suno Music
 
@@ -56,10 +56,10 @@
 | PRMT-03 | Phase 9 | Complete |
 | PRMT-04 | Phase 9 | Complete |
 | PRMT-05 | Phase 9 | Complete |
-| SDXL-01 | Phase 10 | Pending |
-| SDXL-02 | Phase 10 | Pending |
-| SDXL-03 | Phase 10 | Pending |
-| SDXL-04 | Phase 10 | Pending |
+| SDXL-01 | Phase 10 | Complete |
+| SDXL-02 | Phase 10 | Complete |
+| SDXL-03 | Phase 10 | Complete |
+| SDXL-04 | Phase 10 | Complete |
 | SUNO-01 | Phase 11 | Pending |
 | SUNO-02 | Phase 11 | Pending |
 | SUNO-03 | Phase 11 | Pending |

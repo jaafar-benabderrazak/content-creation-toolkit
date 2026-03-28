@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 9: Config Extension and Prompt Templates)
+**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 10: SDXL Generator Extraction and Image Caching)
 
 ## Current Position
 
-Phase: 9 — Config Extension and Prompt Templates
-Plan: 03 complete (3/3 plans done in phase)
-Status: Phase 09 complete — all 3 plans done; Phase 10 (SDXL Generator) is next
-Last activity: 2026-03-28 — 09-03 complete: PromptTemplate.render() and build_compel_prompt() implemented with 13-test TDD suite
+Phase: 10 — SDXL Generator Extraction and Image Caching
+Plan: 01 complete (1/2 plans done in phase)
+Status: Phase 10 in progress — 10-01 done (generators/ package + SDXLGenerator); 10-02 pending
+Last activity: 2026-03-28 — 10-01 complete: SDXLGenerator with SHA-256 cache, JSON sidecars, and lazy GPU imports
 
-Progress: [█░░░░░░░░░] 10% (v1.1 milestone)
+Progress: [█░░░░░░░░░] 15% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [█░░░░░░░░░] 10% (v1.1 milestone)
 | Phase 09-config-extension-and-prompt-templates P02 | 2 | 2 tasks | 3 files |
 | Phase 09-config-extension-and-prompt-templates P01 | 2 | 2 tasks | 1 files |
 | Phase 09-config-extension-and-prompt-templates P03 | 1 | 2 tasks | 2 files |
+| Phase 10-sdxl-generator-extraction-and-image-caching P01 | 1 | 2 tasks | 2 files |
 
 ### Recent Trend
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 09-config-extension-and-prompt-templates]: SDXLSettings.negative_prompt and SunoSettings.genre have no defaults — ValidationError on omission enforces PRMT-02 at schema load time
 - [Phase 09-config-extension-and-prompt-templates]: str.format_map(_StrictFormatMap) chosen over .format(**kwargs) — enables targeted ValueError with variable name instead of generic KeyError
 - [Phase 09-config-extension-and-prompt-templates]: build_compel_prompt tested via sys.modules patch not real GPU — GPU/model dependency excluded from test suite by design
+- [Phase 10-sdxl-generator-extraction-and-image-caching]: SDXLGenerator uses lazy torch/diffusers imports in _generate_one — GPU-free module import and unit testing without model weights
+- [Phase 10-sdxl-generator-extraction-and-image-caching]: Cache key uses full 64-char SHA-256 digest of sort_keys JSON — any single param change produces different key (SDXL-02)
 
 ### Roadmap Evolution
 
