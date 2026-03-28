@@ -250,6 +250,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
+
 - [ ] 10-01-PLAN.md — generators/ package and SDXLGenerator with hash-based cache, sidecar write, and hit/miss logging
 - [ ] 10-02-PLAN.md — Refactor study_with_me_generator.py to delegate to SDXLGenerator; remove inline SDXL code
 
@@ -277,7 +278,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 14
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -292,6 +293,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Config Extension and Prompt Templates | 3/3 | Complete   | 2026-03-28 |
 | 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete   | 2026-03-28 |
 | 11. Suno Music Integration | 2/2 | Complete   | 2026-03-28 |
+| 14. Vercel Dashboard UI | 0/4 | Not started | - |
 
 ### Phase 12: Discord approval loops for images video and auto YouTube publish
 
@@ -300,6 +302,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd:plan-phase 12 to break down)
 
 ### Phase 13: YouTube credential setup and video thumbnail generation for publishing
@@ -309,13 +312,19 @@ Plans:
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd:plan-phase 13 to break down)
 
 ### Phase 14: Vercel dashboard UI for pipeline config, token/credit monitoring, and top-up controls
 
-**Goal:** [To be planned]
-**Depends on:** Phase 13
-**Plans:** 0 plans
+**Goal:** A browser-based dashboard deployed on Vercel provides pipeline config editing, live credit balance monitoring across all API providers, top-up links, pipeline trigger via webhook, and a live generation status log — the user never needs to edit YAML files or SSH into the local machine to manage the pipeline
+
+**Depends on:** Phase 13 (can also run independently — no Python pipeline dependency)
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 14 to break down)
+
+- [ ] 14-01-PLAN.md — Next.js 15 project scaffold with shadcn/ui, Tailwind, vercel.json, and .env.example
+- [ ] 14-02-PLAN.md — Config editor: GET/PUT YAML profile API routes + ProfileEditor UI component
+- [ ] 14-03-PLAN.md — Credit monitor: API routes for Suno/Replicate/OpenAI/YouTube + CreditCard UI components
+- [ ] 14-04-PLAN.md — Pipeline trigger + status log: POST status receiver, trigger forwarder, GenerationLog polling component
