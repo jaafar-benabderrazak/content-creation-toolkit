@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 17 of 18 (v1.2 — Channel Branding)
-Plan: 1 of ? completed in current phase
+Plan: 3 of ? completed in current phase
 Status: In progress
-Last activity: 2026-03-28 — 17-01 complete: shared/branding.py channel fetch+cache and BrandingSettings in PipelineConfig
+Last activity: 2026-03-28 — 17-03 complete: shared/branding_clips.py FFmpeg intro/outro generation from BrandingData
 
 Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans complete)
 
@@ -38,6 +38,7 @@ Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans com
 - Trend: Stable
 | Phase 16 P03 | 1 | 1 tasks | 1 files |
 | Phase 16-smart-defaults P02 | 8 | 2 tasks | 4 files |
+| Phase 17 P03 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,10 @@ Recent decisions affecting v1.2 work:
 - [Phase 16-smart-defaults]: ENV_VAR_MAP inlined in route.ts as TS mirror of Python constant; provenance kept as separate React state; EnvBadge defined inline in ProfileEditor
 - [Phase 17-01]: BrandingSettings.refresh_branding is a runtime flag — not added to ENV_VAR_MAP; explicit refresh=True is primary cache invalidation path; TTL (7 days) is safety net only
 - [Phase 17-01]: avatar_local_path stored as absolute str in BrandingData; downstream consumers (watermark, thumbnail, intro/outro) read from single cache source under .cache/branding/
+- [Phase 17-02]: Lazy import of fetch_channel_branding inside try/except in run_post_process — branding.py never imported at module level; failure is a warning not a crash
+- [Phase 17-02]: Avatar composite size fixed at 80px at bottom-right with 16px margin in thumbnail_gen — spec-defined values; no new config fields added
+- [Phase 17]: Avatar branching uses two explicit FFmpeg command builds rather than dynamic filter_complex — clearer, easier to debug
+- [Phase 17]: generate_branding_clips skips existing files — callers control cache invalidation, consistent with 17-01 cache strategy
 
 ### Pending Todos
 
@@ -71,10 +76,10 @@ Recent decisions affecting v1.2 work:
 - [Pre-Phase 5]: YouTube quota increase SLA is variable — file quota increase request with Google if >6 uploads/day required
 - [Pre-Phase 7]: AnimateDiff Gradio version pin not yet inspected — run `grep -i gradio AnimateDiff/requirements.txt` before Phase 7 planning
 - [Pre-Phase 11]: Suno has no official public API — third-party wrappers can break silently; check suno.ai/developers before committing
-- [Phase 17 BRND-03]: Intro/outro generation complexity — Remotion or FFmpeg compositing from channel assets; validate asset format (avatar PNG dimensions, description length) before implementation
+- ~~[Phase 17 BRND-03]: Intro/outro generation complexity~~ — RESOLVED in 17-03 (FFmpeg lavfi, avatar overlay conditional)
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 17-01-PLAN.md — shared/branding.py + BrandingSettings in PipelineConfig
+Stopped at: Completed 17-03-PLAN.md — shared/branding_clips.py FFmpeg intro/outro generation
 Resume file: None
