@@ -24,7 +24,7 @@ post:
   outro_enabled: false
 
 publish:
-  youtube_enabled: false
+  youtube_enabled: true
   youtube_title: "Cinematic Study Session — Focus & Flow"
   youtube_description: "An immersive cinematic study session with dramatic visuals and orchestral music."
   youtube_tags:

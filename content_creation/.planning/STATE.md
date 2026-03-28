@@ -90,6 +90,7 @@ Recent decisions affecting current work:
 - Phase 8 added: Remotion compilation quality — top-notch video rendering with advanced effects
 - Phases 9-11 added: v1.1 AI Generation Quality milestone (config extension, SDXL caching, Suno integration)
 - Phase 12 added: Discord approval loops for images/video + auto YouTube publish
+- Phase 13 added: YouTube credential setup (OAuth, GCP project) + video thumbnail generation for publishing
 
 ### Pending Todos
 
