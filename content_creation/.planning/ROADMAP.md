@@ -310,3 +310,12 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 13 to break down)
+
+### Phase 14: Vercel dashboard UI for pipeline config, token/credit monitoring, and top-up controls
+
+**Goal:** [To be planned]
+**Depends on:** Phase 13
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 14 to break down)
