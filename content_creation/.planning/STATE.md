@@ -48,6 +48,10 @@ Recent decisions affecting current work:
 - [Research]: YouTube OAuth app must be moved to Production status before unattended uploads — Testing mode limits refresh tokens to 7 days
 - [Research]: Use separate GCP project for development to avoid exhausting production quota during testing
 
+### Roadmap Evolution
+
+- Phase 8 added: Remotion compilation quality — top-notch video rendering with advanced effects
+
 ### Pending Todos
 
 None yet.
