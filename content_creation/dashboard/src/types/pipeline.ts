@@ -52,3 +52,11 @@ export interface PipelineConfig {
   sdxl?: Record<string, unknown>;
   suno?: Record<string, unknown>;
 }
+
+/** Dotted field path -> "env" | "yaml" */
+export type ConfigProvenance = Record<string, "env" | "yaml">;
+
+export interface ProfileWithProvenance {
+  config: PipelineConfig;
+  provenance: ConfigProvenance;
+}

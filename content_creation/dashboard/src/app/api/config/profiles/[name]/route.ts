@@ -31,7 +31,26 @@ export async function GET(
   try {
     const raw = fs.readFileSync(filePath, "utf-8");
     const data = yaml.load(raw);
-    return NextResponse.json(data);
+
+    const ENV_VAR_MAP: Record<string, string> = {
+      "notify.discord_webhook_url": "NOTF_DISCORD_WEBHOOK_URL",
+      "notify.slack_webhook_url":   "NOTF_SLACK_WEBHOOK_URL",
+      "suno.api_key":               "SUNO_API_KEY",
+    };
+
+    const provenance: Record<string, "env" | "yaml"> = {};
+    for (const [fieldPath, envVar] of Object.entries(ENV_VAR_MAP)) {
+      const [section, key] = fieldPath.split(".");
+      const yamlValue = (data as Record<string, Record<string, unknown>>)[section]?.[key];
+      const envValue = process.env[envVar];
+      if ((yamlValue === null || yamlValue === undefined || yamlValue === "") && envValue) {
+        provenance[fieldPath] = "env";
+      } else {
+        provenance[fieldPath] = "yaml";
+      }
+    }
+
+    return NextResponse.json({ config: data, provenance });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 500 });
