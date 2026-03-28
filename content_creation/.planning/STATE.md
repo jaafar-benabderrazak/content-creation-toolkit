@@ -34,6 +34,7 @@ Progress: [░░░░░░░░░░] ~5%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 08-the-compilation-via-remotion-should-be-top-notch P03 | 2 min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -49,6 +50,8 @@ Recent decisions affecting current work:
 - [Research]: Use separate GCP project for development to avoid exhausting production quota during testing
 - [Phase 08]: ProfileConfig uses explicit interface with union types instead of typeof lofiStudyProfile to prevent TS narrowing rejecting slide and wipe profiles
 - [Phase 08]: useWindowedAudioData at 4.0.441 takes options object {src,frame,fps,windowInSeconds} not raw string; AudioVisualizer updated accordingly
+- [Phase 08-the-compilation-via-remotion-should-be-top-notch]: Cast component props to any in Root.tsx — Remotion LooseComponentType does not accept typed FC props
+- [Phase 08-the-compilation-via-remotion-should-be-top-notch]: Cast getPresentation return to any in StudyVideo.tsx — union of TransitionPresentation types not assignable to single typed slot
 
 ### Roadmap Evolution
 
