@@ -17,13 +17,22 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { PipelineConfig } from "@/types/pipeline";
 
+function EnvBadge() {
+  return (
+    <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-medium bg-blue-50 text-blue-600 border border-blue-200 leading-none">
+      ENV
+    </span>
+  );
+}
+
 interface ProfileEditorProps {
   profile: string;
   config: PipelineConfig;
+  provenance: Record<string, "env" | "yaml">;
   onSave: (config: PipelineConfig) => Promise<void>;
 }
 
-export function ProfileEditor({ profile, config, onSave }: ProfileEditorProps) {
+export function ProfileEditor({ profile, config, provenance, onSave }: ProfileEditorProps) {
   const [current, setCurrent] = React.useState<PipelineConfig>(config);
   const [saving, setSaving] = React.useState(false);
   const { toast } = useToast();
@@ -405,7 +414,10 @@ export function ProfileEditor({ profile, config, onSave }: ProfileEditorProps) {
       {/* Notify Settings */}
       <FieldGroup title="Notify Settings">
         <div className="grid gap-2">
-          <Label htmlFor="discord_webhook_url">Discord Webhook URL</Label>
+          <Label htmlFor="discord_webhook_url">
+            Discord Webhook URL{" "}
+            {provenance["notify.discord_webhook_url"] === "env" && <EnvBadge />}
+          </Label>
           <Input
             id="discord_webhook_url"
             placeholder="https://discord.com/api/webhooks/..."

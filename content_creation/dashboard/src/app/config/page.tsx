@@ -12,12 +12,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import type { PipelineConfig } from "@/types/pipeline";
+import type { PipelineConfig, ProfileWithProvenance } from "@/types/pipeline";
 
 export default function ConfigPage() {
   const [profiles, setProfiles] = React.useState<string[]>([]);
   const [selectedProfile, setSelectedProfile] = React.useState<string>("");
   const [config, setConfig] = React.useState<PipelineConfig | null>(null);
+  const [provenance, setProvenance] = React.useState<Record<string, "env" | "yaml">>({});
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [profilesError, setProfilesError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -51,8 +52,9 @@ export default function ConfigPage() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? `HTTP ${res.status}`);
       }
-      const data: PipelineConfig = await res.json();
-      setConfig(data);
+      const data: ProfileWithProvenance = await res.json();
+      setConfig(data.config);
+      setProvenance(data.provenance ?? {});
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setLoadError(message);
@@ -152,6 +154,7 @@ export default function ConfigPage() {
         <ProfileEditor
           profile={selectedProfile}
           config={config}
+          provenance={provenance}
           onSave={handleSave}
         />
       )}
