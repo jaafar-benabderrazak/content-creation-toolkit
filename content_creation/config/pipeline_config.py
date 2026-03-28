@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
+
+# Maps dotted config field paths to the environment variable that should fill them
+# when the YAML value is absent (None or empty string).
+# Keys must correspond to actual fields in the Pydantic model tree.
+ENV_VAR_MAP: dict[str, str] = {
+    "notify.discord_webhook_url": "NOTF_DISCORD_WEBHOOK_URL",
+    "notify.slack_webhook_url":   "NOTF_SLACK_WEBHOOK_URL",
+    "suno.api_key":               "SUNO_API_KEY",
+}
 
 
 class SDXLSettings(BaseModel):
@@ -117,6 +127,81 @@ class PipelineConfig(BaseModel):
             return cls.model_validate(data)
         except AttributeError:
             return cls.parse_obj(data)  # Pydantic v1 fallback
+
+    @classmethod
+    def load_with_env_defaults(
+        cls, path: Union[str, Path]
+    ) -> "tuple[PipelineConfig, dict[str, str]]":
+        """Load config from YAML, then fill None/empty fields from environment variables.
+
+        YAML values always win over env vars.  Returns a (config, provenance) tuple
+        where provenance maps every ENV_VAR_MAP key to "yaml" or "env".
+        """
+        import yaml
+
+        # Read the raw YAML first so we can determine suno.api_key provenance
+        # before the model validator auto-fills it from env.
+        with open(path, "r", encoding="utf-8") as f:
+            raw_data = yaml.safe_load(f) or {}
+
+        config = cls.from_yaml(path)
+        provenance: dict[str, str] = {}
+
+        for dotted_path, env_var_name in ENV_VAR_MAP.items():
+            parts = dotted_path.split(".")
+            if len(parts) != 2:
+                # Defensive: only 2-level paths are supported
+                continue
+            parent_attr, child_attr = parts
+
+            # suno is Optional — skip if not present in config
+            parent_obj = getattr(config, parent_attr, None)
+            if parent_obj is None:
+                # Sub-model absent; env provenance only if env var is set
+                env_val = os.environ.get(env_var_name)
+                provenance[dotted_path] = "env" if env_val else "yaml"
+                continue
+
+            current_val = getattr(parent_obj, child_attr, None)
+
+            # Special case: suno.api_key — the model validator already injected
+            # the env value at construction time.  Determine provenance by
+            # inspecting the raw YAML instead.
+            if dotted_path == "suno.api_key":
+                raw_suno_key = (raw_data.get("suno") or {}).get("api_key")
+                env_val = os.environ.get(env_var_name)
+                if raw_suno_key:
+                    provenance[dotted_path] = "yaml"
+                elif env_val:
+                    provenance[dotted_path] = "env"
+                else:
+                    provenance[dotted_path] = "yaml"
+                continue
+
+            if current_val is None or current_val == "":
+                env_val = os.environ.get(env_var_name)
+                if env_val:
+                    # Rebuild the sub-model with the env value applied.
+                    try:
+                        updated_parent = parent_obj.model_copy(
+                            update={child_attr: env_val}
+                        )
+                        config = config.model_copy(
+                            update={parent_attr: updated_parent}
+                        )
+                    except AttributeError:
+                        # Pydantic v1 fallback
+                        updated_parent = parent_obj.copy(
+                            update={child_attr: env_val}
+                        )
+                        config = config.copy(update={parent_attr: updated_parent})
+                    provenance[dotted_path] = "env"
+                else:
+                    provenance[dotted_path] = "yaml"
+            else:
+                provenance[dotted_path] = "yaml"
+
+        return config, provenance
 
     def to_yaml(self, path: Union[str, Path]) -> None:
         import yaml
