@@ -1,0 +1,42 @@
+profile: lofi-study
+
+video:
+  style_prompt: "cozy study room, warm Edison bulb lighting, rainy window, soft bokeh, film grain, lofi aesthetic, muted warm palette"
+  music_prompt: "ambient lofi study music, soft piano, gentle rain, warm analog tape hiss, mellow pads, no vocals, 70 bpm, calming, focus-enhancing"
+  mood: relaxed-focus
+  duration_minutes: 120
+  resolution: "1080p"
+  quality_preset: high
+  scene_count: 24
+  scene_duration_seconds: 25.0
+  enable_weather: true
+  enable_time_progression: true
+  enable_parallax: true
+  enable_particles: true
+  parallax_strength: 0.03
+
+post:
+  watermark_enabled: false
+  subtitles_enabled: false
+  intro_enabled: false
+  outro_enabled: false
+
+publish:
+  youtube_enabled: false
+  youtube_title: "Study With Me — Lofi Chill Session"
+  youtube_description: "A relaxed lofi study session to help you focus and get work done."
+  youtube_tags:
+    - study with me
+    - lofi
+    - focus music
+    - chill
+    - productivity
+  youtube_category_id: "27"
+  youtube_privacy: private
+  thumbnail_enabled: true
+
+notify:
+  discord_webhook_url: null
+  slack_webhook_url: null
+  require_approval: true
+  approval_timeout_seconds: 3600

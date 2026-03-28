@@ -1,0 +1,44 @@
+profile: cinematic
+
+video:
+  style_prompt: "cinematic wide shot, dramatic lighting, film photography, high contrast, warm golden hour, shallow depth of field, 35mm grain, premium production"
+  music_prompt: "orchestral cinematic score, sweeping strings, subtle percussion, emotional build, no lyrics, Hollywood quality, 80 bpm"
+  mood: dramatic
+  duration_minutes: 60
+  resolution: "1080p"
+  quality_preset: high
+  scene_count: 18
+  scene_duration_seconds: 30.0
+  enable_weather: true
+  enable_time_progression: true
+  enable_parallax: true
+  enable_particles: true
+  parallax_strength: 0.05
+
+post:
+  watermark_enabled: true
+  watermark_text: "Your Channel"
+  watermark_position: bottom-right
+  subtitles_enabled: false
+  intro_enabled: false
+  outro_enabled: false
+
+publish:
+  youtube_enabled: false
+  youtube_title: "Cinematic Study Session — Focus & Flow"
+  youtube_description: "An immersive cinematic study session with dramatic visuals and orchestral music."
+  youtube_tags:
+    - cinematic
+    - study with me
+    - focus
+    - orchestral
+    - dramatic
+  youtube_category_id: "27"
+  youtube_privacy: private
+  thumbnail_enabled: true
+
+notify:
+  discord_webhook_url: null
+  slack_webhook_url: null
+  require_approval: true
+  approval_timeout_seconds: 3600
