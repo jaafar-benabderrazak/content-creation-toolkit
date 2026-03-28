@@ -43,3 +43,18 @@ notify:
   slack_webhook_url: null
   require_approval: true
   approval_timeout_seconds: 3600
+
+sdxl:
+  negative_prompt: "blurry, watermark, people, faces, clutter, dim lighting, outdated"
+  positive_prompt: "clean modern office workspace, bright white background, professional lighting, minimal tech aesthetic, blue accent colors, sharp focus"
+  scene_templates:
+    - "{positive_prompt}, top-down flat lay, product photography"
+    - "{positive_prompt}, shallow depth of field, bokeh background"
+    - "{positive_prompt}, studio lighting, high contrast, crisp details"
+  # steps, guidance_scale, quality_suffix overridden by quality_preset validator
+
+suno:
+  genre: "upbeat electronic"
+  prompt_tags: "electronic, upbeat, synthwave, energetic, background music, no vocals, modern corporate"
+  make_instrumental: true
+  track_count: 2

@@ -42,3 +42,18 @@ notify:
   slack_webhook_url: null
   require_approval: true
   approval_timeout_seconds: 3600
+
+sdxl:
+  negative_prompt: "cartoon, anime, watermark, text, logo, oversaturated, flat lighting"
+  positive_prompt: "cinematic wide shot, dramatic lighting, film photography, high contrast, golden hour, shallow depth of field, 35mm grain"
+  scene_templates:
+    - "{positive_prompt}, {weather}, epic composition, anamorphic lens"
+    - "{positive_prompt}, {time_of_day}, volumetric light, cinematic color grade"
+    - "{positive_prompt}, {weather}, {time_of_day}, dramatic shadows, premium production"
+  # steps, guidance_scale, quality_suffix overridden by quality_preset validator
+
+suno:
+  genre: "orchestral cinematic"
+  prompt_tags: "cinematic orchestral, epic, atmospheric, sweeping strings, no vocals, film score"
+  make_instrumental: true
+  track_count: 2
