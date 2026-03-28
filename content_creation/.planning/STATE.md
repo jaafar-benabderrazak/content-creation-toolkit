@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 9 — Config Extension and Prompt Templates
-Plan: —
-Status: Roadmap defined, ready for Phase 9 planning
-Last activity: 2026-03-28 — v1.1 roadmap created (phases 9-11 derived from 20 requirements)
+Plan: 02 complete (1/3 plans done in phase)
+Status: In progress — Plan 09-02 complete, Plan 09-03 next
+Last activity: 2026-03-28 — 09-02 complete: SDXL/Suno blocks added to all 3 profile YAMLs
 
-Progress: [░░░░░░░░░░] 0% (v1.1 milestone)
+Progress: [█░░░░░░░░░] 10% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -28,6 +28,8 @@ Progress: [░░░░░░░░░░] 0% (v1.1 milestone)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 08-the-compilation-via-remotion-should-be-top-notch | 4 | 16 min | 4 min |
+| Phase 09-config-extension-and-prompt-templates P02 | 2 | 2 tasks | 3 files |
+| Phase 09-config-extension-and-prompt-templates P01 | 2 | 2 tasks | 1 files |
 
 ### Recent Trend
 
@@ -63,6 +65,11 @@ Recent decisions affecting current work:
 - [v1.1 Research]: Pin Suno third-party wrapper to exact version (== not >=); implement Stable Audio fallback before considering Suno integration done
 - [v1.1 Research]: Suno make_instrumental flag is probabilistic (~70-80% clean) — always generate 2-3 tracks and validate before passing to video assembly
 - [v1.1 Research]: Hard 300s polling timeout on Suno with exponential backoff (5s → 10s → 20s → cap 60s); on timeout fall back to Stable Audio
+- [Phase 09-config-extension-and-prompt-templates]: SDXL negative prompts capped at 7 terms per profile — SD1.5 mega-lists degrade SDXL output quality
+- [Phase 09-config-extension-and-prompt-templates]: tech_tutorial scene_templates omit {weather}/{time_of_day} variables — consistent with enable_weather: false in profile
+- [Phase 09-config-extension-and-prompt-templates]: make_instrumental: true mandatory on all profiles — vocal bleed unacceptable for study/ambient/tutorial content
+- [Phase 09-config-extension-and-prompt-templates]: quality_preset validator lives on PipelineConfig — only PipelineConfig has access to both video.quality_preset and sdxl/suno sub-models simultaneously
+- [Phase 09-config-extension-and-prompt-templates]: SDXLSettings.negative_prompt and SunoSettings.genre have no defaults — ValidationError on omission enforces PRMT-02 at schema load time
 
 ### Roadmap Evolution
 
@@ -84,6 +91,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: v1.1 roadmap created — phases 9, 10, 11 defined with 20/20 requirement coverage
+Last session: 2026-03-28T17:39:40Z
+Stopped at: Completed 09-02-PLAN.md — SDXL/Suno blocks added to all profile YAMLs
 Resume file: None
