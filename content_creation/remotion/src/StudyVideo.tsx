@@ -3,17 +3,28 @@ import {
   AbsoluteFill,
   Audio,
   Img,
-  Sequence,
   interpolate,
-  staticFile,
+  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { TransitionSeries, springTiming } from "@remotion/transitions";
+import { fade } from "@remotion/transitions/fade";
+import { wipe } from "@remotion/transitions/wipe";
+import { slide } from "@remotion/transitions/slide";
+import { getProfile } from "./profiles/index";
+import { FilmGrain } from "./components/FilmGrain";
+import { Vignette } from "./components/Vignette";
+import { AudioVisualizer } from "./components/AudioVisualizer";
+// Load fonts so they are available in renders
+import "./fonts/index";
 
 interface StudyVideoProps {
   images: string[];
   audioFile: string;
   sceneDuration: number;
+  sceneDurations?: number[];
+  profile?: string;
   style: string;
   enableParallax: boolean;
   enableParticles: boolean;
@@ -21,41 +32,54 @@ interface StudyVideoProps {
   durationMinutes: number;
 }
 
+// Helper: select presentation from profile transition string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getPresentation = (transitionName: string): any => {
+  switch (transitionName) {
+    case "wipe":
+      return wipe({ direction: "from-left" });
+    case "slide":
+      return slide({ direction: "from-left" });
+    case "fade":
+    default:
+      return fade();
+  }
+};
+
 const Scene: React.FC<{
   src: string;
   durationFrames: number;
   enableParallax: boolean;
-}> = ({ src, durationFrames, enableParallax }) => {
+  profileConfig: ReturnType<typeof getProfile>;
+}> = ({ src, durationFrames, enableParallax, profileConfig }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // Parallax: subtle pan effect
-  const translateX = enableParallax
-    ? interpolate(frame, [0, durationFrames], [-20, 20], {
-        extrapolateRight: "clamp",
-      })
-    : 0;
-
-  const translateY = enableParallax
-    ? interpolate(frame, [0, durationFrames], [-10, 10], {
-        extrapolateRight: "clamp",
-      })
-    : 0;
-
-  // Fade in/out
-  const opacity = interpolate(
+  // Spring-based parallax — organic feel, not linear pan
+  const parallaxProgress = spring({
     frame,
-    [0, 30, durationFrames - 30, durationFrames],
-    [0, 1, 1, 0],
-    { extrapolateRight: "clamp", extrapolateLeft: "clamp" }
-  );
-
-  // Subtle zoom
-  const scale = interpolate(frame, [0, durationFrames], [1.05, 1.15], {
-    extrapolateRight: "clamp",
+    fps,
+    config: profileConfig.springConfig,
+    durationInFrames: durationFrames,
   });
+  const translateX = enableParallax
+    ? interpolate(parallaxProgress, [0, 1], [-20, 20])
+    : 0;
+  const translateY = enableParallax
+    ? interpolate(parallaxProgress, [0, 1], [-10, 10])
+    : 0;
+
+  // Zoom: spring in, hold
+  const zoomProgress = spring({
+    frame,
+    fps,
+    config: { damping: 20, stiffness: 60, mass: 1 },
+    durationInFrames: Math.min(60, durationFrames),
+  });
+  const scale = interpolate(zoomProgress, [0, 1], [1.05, 1.12]);
 
   return (
-    <AbsoluteFill style={{ opacity }}>
+    <AbsoluteFill>
       <Img
         src={src}
         style={{
@@ -66,13 +90,17 @@ const Scene: React.FC<{
           position: "absolute",
           top: "-5%",
           left: "-5%",
+          filter: profileConfig.cssColorFilter,
         }}
       />
     </AbsoluteFill>
   );
 };
 
-const Timer: React.FC<{ durationMinutes: number }> = ({ durationMinutes }) => {
+const Timer: React.FC<{ durationMinutes: number; fontFamily: string }> = ({
+  durationMinutes,
+  fontFamily,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const totalSeconds = durationMinutes * 60;
@@ -87,6 +115,13 @@ const Timer: React.FC<{ durationMinutes: number }> = ({ durationMinutes }) => {
       ? `${hours}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
       : `${mins}:${String(secs).padStart(2, "0")}`;
 
+  const popIn = spring({
+    frame,
+    fps,
+    config: { damping: 10, stiffness: 200, overshootClamping: false },
+    durationInFrames: 20,
+  });
+
   return (
     <div
       style={{
@@ -94,10 +129,11 @@ const Timer: React.FC<{ durationMinutes: number }> = ({ durationMinutes }) => {
         top: 40,
         right: 40,
         fontSize: 48,
-        fontFamily: "monospace",
+        fontFamily,
         color: "rgba(255, 255, 255, 0.7)",
         textShadow: "2px 2px 8px rgba(0, 0, 0, 0.5)",
         letterSpacing: 2,
+        transform: `scale(${popIn})`,
       }}
     >
       {timeStr}
@@ -105,9 +141,10 @@ const Timer: React.FC<{ durationMinutes: number }> = ({ durationMinutes }) => {
   );
 };
 
-const Particles: React.FC = () => {
+const Particles: React.FC<{ density: number }> = ({ density }) => {
   const frame = useCurrentFrame();
-  const particles = Array.from({ length: 20 }, (_, i) => {
+  const count = Math.round(20 * density);
+  const particles = Array.from({ length: count }, (_, i) => {
     const x = ((i * 97 + frame * 0.3) % 110) - 5;
     const y = ((i * 53 + frame * 0.2) % 110) - 5;
     const size = 2 + (i % 3);
@@ -135,44 +172,77 @@ export const StudyVideo: React.FC<StudyVideoProps> = ({
   images,
   audioFile,
   sceneDuration,
+  sceneDurations,
+  profile,
   enableParallax,
   enableParticles,
   timerEnabled,
   durationMinutes,
 }) => {
   const { fps } = useVideoConfig();
-  const sceneDurationFrames = Math.round(sceneDuration * fps);
+  const profileConfig = getProfile(profile ?? "lofi-study");
+
+  const sceneDurationsList =
+    sceneDurations && sceneDurations.length > 0
+      ? sceneDurations
+      : images.map(() => sceneDuration);
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#1a1a2e" }}>
-      {/* Scene sequences */}
-      {images.map((img, i) => {
-        const from = i * sceneDurationFrames;
-        return (
-          <Sequence key={i} from={from} durationInFrames={sceneDurationFrames}>
-            <Scene
-              src={img}
-              durationFrames={sceneDurationFrames}
-              enableParallax={enableParallax}
-            />
-          </Sequence>
-        );
-      })}
+      {/* Scene sequences via TransitionSeries */}
+      <TransitionSeries>
+        {images.map((img, i) => {
+          const durationFrames = Math.round(
+            (sceneDurationsList[i] ?? sceneDuration) * fps
+          );
+          return (
+            <React.Fragment key={i}>
+              <TransitionSeries.Sequence durationInFrames={durationFrames}>
+                <Scene
+                  src={img}
+                  durationFrames={durationFrames}
+                  enableParallax={enableParallax}
+                  profileConfig={profileConfig}
+                />
+              </TransitionSeries.Sequence>
+              {i < images.length - 1 && (
+                <TransitionSeries.Transition
+                  presentation={getPresentation(profileConfig.transition)}
+                  timing={springTiming({ config: { damping: 200 } })}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </TransitionSeries>
 
       {/* Particle overlay */}
-      {enableParticles && <Particles />}
+      {enableParticles && profileConfig.particleDensity > 0 && (
+        <Particles density={profileConfig.particleDensity} />
+      )}
 
       {/* Timer overlay */}
-      {timerEnabled && <Timer durationMinutes={durationMinutes} />}
+      {profileConfig.timerVisible && timerEnabled && (
+        <Timer
+          durationMinutes={durationMinutes}
+          fontFamily={profileConfig.fontFamily}
+        />
+      )}
 
       {/* Vignette */}
-      <AbsoluteFill
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%)",
-          pointerEvents: "none",
-        }}
-      />
+      <Vignette strength={profileConfig.vignetteStrength} />
+
+      {/* Film grain */}
+      {profileConfig.grainIntensity > 0 && (
+        <FilmGrain intensity={profileConfig.grainIntensity} instanceId="study" />
+      )}
+
+      {/* AudioVisualizer in footer — lofi-study only */}
+      {audioFile && profile === "lofi-study" && (
+        <div style={{ position: "absolute", bottom: 20, left: 20 }}>
+          <AudioVisualizer src={audioFile} />
+        </div>
+      )}
 
       {/* Audio */}
       {audioFile && <Audio src={audioFile} />}
