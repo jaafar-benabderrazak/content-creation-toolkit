@@ -36,6 +36,37 @@ def run_shared_pipeline(
     current_video = video_path
     thumbnail_path = None
 
+    # Step 0: Channel branding fetch (runs only when branding_enabled=True)
+    branding_data = None
+    avatar_path = None
+    generated_intro_path = None
+    generated_outro_path = None
+
+    if hasattr(config, 'branding') and config.branding.branding_enabled:
+        try:
+            from shared.branding import fetch_channel_branding
+            from pathlib import Path as _Path
+            branding_data = fetch_channel_branding(refresh=config.branding.refresh_branding)
+            avatar_local = _Path(branding_data.avatar_local_path)
+            if avatar_local.exists():
+                avatar_path = avatar_local
+
+            # Generate intro/outro clips into .cache/branding/
+            from shared.branding_clips import generate_branding_clips
+            cache_dir = _Path(".cache/branding")
+            # Regenerate clips if refresh was requested (delete stale clips first)
+            if config.branding.refresh_branding:
+                for clip in [cache_dir / "intro.mp4", cache_dir / "outro.mp4"]:
+                    clip.unlink(missing_ok=True)
+            generated_intro_path, generated_outro_path = generate_branding_clips(branding_data, cache_dir)
+            logger.info(f"[Pipeline] Branding ready: channel={branding_data.channel_name}")
+        except Exception as e:
+            logger.warning(f"[Pipeline] Branding fetch failed, continuing without branding: {e}")
+            branding_data = None
+            avatar_path = None
+            generated_intro_path = None
+            generated_outro_path = None
+
     # Step 1: Image approval gate (if images provided)
     if image_paths and regenerate_images_fn:
         try:
@@ -47,7 +78,31 @@ def run_shared_pipeline(
     # Step 2: Post-processing
     try:
         from shared.post_process import run_post_process
-        current_video = run_post_process(current_video, config)
+
+        # Inject branding clips into post config if not explicitly set
+        post_config = config
+        if generated_intro_path or generated_outro_path:
+            from config.pipeline_config import PostSettings
+            post_overrides = {}
+            if generated_intro_path and generated_intro_path.exists():
+                if not config.post.intro_clip_path:
+                    post_overrides["intro_enabled"] = True
+                    post_overrides["intro_clip_path"] = str(generated_intro_path)
+            if generated_outro_path and generated_outro_path.exists():
+                if not config.post.outro_clip_path:
+                    post_overrides["outro_enabled"] = True
+                    post_overrides["outro_clip_path"] = str(generated_outro_path)
+            if post_overrides:
+                try:
+                    updated_post = config.post.model_copy(update=post_overrides)
+                except AttributeError:
+                    updated_post = config.post.copy(update=post_overrides)
+                try:
+                    post_config = config.model_copy(update={"post": updated_post})
+                except AttributeError:
+                    post_config = config.copy(update={"post": updated_post})
+
+        current_video = run_post_process(current_video, post_config)
     except Exception as e:
         logger.error(f"[Pipeline] Post-processing failed: {e}")
         _notify_error(config, "post-processing", str(e))
@@ -62,6 +117,7 @@ def run_shared_pipeline(
                 current_video, thumb_out,
                 title=config.publish.youtube_title,
                 branding=config.post.watermark_text,
+                avatar_path=avatar_path,
             )
         except Exception as e:
             logger.warning(f"[Pipeline] Thumbnail generation failed: {e}")
