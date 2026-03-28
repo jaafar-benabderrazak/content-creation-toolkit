@@ -1,0 +1,60 @@
+profile: tech-tutorial
+
+video:
+  style_prompt: "clean modern office, bright white background, professional lighting, shallow depth of field, tech aesthetic, blue accent colors"
+  music_prompt: "upbeat background music, light electronic, no distracting vocals, modern corporate, motivating, 100 bpm"
+  mood: professional
+  duration_minutes: 10
+  resolution: "1080p"
+  quality_preset: high
+  scene_count: 8
+  scene_duration_seconds: 15.0
+  enable_weather: false
+  enable_time_progression: false
+  enable_parallax: true
+  enable_particles: false
+  parallax_strength: 0.02
+
+post:
+  watermark_enabled: true
+  watermark_text: "@TechAIHacks"
+  watermark_position: bottom-right
+  subtitles_enabled: true
+  subtitles_srt_path: ""
+  intro_enabled: false
+  outro_enabled: false
+
+publish:
+  youtube_enabled: false
+  youtube_title: "How to Use AI Tools to Automate Your Workflow"
+  youtube_description: "Step-by-step tutorial on using AI tools to automate repetitive tasks and boost productivity."
+  youtube_tags:
+    - AI tutorial
+    - automation
+    - tech tips
+    - productivity
+    - how to
+  youtube_category_id: "28"
+  youtube_privacy: private
+  thumbnail_enabled: true
+
+notify:
+  discord_webhook_url: null
+  slack_webhook_url: null
+  require_approval: true
+  approval_timeout_seconds: 3600
+
+sdxl:
+  negative_prompt: "blurry, watermark, people, faces, clutter, dim lighting, outdated"
+  positive_prompt: "clean modern office workspace, bright white background, professional lighting, minimal tech aesthetic, blue accent colors, sharp focus"
+  scene_templates:
+    - "{positive_prompt}, top-down flat lay, product photography"
+    - "{positive_prompt}, shallow depth of field, bokeh background"
+    - "{positive_prompt}, studio lighting, high contrast, crisp details"
+  # steps, guidance_scale, quality_suffix overridden by quality_preset validator
+
+suno:
+  genre: "upbeat electronic"
+  prompt_tags: "electronic, upbeat, synthwave, energetic, background music, no vocals, modern corporate"
+  make_instrumental: true
+  track_count: 2
