@@ -6,6 +6,8 @@ This milestone adds a shared publish/notify/post-processing layer to an existing
 
 v1.1 (AI Generation Quality) extends the foundation with profile-driven SDXL prompt templates, hash-based image caching, and Suno music integration replacing Stable Audio. Config schema extension comes first; Suno integration last (highest risk).
 
+v1.2 (Smart Automation) closes the manual-input loop: smart defaults pre-fill all env-sourced credentials, channel branding is fetched from YouTube and applied automatically, and AI prompt generation lets the user supply only tags — OpenAI writes every SDXL and Suno prompt. One command with tags produces a branded, publish-ready video.
+
 ## Phases
 
 **Phase Numbering:**
@@ -25,11 +27,16 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Config Extension and Prompt Templates** - SDXLSettings/SunoSettings sub-models and per-profile YAML prompt templates that all v1.1 generators depend on (completed 2026-03-28)
 - [x] **Phase 10: SDXL Generator Extraction and Image Caching** - generators/sdxl.py module with hash-based cache eliminating redundant scene regeneration (completed 2026-03-28)
 - [x] **Phase 11: Suno Music Integration** - SunoClient with async submission, multi-track generation, vocal validation, and Stable Audio fallback (completed 2026-03-28)
+- [ ] **Phase 12: Discord Approval Loops** - Discord approval gate for images and video before YouTube publish
+- [ ] **Phase 13: YouTube Credential Setup and Thumbnail Publishing** - OAuth setup and thumbnail attach for YouTube publishing
+- [ ] **Phase 14: Vercel Dashboard UI** - Browser-based pipeline config, credit monitoring, and pipeline trigger
+- [ ] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard
+- [ ] **Phase 17: Channel Branding** - YouTube channel data fetch, branding propagation to watermark/thumbnail, cached locally, and auto-generated intro/outro clips
+- [ ] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs
 
 ## Phase Details
 
 ### Phase 1: Config Foundation
-
 **Goal**: Users can define pipeline behavior in YAML files with named profiles, and the system validates configs at load time before any generation runs
 
 **Depends on**: Nothing (first phase)
@@ -52,7 +59,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 01-04-PLAN.md — pytest suite covering missing fields, wrong types, invalid enum values, and YAML round-trip (TDD)
 
 ### Phase 2: Post-Processing Pipeline
-
 **Goal**: Every finished video automatically has watermark, subtitles, and intro/outro applied before any downstream step touches it
 
 **Depends on**: Phase 1
@@ -76,7 +82,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 02-05: Integration tests against sample output from each pipeline (short-form and long-form clips)
 
 ### Phase 3: Thumbnail Generation
-
 **Goal**: Every finished video automatically produces a YouTube-compliant thumbnail with title text composited over the sharpest extracted frame
 
 **Depends on**: Phase 2
@@ -96,7 +101,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 03-03: Add output validation (dimensions, format, file size) with explicit error on constraint violation
 
 ### Phase 4: Notifications and Approval Gate
-
 **Goal**: Users receive webhook notifications with video preview when generation completes and can approve or defer publishing from Discord or Slack before the pipeline touches YouTube
 
 **Depends on**: Phase 3
@@ -121,7 +125,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 04-05: Add NOTF_DISCORD_WEBHOOK_URL and NOTF_SLACK_WEBHOOK_URL env var loading with fallback to config file
 
 ### Phase 5: YouTube Publisher
-
 **Goal**: Users can publish a processed, approved video to YouTube with persistent OAuth credentials that do not require re-authentication on each run
 
 **Depends on**: Phase 4
@@ -145,7 +148,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 05-05: Add pre-upload quota guard reading from YouTube Data API quotas endpoint and refusing upload below 1,600 unit threshold
 
 ### Phase 6: Pipeline Integration
-
 **Goal**: Both existing pipelines run the full post-processing, notification, approval gate, and YouTube publish chain when config flags are enabled, while continuing to function identically without config flags
 
 **Depends on**: Phase 5
@@ -165,7 +167,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 06-03: End-to-end dry-run test through full chain with a sample video (upload disabled, approval auto-approved) to validate all wiring
 
 ### Phase 7: Config UI
-
 **Goal**: Users can load, edit, and launch either pipeline from a Gradio web interface on localhost without editing YAML files or using the CLI
 
 **Depends on**: Phase 6
@@ -187,7 +188,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 07-04: Add auto-save to configs/last_run.yaml on each submit and upload result (YouTube URL or error) display
 
 ### Phase 8: Remotion Compilation Quality
-
 **Goal**: Both Remotion compositions produce professional-quality video output — spring-physics motion, profile-driven effect bundles (transitions, grain, vignette, typography), audio visualization, and YouTube-optimized render flags — all driven by a profile prop passed from Python
 
 **Depends on**: Phase 7
@@ -211,7 +211,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] 08-04-PLAN.md — remotion_renderer.py extended with profile prop, quality flags, sceneDurations, WAV conversion helper
 
 ### Phase 9: Config Extension and Prompt Templates
-
 **Goal**: PipelineConfig holds all SDXL and Suno generation parameters as typed sub-models, and every profile YAML contains the prompt templates, negative prompts, and genre tags that generators read at runtime — no generation parameters hardcoded in Python source
 
 **Depends on**: Phase 8
@@ -233,7 +232,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] 09-03-PLAN.md — PromptTemplate.render() with variable substitution and ValueError on unresolved vars; build_compel_prompt() helper; pytest TDD suite
 
 ### Phase 10: SDXL Generator Extraction and Image Caching
-
 **Goal**: SDXL generation runs from an importable generators/sdxl.py module with a hash-based cache that skips scenes whose prompt and parameters have not changed since the last run — re-running an unchanged pipeline produces zero new GPU compute
 
 **Depends on**: Phase 9
@@ -249,13 +247,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Plans**: 2 plans
 
-Plans:
-
 - [ ] 10-01-PLAN.md — generators/ package and SDXLGenerator with hash-based cache, sidecar write, and hit/miss logging
 - [ ] 10-02-PLAN.md — Refactor study_with_me_generator.py to delegate to SDXLGenerator; remove inline SDXL code
 
 ### Phase 11: Suno Music Integration
-
 **Goal**: The pipeline generates music via Suno matched to the active profile's genre and the video's exact duration, with Stable Audio as an automatic fallback, and Suno task submission runs in a background thread so it does not add wall-clock time to the pipeline
 
 **Depends on**: Phase 10
@@ -275,28 +270,7 @@ Plans:
 - [ ] 11-01-PLAN.md — generators/suno.py with SunoClient: REST submit, exponential-backoff polling (hard 300s timeout), multi-track download, duration stitching, and Stable Audio fallback
 - [ ] 11-02-PLAN.md — ThreadPoolExecutor wiring in study_with_me_generator.py: Suno submission before SDXL batch, future.result() after images complete, suno_generation progress key
 
-## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 14
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Config Foundation | 0/4 | Not started | - |
-| 2. Post-Processing Pipeline | 0/5 | Not started | - |
-| 3. Thumbnail Generation | 0/3 | Not started | - |
-| 4. Notifications and Approval Gate | 0/5 | Not started | - |
-| 5. YouTube Publisher | 0/5 | Not started | - |
-| 6. Pipeline Integration | 0/3 | Not started | - |
-| 7. Config UI | 0/4 | Not started | - |
-| 8. Remotion Compilation Quality | 4/4 | Complete   | 2026-03-28 |
-| 9. Config Extension and Prompt Templates | 3/3 | Complete   | 2026-03-28 |
-| 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete   | 2026-03-28 |
-| 11. Suno Music Integration | 2/2 | Complete   | 2026-03-28 |
-| 14. Vercel Dashboard UI | 2/4 | In Progress|  |
-
-### Phase 12: Discord approval loops for images video and auto YouTube publish
-
+### Phase 12: Discord Approval Loops
 **Goal:** [To be planned]
 **Depends on:** Phase 11
 **Plans:** 0 plans
@@ -305,8 +279,7 @@ Plans:
 
 - [ ] TBD (run /gsd:plan-phase 12 to break down)
 
-### Phase 13: YouTube credential setup and video thumbnail generation for publishing
-
+### Phase 13: YouTube Credential Setup and Thumbnail Publishing
 **Goal:** [To be planned]
 **Depends on:** Phase 12
 **Plans:** 0 plans
@@ -315,8 +288,7 @@ Plans:
 
 - [ ] TBD (run /gsd:plan-phase 13 to break down)
 
-### Phase 14: Vercel dashboard UI for pipeline config, token/credit monitoring, and top-up controls
-
+### Phase 14: Vercel Dashboard UI
 **Goal:** A browser-based dashboard deployed on Vercel provides pipeline config editing, live credit balance monitoring across all API providers, top-up links, pipeline trigger via webhook, and a live generation status log — the user never needs to edit YAML files or SSH into the local machine to manage the pipeline
 
 **Depends on:** Phase 13 (can also run independently — no Python pipeline dependency)
@@ -328,3 +300,78 @@ Plans:
 - [x] 14-02-PLAN.md — Config editor: GET/PUT YAML profile API routes + ProfileEditor UI component
 - [x] 14-03-PLAN.md — Credit monitor: API routes for Suno/Replicate/OpenAI/YouTube + CreditCard UI components
 - [x] 14-04-PLAN.md — Pipeline trigger + status log: POST status receiver, trigger forwarder, GenerationLog polling component
+
+### Phase 16: Smart Defaults
+**Goal**: The config loader silently pre-fills every credential and webhook URL from environment variables, the dashboard visually separates env-sourced values from YAML-defined ones, and a first-run helper generates a starter profile so a new machine is ready to run a pipeline after one setup command
+
+**Depends on**: Phase 14
+
+**Requirements**: DFLT-01, DFLT-02, DFLT-03
+
+**Success Criteria** (what must be TRUE):
+
+1. Running a pipeline on a machine where DISCORD_WEBHOOK_URL, OPENAI_API_KEY, YOUTUBE_CLIENT_ID (and all other recognised env vars) are set produces a fully-populated config without the user touching any YAML file
+2. The Vercel dashboard config editor shows a distinct visual badge (e.g., "ENV" label) beside every field whose value was sourced from an environment variable rather than the YAML profile, so the user knows which values to override in the profile if they want YAML-pinned values
+3. Running the first-run setup command on a fresh checkout scans all known env vars, writes a starter YAML profile with every discoverable value pre-filled, and prints a list of any env vars that were not found so the user knows exactly what is missing
+4. A field present in the YAML profile always takes precedence over the environment variable — env vars are the fallback, not the override
+
+**Plans**: TBD
+
+### Phase 17: Channel Branding
+**Goal**: The pipeline fetches YouTube channel name, avatar, and description once via the existing OAuth credentials, caches the result locally, and automatically applies channel branding as the watermark text, thumbnail corner logo, and auto-generated intro/outro clips — no manual video files or branding config required
+
+**Depends on**: Phase 16
+
+**Requirements**: BRND-01, BRND-02, BRND-03, BRND-04, BRND-05
+
+**Success Criteria** (what must be TRUE):
+
+1. Running the pipeline with channel branding enabled produces a watermark that reads the YouTube channel name without any watermark_text field set in the config — the channel name is fetched automatically and applied
+2. The thumbnail produced by the pipeline has the channel avatar image composited as a corner logo overlay without the user providing a local logo file
+3. The intro and outro clips attached to the assembled video display the channel avatar, channel name, and a one-line tagline derived from the channel description — generated programmatically from fetched assets with no manually supplied video files
+4. Re-running the pipeline a second time (without calling explicit refresh) does not make any YouTube API call — branding assets are read from the local cache
+5. Running the pipeline with --refresh-branding (or equivalent flag) discards the local cache, re-fetches channel assets from the YouTube Data API, and updates the cache before generation proceeds
+
+**Plans**: TBD
+
+### Phase 18: AI Prompt Generation
+**Goal**: The user supplies only a comma-separated tag string and a profile name; OpenAI generates a full SDXL positive prompt, negative prompt, and Suno music prompt matched to the profile's style, produces 8 scene-level variations, saves them to the profile YAML for inspection, and the pipeline runs end-to-end without any manual prompt editing
+
+**Depends on**: Phase 17
+
+**Requirements**: AGEN-01, AGEN-02, AGEN-03, AGEN-04, AGEN-05
+
+**Success Criteria** (what must be TRUE):
+
+1. Running the pipeline with --tags "lofi, rain, cozy, study" produces a video without the user writing any SDXL or Suno prompt — OpenAI fills every prompt field before generation starts
+2. Prompts generated from a cinematic profile tag set read cinematically (lens flare, bokeh, film grain phrasing) while prompts generated from the same tags against a lofi profile read warmly and softly — profile style propagates into OpenAI output
+3. A single tag invocation produces 8 distinct scene prompt variants covering different moments, lighting conditions, or compositional angles — the assembled video has no repeated frames caused by identical prompts
+4. After tag-based generation, the profile YAML on disk contains the generated prompts under the sdxl.scene_templates key — the user can open the YAML, read every prompt, and edit them before re-running without tags
+5. Running the pipeline with --tags and no other prompt configuration produces a finished, assembled video — no intermediate manual step is required between tag input and video output
+
+**Plans**: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 16 → 17 → 18
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Config Foundation | 0/4 | Not started | - |
+| 2. Post-Processing Pipeline | 0/5 | Not started | - |
+| 3. Thumbnail Generation | 0/3 | Not started | - |
+| 4. Notifications and Approval Gate | 0/5 | Not started | - |
+| 5. YouTube Publisher | 0/5 | Not started | - |
+| 6. Pipeline Integration | 0/3 | Not started | - |
+| 7. Config UI | 0/4 | Not started | - |
+| 8. Remotion Compilation Quality | 4/4 | Complete | 2026-03-28 |
+| 9. Config Extension and Prompt Templates | 3/3 | Complete | 2026-03-28 |
+| 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete | 2026-03-28 |
+| 11. Suno Music Integration | 2/2 | Complete | 2026-03-28 |
+| 12. Discord Approval Loops | 0/? | Not started | - |
+| 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
+| 14. Vercel Dashboard UI | 4/4 | In Progress | - |
+| 16. Smart Defaults | 0/? | Not started | - |
+| 17. Channel Branding | 0/? | Not started | - |
+| 18. AI Prompt Generation | 0/? | Not started | - |

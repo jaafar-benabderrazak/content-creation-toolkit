@@ -40,24 +40,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DFLT-01 | — | Pending |
-| DFLT-02 | — | Pending |
-| DFLT-03 | — | Pending |
-| BRND-01 | — | Pending |
-| BRND-02 | — | Pending |
-| BRND-03 | — | Pending |
-| BRND-04 | — | Pending |
-| BRND-05 | — | Pending |
-| AGEN-01 | — | Pending |
-| AGEN-02 | — | Pending |
-| AGEN-03 | — | Pending |
-| AGEN-04 | — | Pending |
-| AGEN-05 | — | Pending |
+| DFLT-01 | Phase 16 | Pending |
+| DFLT-02 | Phase 16 | Pending |
+| DFLT-03 | Phase 16 | Pending |
+| BRND-01 | Phase 17 | Pending |
+| BRND-02 | Phase 17 | Pending |
+| BRND-03 | Phase 17 | Pending |
+| BRND-04 | Phase 17 | Pending |
+| BRND-05 | Phase 17 | Pending |
+| AGEN-01 | Phase 18 | Pending |
+| AGEN-02 | Phase 18 | Pending |
+| AGEN-03 | Phase 18 | Pending |
+| AGEN-04 | Phase 18 | Pending |
+| AGEN-05 | Phase 18 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
