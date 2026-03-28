@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.2 — Smart Automation (Phase 17)
+**Current focus:** Milestone v1.2 — Smart Automation (Phase 18)
 
 ## Current Position
 
-Phase: 17 of 18 (v1.2 — Channel Branding)
-Plan: 4 of 4 completed in current phase
+Phase: 18 of 18 (v1.2 — AI Prompt Generation)
+Plan: 1 of 1 completed in current phase
 Status: Phase complete
-Last activity: 2026-03-28 — 17-04 complete: pipeline_runner.py branding wiring — full BRND surface activated by single flag
+Last activity: 2026-03-28 — 18-01 complete: PromptGenerator with OpenAI generate() and PromptGenerationError
 
 Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans complete)
 
@@ -40,6 +40,7 @@ Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans com
 | Phase 16-smart-defaults P02 | 8 | 2 tasks | 4 files |
 | Phase 17 P03 | 1 | 1 tasks | 1 files |
 | Phase 17 P04 | 2 | 1 tasks | 1 files |
+| Phase 18-ai-prompt-generation P01 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 17]: generate_branding_clips skips existing files — callers control cache invalidation, consistent with 17-01 cache strategy
 - [Phase 17]: All branding imports lazy inside the branding_enabled if-gate — zero overhead when disabled
 - [Phase 17]: YAML clip paths explicitly set take precedence over generated branding clips — user config wins
+- [Phase 18-01]: No module-level side effects — PromptGenerator instantiation is the API key check point, not import time
+- [Phase 18-01]: All OpenAI exceptions wrapped as PromptGenerationError — callers only handle one exception type
 
 ### Pending Todos
 
@@ -84,5 +87,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 17-04-PLAN.md — pipeline_runner.py branding wiring (Phase 17 complete)
+Stopped at: Completed 18-01-PLAN.md — PromptGenerator with OpenAI generate() and PromptGenerationError (Phase 18 complete)
 Resume file: None

@@ -21,10 +21,10 @@
 
 ### AI Prompt Generation
 
-- [ ] **AGEN-01**: User provides only tags (e.g., "lofi, rain, cozy, study") and OpenAI generates full SDXL positive prompt, negative prompt, and Suno music prompt
-- [ ] **AGEN-02**: Generated prompts respect the active profile's style (cinematic tags produce cinematic prompt style)
-- [ ] **AGEN-03**: Tag-to-prompt generation produces scene variation prompts (8 variants from tags, not 1 repeated prompt)
-- [ ] **AGEN-04**: Generated prompts are saved to the profile YAML so they're visible and editable before generation
+- [x] **AGEN-01**: User provides only tags (e.g., "lofi, rain, cozy, study") and OpenAI generates full SDXL positive prompt, negative prompt, and Suno music prompt
+- [x] **AGEN-02**: Generated prompts respect the active profile's style (cinematic tags produce cinematic prompt style)
+- [x] **AGEN-03**: Tag-to-prompt generation produces scene variation prompts (8 variants from tags, not 1 repeated prompt)
+- [x] **AGEN-04**: Generated prompts are saved to the profile YAML so they're visible and editable before generation
 - [ ] **AGEN-05**: Pipeline can run end-to-end with just tags + profile name — no manual prompt editing required
 
 ## Out of Scope
@@ -48,10 +48,10 @@
 | BRND-03 | Phase 17 | Complete |
 | BRND-04 | Phase 17 | Complete |
 | BRND-05 | Phase 17 | Complete |
-| AGEN-01 | Phase 18 | Pending |
-| AGEN-02 | Phase 18 | Pending |
-| AGEN-03 | Phase 18 | Pending |
-| AGEN-04 | Phase 18 | Pending |
+| AGEN-01 | Phase 18 | Complete |
+| AGEN-02 | Phase 18 | Complete |
+| AGEN-03 | Phase 18 | Complete |
+| AGEN-04 | Phase 18 | Complete |
 | AGEN-05 | Phase 18 | Pending |
 
 **Coverage:**
