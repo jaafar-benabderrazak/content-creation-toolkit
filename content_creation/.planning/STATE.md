@@ -5,32 +5,32 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Phase 1 — Config Foundation
+**Current focus:** Phase 8 — Remotion Compilation Quality
 
 ## Current Position
 
-Phase: 1 of 7 (Config Foundation)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-03-28 — Roadmap created, all 30 v1 requirements mapped across 7 phases
+Phase: 8 of 8 (The Compilation via Remotion Should Be Top-Notch)
+Plan: 1 of 4 in current phase
+Status: In Progress
+Last activity: 2026-03-28 — Completed 08-01: profiles, fonts, shared components
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] ~5%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 5 min
+- Total execution time: 0.08 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 08-the-compilation-via-remotion-should-be-top-notch | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: —
+- Last 5 plans: 08-01 (5 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -47,6 +47,8 @@ Recent decisions affecting current work:
 - [Research]: Gradio must run in isolated venv from AnimateDiff (AnimateDiff pins Gradio 3.36.1); audit AnimateDiff/requirements.txt before writing any Phase 7 code
 - [Research]: YouTube OAuth app must be moved to Production status before unattended uploads — Testing mode limits refresh tokens to 7 days
 - [Research]: Use separate GCP project for development to avoid exhausting production quota during testing
+- [Phase 08]: ProfileConfig uses explicit interface with union types instead of typeof lofiStudyProfile to prevent TS narrowing rejecting slide and wipe profiles
+- [Phase 08]: useWindowedAudioData at 4.0.441 takes options object {src,frame,fps,windowInSeconds} not raw string; AudioVisualizer updated accordingly
 
 ### Roadmap Evolution
 

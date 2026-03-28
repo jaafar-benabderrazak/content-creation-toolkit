@@ -60,9 +60,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Remotion Render Quality
 
-- [ ] **REND-01**: Both Remotion compositions accept a profile prop that selects a pre-defined effect bundle (transitions, spring config, grain intensity, vignette strength, font family, CSS color filter)
-- [ ] **REND-02**: StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation — no manual opacity crossfade
-- [ ] **REND-03**: All element motion in both compositions uses spring() physics — no bare linear interpolate for entrances or exits
+- [x] **REND-01**: Both Remotion compositions accept a profile prop that selects a pre-defined effect bundle (transitions, spring config, grain intensity, vignette strength, font family, CSS color filter)
+- [x] **REND-02**: StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation — no manual opacity crossfade
+- [x] **REND-03**: All element motion in both compositions uses spring() physics — no bare linear interpolate for entrances or exits
 - [ ] **REND-04**: Root.tsx computes StudyVideo durationInFrames via calculateMetadata() from sceneDurations prop — no hardcoded frame count
 - [ ] **REND-05**: Python renderer passes profile prop, quality-tier CRF/x264-preset, --color-space bt709, and audio codec flags to every Remotion render invocation
 
@@ -136,9 +136,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | INTG-01 | Phase 6 | Pending |
 | INTG-02 | Phase 6 | Pending |
 | INTG-03 | Phase 6 | Pending |
-| REND-01 | Phase 8 | Pending |
-| REND-02 | Phase 8 | Pending |
-| REND-03 | Phase 8 | Pending |
+| REND-01 | Phase 8 | Complete |
+| REND-02 | Phase 8 | Complete |
+| REND-03 | Phase 8 | Complete |
 | REND-04 | Phase 8 | Pending |
 | REND-05 | Phase 8 | Pending |
 
