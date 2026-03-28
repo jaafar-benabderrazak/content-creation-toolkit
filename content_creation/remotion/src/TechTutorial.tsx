@@ -6,9 +6,13 @@ import {
   Img,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+
+const resolveAsset = (src: string): string =>
+  src.startsWith("/") ? staticFile(src) : src;
 import { getProfile } from "./profiles/index";
 import { FilmGrain } from "./components/FilmGrain";
 import { Vignette } from "./components/Vignette";
@@ -55,7 +59,7 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
       {backgroundImage && (
         <>
           <Img
-            src={backgroundImage}
+            src={resolveAsset(backgroundImage)}
             style={{
               width: "100%",
               height: "100%",
@@ -156,7 +160,7 @@ export const TechTutorial: React.FC<TechTutorialProps> = ({
       />
 
       {/* Audio */}
-      {audioFile && <Audio src={audioFile} />}
+      {audioFile && <Audio src={resolveAsset(audioFile)} />}
     </AbsoluteFill>
   );
 };

@@ -63,6 +63,7 @@ def _ensure_remotion_installed() -> bool:
             cwd=str(REMOTION_DIR),
             capture_output=True,
             text=True,
+            shell=(sys.platform == "win32"),
         )
         if result.returncode != 0:
             logger.error(f"[Remotion] npm install failed: {result.stderr[:500]}")
@@ -91,8 +92,16 @@ def render_study_video(
     if not _ensure_remotion_installed():
         raise RuntimeError("Remotion not installed")
 
-    # Convert image paths to file:// URIs for Remotion
-    image_uris = [f"file:///{str(p).replace(chr(92), '/')}" for p in images if p.exists()]
+    # Copy images into remotion/public/ so staticFile() can serve them
+    import shutil
+    public_dir = REMOTION_DIR / "public" / "assets"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    image_uris = []
+    for p in images:
+        if p.exists():
+            dest = public_dir / p.name
+            shutil.copy2(str(p), str(dest))
+            image_uris.append(f"/assets/{p.name}")  # served via staticFile()
 
     # Calculate actual duration based on images, accounting for TransitionSeries overlap
     if scene_durations:
@@ -220,6 +229,7 @@ def _render(
         capture_output=True,
         text=True,
         timeout=7200,  # 2h max
+        shell=(sys.platform == "win32"),  # npx.cmd needs shell on Windows
     )
 
     # Clean up props file

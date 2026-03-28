@@ -5,9 +5,13 @@ import {
   Img,
   interpolate,
   spring,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+
+const resolveAsset = (src: string): string =>
+  src.startsWith("/") ? staticFile(src) : src;
 import { TransitionSeries, springTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { wipe } from "@remotion/transitions/wipe";
@@ -81,7 +85,7 @@ const Scene: React.FC<{
   return (
     <AbsoluteFill>
       <Img
-        src={src}
+        src={resolveAsset(src)}
         style={{
           width: "110%",
           height: "110%",
@@ -245,7 +249,7 @@ export const StudyVideo: React.FC<StudyVideoProps> = ({
       )}
 
       {/* Audio */}
-      {audioFile && <Audio src={audioFile} />}
+      {audioFile && <Audio src={resolveAsset(audioFile)} />}
     </AbsoluteFill>
   );
 };
