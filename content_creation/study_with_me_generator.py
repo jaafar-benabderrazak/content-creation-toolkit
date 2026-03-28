@@ -38,20 +38,16 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance
 from tqdm import tqdm
 
-# Video
-from moviepy.editor import (
-    AudioFileClip,
-    CompositeVideoClip,
-    ImageClip,
-    concatenate_videoclips,
-    vfx,
-    ColorClip,
-    TextClip,
-)
+# Video rendering via Remotion (replaces MoviePy)
+# MoviePy imports removed — video composition handled by shared.remotion_renderer
 
-# Audio utils
-from pydub import AudioSegment
-from pydub.effects import normalize, compress_dynamic_range
+# Audio utils (optional — graceful skip if not installed)
+try:
+    from pydub import AudioSegment
+    from pydub.effects import normalize, compress_dynamic_range
+    HAS_PYDUB = True
+except ImportError:
+    HAS_PYDUB = False
 
 import PIL.Image
 if not hasattr(PIL.Image, 'ANTIALIAS'):
@@ -1038,13 +1034,21 @@ def main():
     print("[Video] Assembling enhanced video with all effects...")
     
     try:
-        build_enhanced_video(
+        # Render via Remotion
+        from shared.remotion_renderer import render_study_video
+        render_study_video(
             images=image_paths,
-            scenes_data=scenes_data,
             audio_path=final_audio_path,
-            out_path=args.out,
-            video_config=video_config,
-            effects_config=effects_config
+            output_path=args.out,
+            scene_duration=video_config.scene_duration,
+            duration_minutes=video_config.duration_minutes,
+            fps=video_config.fps,
+            width=video_config.resolution[0],
+            height=video_config.resolution[1],
+            enable_parallax=effects_config.enable_parallax if effects_config else True,
+            enable_particles=effects_config.enable_particles if effects_config else True,
+            timer_enabled=True,
+            style=args.style,
         )
         
         # Save final progress
