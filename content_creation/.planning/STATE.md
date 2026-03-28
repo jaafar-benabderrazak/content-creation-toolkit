@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.2 — Smart Automation (Phase 16)
+**Current focus:** Milestone v1.2 — Smart Automation (Phase 17)
 
 ## Current Position
 
-Phase: 16 of 18 (v1.2 — Smart Defaults)
-Plan: 3 of 3 completed in current phase
+Phase: 17 of 18 (v1.2 — Channel Branding)
+Plan: 1 of ? completed in current phase
 Status: In progress
-Last activity: 2026-03-28 — 16-03 complete: setup.py first-run CLI for env var scanning and starter YAML generation
+Last activity: 2026-03-28 — 17-01 complete: shared/branding.py channel fetch+cache and BrandingSettings in PipelineConfig
 
-Progress: [███░░░░░░░] 30% (v1.2 milestone — 3/? plans complete)
+Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans complete)
 
 ## Performance Metrics
 
@@ -57,6 +57,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 16-01]: load_with_env_defaults is the preferred runtime load path; from_yaml remains for tests and tools that don't need env pre-fill
 - [Phase 16]: KNOWN_ENV_VARS list-of-dicts preserves insertion order for stdout; None sections silently skip injection; exit code 0 always
 - [Phase 16-smart-defaults]: ENV_VAR_MAP inlined in route.ts as TS mirror of Python constant; provenance kept as separate React state; EnvBadge defined inline in ProfileEditor
+- [Phase 17-01]: BrandingSettings.refresh_branding is a runtime flag — not added to ENV_VAR_MAP; explicit refresh=True is primary cache invalidation path; TTL (7 days) is safety net only
+- [Phase 17-01]: avatar_local_path stored as absolute str in BrandingData; downstream consumers (watermark, thumbnail, intro/outro) read from single cache source under .cache/branding/
 
 ### Pending Todos
 
@@ -73,6 +75,6 @@ Recent decisions affecting v1.2 work:
 
 ## Session Continuity
 
-Last session: 2026-03-29
-Stopped at: Completed 16-02-PLAN.md — provenance badges in dashboard config editor
+Last session: 2026-03-28
+Stopped at: Completed 17-01-PLAN.md — shared/branding.py + BrandingSettings in PipelineConfig
 Resume file: None
