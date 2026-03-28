@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 17 of 18 (v1.2 — Channel Branding)
-Plan: 3 of ? completed in current phase
-Status: In progress
-Last activity: 2026-03-28 — 17-03 complete: shared/branding_clips.py FFmpeg intro/outro generation from BrandingData
+Plan: 4 of 4 completed in current phase
+Status: Phase complete
+Last activity: 2026-03-28 — 17-04 complete: pipeline_runner.py branding wiring — full BRND surface activated by single flag
 
 Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans complete)
 
@@ -39,6 +39,7 @@ Progress: [████░░░░░░] 40% (v1.2 milestone — 4/? plans com
 | Phase 16 P03 | 1 | 1 tasks | 1 files |
 | Phase 16-smart-defaults P02 | 8 | 2 tasks | 4 files |
 | Phase 17 P03 | 1 | 1 tasks | 1 files |
+| Phase 17 P04 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 17-02]: Avatar composite size fixed at 80px at bottom-right with 16px margin in thumbnail_gen — spec-defined values; no new config fields added
 - [Phase 17]: Avatar branching uses two explicit FFmpeg command builds rather than dynamic filter_complex — clearer, easier to debug
 - [Phase 17]: generate_branding_clips skips existing files — callers control cache invalidation, consistent with 17-01 cache strategy
+- [Phase 17]: All branding imports lazy inside the branding_enabled if-gate — zero overhead when disabled
+- [Phase 17]: YAML clip paths explicitly set take precedence over generated branding clips — user config wins
 
 ### Pending Todos
 
@@ -81,5 +84,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 17-03-PLAN.md — shared/branding_clips.py FFmpeg intro/outro generation
+Stopped at: Completed 17-04-PLAN.md — pipeline_runner.py branding wiring (Phase 17 complete)
 Resume file: None
