@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 9 — Config Extension and Prompt Templates
-Plan: 02 complete (1/3 plans done in phase)
-Status: In progress — Plan 09-02 complete, Plan 09-03 next
-Last activity: 2026-03-28 — 09-02 complete: SDXL/Suno blocks added to all 3 profile YAMLs
+Plan: 03 complete (3/3 plans done in phase)
+Status: Phase 09 complete — all 3 plans done; Phase 10 (SDXL Generator) is next
+Last activity: 2026-03-28 — 09-03 complete: PromptTemplate.render() and build_compel_prompt() implemented with 13-test TDD suite
 
 Progress: [█░░░░░░░░░] 10% (v1.1 milestone)
 
@@ -30,6 +30,7 @@ Progress: [█░░░░░░░░░] 10% (v1.1 milestone)
 | 08-the-compilation-via-remotion-should-be-top-notch | 4 | 16 min | 4 min |
 | Phase 09-config-extension-and-prompt-templates P02 | 2 | 2 tasks | 3 files |
 | Phase 09-config-extension-and-prompt-templates P01 | 2 | 2 tasks | 1 files |
+| Phase 09-config-extension-and-prompt-templates P03 | 1 | 2 tasks | 2 files |
 
 ### Recent Trend
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 09-config-extension-and-prompt-templates]: make_instrumental: true mandatory on all profiles — vocal bleed unacceptable for study/ambient/tutorial content
 - [Phase 09-config-extension-and-prompt-templates]: quality_preset validator lives on PipelineConfig — only PipelineConfig has access to both video.quality_preset and sdxl/suno sub-models simultaneously
 - [Phase 09-config-extension-and-prompt-templates]: SDXLSettings.negative_prompt and SunoSettings.genre have no defaults — ValidationError on omission enforces PRMT-02 at schema load time
+- [Phase 09-config-extension-and-prompt-templates]: str.format_map(_StrictFormatMap) chosen over .format(**kwargs) — enables targeted ValueError with variable name instead of generic KeyError
+- [Phase 09-config-extension-and-prompt-templates]: build_compel_prompt tested via sys.modules patch not real GPU — GPU/model dependency excluded from test suite by design
 
 ### Roadmap Evolution
 
@@ -91,6 +94,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:40:35Z
-Stopped at: Completed 09-01-PLAN.md — SDXLSettings and SunoSettings sub-models added to PipelineConfig with quality_preset validator
+Last session: 2026-03-28T18:25:00Z
+Stopped at: Completed 09-03-PLAN.md — PromptTemplate.render() and build_compel_prompt() implemented with 13-test TDD suite
 Resume file: None
