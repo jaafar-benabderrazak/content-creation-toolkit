@@ -16,6 +16,42 @@ logger = logging.getLogger(__name__)
 
 REMOTION_DIR = Path(__file__).parent.parent / "remotion"
 
+_QUALITY_MAP = {
+    "cinematic":     {"crf": 16, "preset": "slow"},
+    "lofi-study":    {"crf": 18, "preset": "medium"},
+    "tech-tutorial": {"crf": 18, "preset": "medium"},
+    "preview":       {"crf": 28, "preset": "veryfast"},
+}
+
+
+def _resolve_quality(profile: str) -> tuple[int, str]:
+    """Return (crf, x264_preset) for the given profile name."""
+    q = _QUALITY_MAP.get(profile, _QUALITY_MAP["lofi-study"])
+    return q["crf"], q["preset"]
+
+
+def _ensure_wav(audio_path: Path) -> Path:
+    """Convert audio to WAV if it is not already WAV. Returns path to WAV file.
+
+    useWindowedAudioData in Remotion requires WAV format (HTTP Range byte-seeking).
+    MP3 VBR encoding breaks byte-offset seeking, causing the hook to return null.
+    """
+    if audio_path.suffix.lower() == ".wav":
+        return audio_path
+    wav_path = audio_path.with_suffix(".wav")
+    if wav_path.exists():
+        return wav_path
+    logger.info(f"[Remotion] Converting {audio_path.name} to WAV for audio visualization...")
+    result = subprocess.run(
+        ["ffmpeg", "-y", "-i", str(audio_path), str(wav_path)],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        logger.warning(f"[Remotion] WAV conversion failed: {result.stderr[:200]}. Audio visualization will be disabled.")
+        return audio_path  # return original; AudioVisualizer will render null (no crash)
+    return wav_path
+
 
 def _ensure_remotion_installed() -> bool:
     """Check that Remotion's node_modules exist."""
@@ -47,6 +83,9 @@ def render_study_video(
     enable_particles: bool = True,
     timer_enabled: bool = True,
     style: str = "cinematic",
+    profile: str = "lofi-study",
+    scene_durations: Optional[list[float]] = None,
+    audio_visualization: bool = False,
 ) -> Path:
     """Render a study video using Remotion."""
     if not _ensure_remotion_installed():
@@ -55,18 +94,37 @@ def render_study_video(
     # Convert image paths to file:// URIs for Remotion
     image_uris = [f"file:///{str(p).replace(chr(92), '/')}" for p in images if p.exists()]
 
-    # Calculate actual duration based on images
-    total_frames = len(image_uris) * int(scene_duration * fps)
+    # Calculate actual duration based on images, accounting for TransitionSeries overlap
+    if scene_durations:
+        # TransitionSeries overlaps transitions: each boundary subtracts transitionDuration frames
+        # transitionDuration from profile map (default 15 frames for lofi-study)
+        _TRANSITION_DURATION = {"cinematic": 20, "lofi-study": 15, "tech-tutorial": 12}
+        td = _TRANSITION_DURATION.get(profile, 15)
+        n_transitions = max(len(scene_durations) - 1, 0)
+        total_frames = max(
+            sum(int(d * fps) for d in scene_durations) - n_transitions * td,
+            1,
+        )
+    else:
+        total_frames = len(image_uris) * int(scene_duration * fps)
+
+    # Handle audio visualization: convert to WAV if needed
+    audio_file_uri = ""
+    if audio_path and audio_path.exists():
+        effective_audio = _ensure_wav(audio_path) if audio_visualization else audio_path
+        audio_file_uri = f"file:///{str(effective_audio).replace(chr(92), '/')}"
 
     props = {
         "images": image_uris,
-        "audioFile": f"file:///{str(audio_path).replace(chr(92), '/')}" if audio_path and audio_path.exists() else "",
+        "audioFile": audio_file_uri,
         "sceneDuration": scene_duration,
         "style": style,
         "enableParallax": enable_parallax,
         "enableParticles": enable_particles,
         "timerEnabled": timer_enabled,
         "durationMinutes": duration_minutes,
+        "profile": profile,
+        "sceneDurations": scene_durations or [],
     }
 
     return _render(
@@ -77,6 +135,7 @@ def render_study_video(
         fps=fps,
         width=width,
         height=height,
+        profile=profile,
     )
 
 
@@ -88,6 +147,7 @@ def render_tech_tutorial(
     bullets: Optional[list[str]] = None,
     fps: int = 30,
     duration_seconds: int = 60,
+    profile: str = "tech-tutorial",
 ) -> Path:
     """Render a tech tutorial video using Remotion."""
     if not _ensure_remotion_installed():
@@ -99,6 +159,7 @@ def render_tech_tutorial(
         "title": title,
         "bullets": bullets or [],
         "subtitlesSrt": "",
+        "profile": profile,
     }
 
     return _render(
@@ -109,6 +170,7 @@ def render_tech_tutorial(
         fps=fps,
         width=1080,
         height=1920,
+        profile=profile,
     )
 
 
@@ -120,9 +182,12 @@ def _render(
     fps: int,
     width: int,
     height: int,
+    profile: str = "lofi-study",
 ) -> Path:
     """Execute npx remotion render."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    crf, x264_preset = _resolve_quality(profile)
 
     # Write props to temp file (avoids shell escaping issues)
     props_file = REMOTION_DIR / ".render-props.json"
@@ -139,7 +204,11 @@ def _render(
         "--width", str(width),
         "--height", str(height),
         "--codec", "h264",
-        "--crf", "18",
+        "--crf", str(crf),
+        "--x264-preset", x264_preset,
+        "--color-space", "bt709",
+        "--audio-codec", "aac",
+        "--audio-bitrate", "320k",
     ]
 
     logger.info(f"[Remotion] Rendering {composition} → {output_path}")
