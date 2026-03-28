@@ -74,6 +74,10 @@ Recent decisions affecting v1.2 work:
 - [Phase 18-02]: YAML write-back uses yaml.safe_load → mutate → yaml.dump(sort_keys=False) — preserves field ordering in profile YAML
 - [Phase 18-02]: cinematic.yaml positive_prompt was already present; Task 2 was a verification pass with no file change
 
+### Roadmap Evolution
+
+- Phase 19 added: Local Gradio UI — pipeline execution, scheduling, video content roadmap/queue
+
 ### Pending Todos
 
 - Phase 11 pre-planning: validate Suno provider field names (sunoapi.org vs kie.ai) for make_instrumental, duration, task_id, status, audio_url before implementing SunoClient

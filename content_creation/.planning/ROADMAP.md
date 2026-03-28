@@ -393,3 +393,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 16. Smart Defaults | 3/3 | Complete   | 2026-03-28 |
 | 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
 | 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
+
+### Phase 19: Local Gradio UI with pipeline execution, scheduling, and video content roadmap
+
+**Goal:** [To be planned]
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 19 to break down)
