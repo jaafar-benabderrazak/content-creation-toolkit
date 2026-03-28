@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 CREDENTIALS_DIR = Path("credentials")
 TOKEN_FILE = CREDENTIALS_DIR / "youtube_token.json"
+TOKEN_PICKLE = CREDENTIALS_DIR / "youtube_token.pickle"
 CLIENT_SECRETS_FILE = CREDENTIALS_DIR / "client_secrets.json"
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
@@ -45,8 +46,15 @@ def _get_credentials():
         )
 
     creds = None
+
+    # Try JSON token first, then pickle (from study_yt project)
     if TOKEN_FILE.exists():
         creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+    elif TOKEN_PICKLE.exists():
+        import pickle
+        with open(TOKEN_PICKLE, "rb") as f:
+            creds = pickle.load(f)
+        logger.info("[YouTube] Loaded token from pickle (study_yt format)")
 
     if creds and creds.expired and creds.refresh_token:
         try:
