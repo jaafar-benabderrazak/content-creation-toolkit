@@ -247,7 +247,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. Changing any single generation parameter (e.g., quality_preset from medium to high) invalidates only that scene's cache entry — other scenes still show cache hits on the next run
 4. The .cache/images/ directory contains a JSON sidecar alongside each cached image recording the full parameter dict used to generate it — a human can read the sidecar and know exactly what produced that image
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — generators/ package and SDXLGenerator with hash-based cache, sidecar write, and hit/miss logging
+- [ ] 10-02-PLAN.md — Refactor study_with_me_generator.py to delegate to SDXLGenerator; remove inline SDXL code
 
 ### Phase 11: Suno Music Integration
 
@@ -283,5 +287,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Config UI | 0/4 | Not started | - |
 | 8. Remotion Compilation Quality | 4/4 | Complete   | 2026-03-28 |
 | 9. Config Extension and Prompt Templates | 3/3 | Complete   | 2026-03-28 |
-| 10. SDXL Generator Extraction and Image Caching | 0/? | Not started | - |
+| 10. SDXL Generator Extraction and Image Caching | 0/2 | Not started | - |
 | 11. Suno Music Integration | 0/? | Not started | - |
