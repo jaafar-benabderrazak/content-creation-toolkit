@@ -141,7 +141,10 @@ class SunoClient:
         resp = self._session.post(f"{SUNO_BASE_URL}/generate", json=payload)
         resp.raise_for_status()
         result = resp.json()
-        task_id = result.get("data", {}).get("taskId")
+        data = result.get("data")
+        if data is None:
+            raise RuntimeError(f"Suno API error: {result.get('msg', result)}")
+        task_id = data.get("taskId")
         if not task_id:
             raise RuntimeError(f"No taskId in response: {result}")
         self.logger.info("[Suno] Submitted task %s", task_id[:12])
@@ -173,13 +176,17 @@ class SunoClient:
             data = result.get("data", {})
             status = data.get("status", "")
 
-            if status in ("SUCCESS", "FIRST_SUCCESS"):
+            if status == "SUCCESS":
                 suno_data = data.get("response", {}).get("sunoData", [])
                 urls = [t["audioUrl"] for t in suno_data if t.get("audioUrl")]
                 if urls:
                     self.logger.info("[Suno] Task %s complete — %d tracks", task_id[:12], len(urls))
                     return urls
                 raise RuntimeError(f"Task succeeded but no audioUrl found: {data}")
+
+            if status == "FIRST_SUCCESS":
+                # First track ready but second may still be rendering — keep polling for SUCCESS
+                self.logger.info("[Suno] Task %s first track ready, waiting for all tracks...", task_id[:12])
 
             if status in ("CREATE_TASK_FAILED", "GENERATE_AUDIO_FAILED"):
                 raise RuntimeError(f"Suno task failed: {status} — {data}")

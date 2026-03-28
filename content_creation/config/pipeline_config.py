@@ -20,7 +20,7 @@ class SunoSettings(BaseModel):
     genre: str  # required — profile-specific genre tag; e.g. "lofi chill" or "orchestral cinematic"
     make_instrumental: bool = True
     track_count: int = Field(default=2, ge=1, le=5)
-    model_version: str = "chirp-v5"  # overridden by quality_preset validator on PipelineConfig
+    model_version: str = "V4_5"  # overridden by quality_preset validator; kie.ai format
     api_key: Optional[str] = None  # loaded from SUNO_API_KEY env var; never hardcoded
 
     @model_validator(mode='after')
@@ -92,9 +92,9 @@ class PipelineConfig(BaseModel):
     def _apply_quality_preset(self) -> 'PipelineConfig':
         preset = self.video.quality_preset
         preset_map = {
-            'high':   {'steps': 35, 'guidance_scale': 8.0, 'model_version': 'chirp-v5',   'quality_suffix': 'masterpiece, best quality, 8k, photorealistic'},
-            'medium': {'steps': 25, 'guidance_scale': 7.5, 'model_version': 'chirp-v4.5', 'quality_suffix': 'high quality, detailed'},
-            'fast':   {'steps': 15, 'guidance_scale': 7.0, 'model_version': 'chirp-v4',   'quality_suffix': ''},
+            'high':   {'steps': 35, 'guidance_scale': 8.0, 'model_version': 'V4_5',  'quality_suffix': 'masterpiece, best quality, 8k, photorealistic'},
+            'medium': {'steps': 25, 'guidance_scale': 7.5, 'model_version': 'V4_5',  'quality_suffix': 'high quality, detailed'},
+            'fast':   {'steps': 15, 'guidance_scale': 7.0, 'model_version': 'V3_5',  'quality_suffix': ''},
         }
         p = preset_map.get(preset, preset_map['medium'])
         if self.sdxl is not None:

@@ -117,11 +117,13 @@ def render_study_video(
     else:
         total_frames = len(image_uris) * int(scene_duration * fps)
 
-    # Handle audio visualization: convert to WAV if needed
+    # Handle audio: copy to public/assets/ for staticFile() serving
     audio_file_uri = ""
     if audio_path and audio_path.exists():
         effective_audio = _ensure_wav(audio_path) if audio_visualization else audio_path
-        audio_file_uri = f"file:///{str(effective_audio).replace(chr(92), '/')}"
+        audio_dest = public_dir / effective_audio.name
+        shutil.copy2(str(effective_audio), str(audio_dest))
+        audio_file_uri = f"/assets/{effective_audio.name}"
 
     props = {
         "images": image_uris,
