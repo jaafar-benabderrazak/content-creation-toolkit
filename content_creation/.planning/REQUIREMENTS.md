@@ -64,7 +64,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **REND-02**: StudyVideo inter-scene cuts use TransitionSeries with profile-matched presentation — no manual opacity crossfade
 - [x] **REND-03**: All element motion in both compositions uses spring() physics — no bare linear interpolate for entrances or exits
 - [ ] **REND-04**: Root.tsx computes StudyVideo durationInFrames via calculateMetadata() from sceneDurations prop — no hardcoded frame count
-- [ ] **REND-05**: Python renderer passes profile prop, quality-tier CRF/x264-preset, --color-space bt709, and audio codec flags to every Remotion render invocation
+- [x] **REND-05**: Python renderer passes profile prop, quality-tier CRF/x264-preset, --color-space bt709, and audio codec flags to every Remotion render invocation
 
 ## v2 Requirements
 
@@ -140,7 +140,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | REND-02 | Phase 8 | Complete |
 | REND-03 | Phase 8 | Complete |
 | REND-04 | Phase 8 | Pending |
-| REND-05 | Phase 8 | Pending |
+| REND-05 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 35 total

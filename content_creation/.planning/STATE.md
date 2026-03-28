@@ -10,31 +10,31 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 8 of 8 (The Compilation via Remotion Should Be Top-Notch)
-Plan: 1 of 4 in current phase
+Plan: 4 of 4 in current phase
 Status: In Progress
-Last activity: 2026-03-28 — Completed 08-01: profiles, fonts, shared components
+Last activity: 2026-03-28 — Completed 08-04: Python-Remotion bridge with profile-aware quality flags and WAV conversion
 
 Progress: [░░░░░░░░░░] ~5%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 5 min
-- Total execution time: 0.08 hours
+- Total plans completed: 4
+- Average duration: 4 min
+- Total execution time: 0.27 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 08-the-compilation-via-remotion-should-be-top-notch | 1 | 5 min | 5 min |
+| 08-the-compilation-via-remotion-should-be-top-notch | 4 | 16 min | 4 min |
 
-**Recent Trend:**
-- Last 5 plans: 08-01 (5 min)
+### Recent Trend
+
+- Last 5 plans: 08-01 (5 min), 08-02 (3 min), 08-03 (~4 min), 08-04 (2 min)
 - Trend: —
 
-*Updated after each plan completion*
-| Phase 08-the-compilation-via-remotion-should-be-top-notch P03 | 2 min | 1 tasks | 3 files |
+Updated after each plan completion.
 
 ## Accumulated Context
 
@@ -52,6 +52,8 @@ Recent decisions affecting current work:
 - [Phase 08]: useWindowedAudioData at 4.0.441 takes options object {src,frame,fps,windowInSeconds} not raw string; AudioVisualizer updated accordingly
 - [Phase 08-the-compilation-via-remotion-should-be-top-notch]: Cast component props to any in Root.tsx — Remotion LooseComponentType does not accept typed FC props
 - [Phase 08-the-compilation-via-remotion-should-be-top-notch]: Cast getPresentation return to any in StudyVideo.tsx — union of TransitionPresentation types not assignable to single typed slot
+- [Phase 08-the-compilation-via-remotion-should-be-top-notch]: _resolve_quality uses lofi-study defaults as fallback for unknown profiles
+- [Phase 08-the-compilation-via-remotion-should-be-top-notch]: WAV conversion caches result on disk; on ffmpeg failure returns original path for graceful degradation
 
 ### Roadmap Evolution
 
@@ -69,5 +71,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Roadmap created and written to disk; REQUIREMENTS.md traceability updated; ready to plan Phase 1
+Stopped at: Completed 08-04-PLAN.md — Python-Remotion bridge with profile-aware quality flags, WAV conversion helper, bt709 color space
 Resume file: None
