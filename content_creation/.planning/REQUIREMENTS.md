@@ -28,7 +28,7 @@
 - [x] **SUNO-04**: Instrumental-only enforcement via make_instrumental flag
 - [x] **SUNO-05**: Suno returns 2 tracks per prompt — pipeline uses all generated tracks (stitch for longer videos, or present both in approval gate for selection)
 - [x] **SUNO-06**: Stable Audio fallback when Suno is unavailable or fails
-- [ ] **SUNO-07**: Async Suno submission before SDXL batch to hide latency
+- [x] **SUNO-07**: Async Suno submission before SDXL batch to hide latency
 - [x] **SUNO-08**: Hard timeout on Suno polling (default 300s) to prevent pipeline hang
 
 ### Config Extension
@@ -66,7 +66,7 @@
 | SUNO-04 | Phase 11 | Complete |
 | SUNO-05 | Phase 11 | Complete |
 | SUNO-06 | Phase 11 | Complete |
-| SUNO-07 | Phase 11 | Pending |
+| SUNO-07 | Phase 11 | Complete |
 | SUNO-08 | Phase 11 | Complete |
 | CFGX-01 | Phase 9 | Complete |
 | CFGX-02 | Phase 9 | Complete |

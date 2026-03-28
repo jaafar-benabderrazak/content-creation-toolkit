@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 11 — Suno Music Integration
-Plan: 01 complete (1/2 plans done in phase — Phase 11 in progress)
-Status: Phase 11 in progress — 11-01 done (SunoClient with polling, stitching, Stable Audio fallback, 5 unit tests)
-Last activity: 2026-03-28 — 11-01 complete: generators/suno.py implemented, requirements.txt created, 5 tests pass
+Plan: 02 complete (2/2 plans done in phase — Phase 11 COMPLETE)
+Status: Phase 11 complete — 11-02 done (ThreadPoolExecutor Suno wiring in study_with_me_generator.py)
+Last activity: 2026-03-28 — 11-02 complete: Suno submission before SDXL batch, future.result() after images, suno_generation progress key, executor cleanup
 
-Progress: [███░░░░░░░] 30% (v1.1 milestone)
+Progress: [████░░░░░░] 40% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -33,6 +33,7 @@ Progress: [███░░░░░░░] 30% (v1.1 milestone)
 | Phase 09-config-extension-and-prompt-templates P03 | 1 | 2 tasks | 2 files |
 | Phase 10-sdxl-generator-extraction-and-image-caching P01 | 1 | 2 tasks | 2 files |
 | Phase 11-suno-music-integration P01 | 3 | 2 tasks | 3 files |
+| Phase 11-suno-music-integration P02 | 5 | 1 tasks | 1 files |
 
 ### Recent Trend
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: getattr(pipeline_config, 'sdxl', None) or SDXLSettings(...) pattern handles VideoConfig (no sdxl field) without AttributeError at call site
 - [Phase 11-suno-music-integration]: Manual timing loop in _poll_until_complete over tenacity decorator — allows elapsed time logging per interval
 - [Phase 11-suno-music-integration]: generate_music catches broad Exception covering TimeoutError, HTTPError, RuntimeError — no failure escapes public interface
+- [Phase 11-suno-music-integration]: ThreadPoolExecutor(max_workers=1) used in orchestrator — synchronous main() has no event loop; concurrent.futures is the correct async primitive here
+- [Phase 11-suno-music-integration]: _suno_executor.shutdown(wait=False) called after audio block — future already resolved at that point; avoids blocking video assembly
 
 ### Roadmap Evolution
 
@@ -102,6 +105,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:32:00Z
-Stopped at: Completed 11-01-PLAN.md — SunoClient implemented with polling, stitching, Stable Audio fallback; requirements.txt created; 5 unit tests pass
+Last session: 2026-03-28T18:22:14Z
+Stopped at: Completed 11-02-PLAN.md — ThreadPoolExecutor Suno wiring complete; study_with_me_generator.py updated; Phase 11 done
 Resume file: None
