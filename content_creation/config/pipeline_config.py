@@ -89,12 +89,18 @@ class NotifySettings(BaseModel):
     approval_timeout_seconds: int = Field(default=3600, ge=60)
 
 
+class BrandingSettings(BaseModel):
+    branding_enabled: bool = False
+    refresh_branding: bool = False  # when True, discard cache and re-fetch on next run
+
+
 class PipelineConfig(BaseModel):
     profile: str = "default"
     video: VideoSettings = Field(default_factory=VideoSettings)
     post: PostSettings = Field(default_factory=PostSettings)
     publish: PublishSettings = Field(default_factory=PublishSettings)
     notify: NotifySettings = Field(default_factory=NotifySettings)
+    branding: BrandingSettings = Field(default_factory=BrandingSettings)
     sdxl: Optional[SDXLSettings] = None
     suno: Optional[SunoSettings] = None
 
