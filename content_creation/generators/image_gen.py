@@ -101,48 +101,88 @@ def generate_image_api(
     model: str = "dall-e-3",
     api_key: Optional[str] = None,
 ) -> Image.Image:
-    """Generate a single image via OpenAI DALL-E 3 API.
+    """Generate a single image via best available API.
 
-    Falls back to local Stable Diffusion on API failure.
+    Priority: Seedream (Replicate) → DALL-E 3 (OpenAI) → Local SD 1.5.
     Returns a PIL Image.
     """
-    import requests as req
-
-    key = api_key or os.environ.get("OPENAI_API_KEY")
-    if key:
+    # Try Seedream via Replicate first
+    replicate_token = os.environ.get("REPLICATE_API_TOKEN")
+    if replicate_token:
         try:
-            from openai import OpenAI
-            client = OpenAI(api_key=key)
-            logger.info(f"[ImageGen] Generating via {model}: {prompt[:80]}...")
-            response = client.images.generate(
-                model=model, prompt=prompt, size=size, quality=quality, n=1,
-            )
-            image_url = response.data[0].url
-            image_data = req.get(image_url).content
-            return Image.open(io.BytesIO(image_data)).convert("RGB")
+            return _generate_seedream(prompt, replicate_token)
         except Exception as e:
-            logger.warning(f"[ImageGen] API failed ({e}), falling back to local SD")
+            logger.warning(f"[ImageGen] Seedream failed ({e}), trying DALL-E 3...")
 
+    # Try DALL-E 3
+    openai_key = api_key or os.environ.get("OPENAI_API_KEY")
+    if openai_key:
+        try:
+            return _generate_dalle(prompt, openai_key, size, quality, model)
+        except Exception as e:
+            logger.warning(f"[ImageGen] DALL-E 3 failed ({e}), falling back to local SD")
+
+    # Last resort: local SD 1.5
     return _generate_local(prompt)
 
 
+def _generate_seedream(prompt: str, token: str) -> Image.Image:
+    """Generate image via ByteDance Seedream on Replicate."""
+    import replicate as rep
+    import requests as req
+
+    os.environ["REPLICATE_API_TOKEN"] = token
+    logger.info(f"[ImageGen] Seedream (Replicate): {prompt[:70]}...")
+
+    output = rep.run(
+        "bytedance/seedream-3",
+        input={
+            "prompt": prompt,
+            "aspect_ratio": "16:9",
+            "output_format": "png",
+            "num_outputs": 1,
+        },
+    )
+
+    # output is a list of FileOutput URLs
+    url = output[0] if isinstance(output, list) else output
+    image_data = req.get(str(url)).content
+    img = Image.open(io.BytesIO(image_data)).convert("RGB")
+    logger.info(f"[ImageGen] Seedream done: {img.size}")
+    return img
+
+
+def _generate_dalle(
+    prompt: str, key: str, size: str, quality: str, model: str,
+) -> Image.Image:
+    """Generate image via OpenAI DALL-E 3."""
+    import requests as req
+    from openai import OpenAI
+
+    client = OpenAI(api_key=key)
+    logger.info(f"[ImageGen] DALL-E 3: {prompt[:70]}...")
+    response = client.images.generate(
+        model=model, prompt=prompt, size=size, quality=quality, n=1,
+    )
+    image_data = req.get(response.data[0].url).content
+    return Image.open(io.BytesIO(image_data)).convert("RGB")
+
+
 def _generate_local(prompt: str) -> Image.Image:
-    """Generate image via local Stable Diffusion 1.5 on CPU."""
+    """Generate image via local Stable Diffusion 1.5 on CPU (last resort)."""
     import torch
     from diffusers import StableDiffusionPipeline
 
     logger.info(f"[ImageGen] Local SD 1.5 (CPU): {prompt[:60]}...")
     pipe = StableDiffusionPipeline.from_pretrained(
         "stable-diffusion-v1-5/stable-diffusion-v1-5",
-        torch_dtype=torch.float32,
-        safety_checker=None,
+        torch_dtype=torch.float32, safety_checker=None,
     )
     pipe.to("cpu")
     pipe.enable_attention_slicing()
-
     img = pipe(
-        prompt, num_inference_steps=20, width=768, height=512,
-        guidance_scale=7.5, generator=torch.manual_seed(42),
+        prompt, num_inference_steps=25, width=768, height=512,
+        guidance_scale=8.0, generator=torch.manual_seed(42),
     ).images[0]
     del pipe
     return img
