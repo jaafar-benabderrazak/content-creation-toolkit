@@ -79,6 +79,7 @@ def composite_text(
     output_path: Path,
     title: str = "",
     branding: str = "",
+    avatar_path: Optional[Path] = None,
 ) -> Path:
     """Composite title text and channel branding onto the thumbnail."""
     from PIL import Image, ImageDraw, ImageFont
@@ -117,6 +118,25 @@ def composite_text(
         font_brand = _load_font(28)
         draw.text((THUMB_WIDTH - 300, THUMB_HEIGHT - 50), branding, fill="white", font=font_brand)
 
+    # Avatar corner logo (bottom-right, above branding text)
+    if avatar_path and avatar_path.exists():
+        try:
+            avatar = Image.open(avatar_path).convert("RGBA")
+            logo_size = 80  # px
+            avatar = avatar.resize((logo_size, logo_size), Image.LANCZOS)
+            # Circular mask
+            mask = Image.new("L", (logo_size, logo_size), 0)
+            from PIL import ImageDraw as _IDraw
+            _IDraw.Draw(mask).ellipse((0, 0, logo_size, logo_size), fill=255)
+            avatar.putalpha(mask)
+            # Position: bottom-right corner with 16px margin
+            x = THUMB_WIDTH - logo_size - 16
+            y = THUMB_HEIGHT - logo_size - 16
+            img.paste(avatar, (x, y), avatar)
+            logger.info(f"[Thumbnail] Avatar logo composited from {avatar_path.name}")
+        except Exception as e:
+            logger.warning(f"[Thumbnail] Avatar overlay skipped: {e}")
+
     # Save as JPEG, reduce quality if over 2MB
     quality = 95
     while quality >= 50:
@@ -138,10 +158,11 @@ def generate_thumbnail(
     title: str = "",
     branding: str = "",
     sample_count: int = 10,
+    avatar_path: Optional[Path] = None,
 ) -> Optional[Path]:
     """Full pipeline: extract best frame → composite text → save."""
     best = select_best_frame(video_path, sample_count)
     if not best:
         return None
 
-    return composite_text(best, output_path, title=title, branding=branding)
+    return composite_text(best, output_path, title=title, branding=branding, avatar_path=avatar_path)
