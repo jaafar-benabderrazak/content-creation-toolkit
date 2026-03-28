@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 10: SDXL Generator Extraction and Image Caching)
+**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 11: Suno Music Integration)
 
 ## Current Position
 
-Phase: 10 — SDXL Generator Extraction and Image Caching
-Plan: 02 complete (2/2 plans done in phase — Phase 10 COMPLETE)
-Status: Phase 10 complete — 10-01 done (generators/ package + SDXLGenerator); 10-02 done (study_with_me_generator.py refactored to delegate to SDXLGenerator)
-Last activity: 2026-03-28 — 10-02 complete: Inline SDXL removed from orchestrator, SDXLGenerator.generate_batch wired with cache
+Phase: 11 — Suno Music Integration
+Plan: 01 complete (1/2 plans done in phase — Phase 11 in progress)
+Status: Phase 11 in progress — 11-01 done (SunoClient with polling, stitching, Stable Audio fallback, 5 unit tests)
+Last activity: 2026-03-28 — 11-01 complete: generators/suno.py implemented, requirements.txt created, 5 tests pass
 
-Progress: [██░░░░░░░░] 20% (v1.1 milestone)
+Progress: [███░░░░░░░] 30% (v1.1 milestone)
 
 ## Performance Metrics
 
@@ -32,6 +32,7 @@ Progress: [██░░░░░░░░] 20% (v1.1 milestone)
 | Phase 09-config-extension-and-prompt-templates P01 | 2 | 2 tasks | 1 files |
 | Phase 09-config-extension-and-prompt-templates P03 | 1 | 2 tasks | 2 files |
 | Phase 10-sdxl-generator-extraction-and-image-caching P01 | 1 | 2 tasks | 2 files |
+| Phase 11-suno-music-integration P01 | 3 | 2 tasks | 3 files |
 
 ### Recent Trend
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: Cache key uses full 64-char SHA-256 digest of sort_keys JSON — any single param change produces different key (SDXL-02)
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: create_fallback_image retained in study_with_me_generator.py — has second call site in outer exception handler outside the removed function
 - [Phase 10-sdxl-generator-extraction-and-image-caching]: getattr(pipeline_config, 'sdxl', None) or SDXLSettings(...) pattern handles VideoConfig (no sdxl field) without AttributeError at call site
+- [Phase 11-suno-music-integration]: Manual timing loop in _poll_until_complete over tenacity decorator — allows elapsed time logging per interval
+- [Phase 11-suno-music-integration]: generate_music catches broad Exception covering TimeoutError, HTTPError, RuntimeError — no failure escapes public interface
 
 ### Roadmap Evolution
 
@@ -99,6 +102,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:02:37Z
-Stopped at: Completed 10-02-PLAN.md — study_with_me_generator.py refactored: inline SDXL removed, SDXLGenerator.generate_batch wired with SHA-256 cache
+Last session: 2026-03-28T18:32:00Z
+Stopped at: Completed 11-01-PLAN.md — SunoClient implemented with polling, stitching, Stable Audio fallback; requirements.txt created; 5 unit tests pass
 Resume file: None

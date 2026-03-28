@@ -22,14 +22,14 @@
 
 ### Suno Music
 
-- [ ] **SUNO-01**: SunoClient abstraction class with generate_music() → audio file path interface
-- [ ] **SUNO-02**: Profile-matched genre selection (lofi-study→"lofi chill", cinematic→"orchestral cinematic", tech-tutorial→"upbeat electronic")
-- [ ] **SUNO-03**: Duration-aware generation matching video length (with stitching for videos > max Suno duration)
-- [ ] **SUNO-04**: Instrumental-only enforcement via make_instrumental flag
-- [ ] **SUNO-05**: Suno returns 2 tracks per prompt — pipeline uses all generated tracks (stitch for longer videos, or present both in approval gate for selection)
-- [ ] **SUNO-06**: Stable Audio fallback when Suno is unavailable or fails
+- [x] **SUNO-01**: SunoClient abstraction class with generate_music() → audio file path interface
+- [x] **SUNO-02**: Profile-matched genre selection (lofi-study→"lofi chill", cinematic→"orchestral cinematic", tech-tutorial→"upbeat electronic")
+- [x] **SUNO-03**: Duration-aware generation matching video length (with stitching for videos > max Suno duration)
+- [x] **SUNO-04**: Instrumental-only enforcement via make_instrumental flag
+- [x] **SUNO-05**: Suno returns 2 tracks per prompt — pipeline uses all generated tracks (stitch for longer videos, or present both in approval gate for selection)
+- [x] **SUNO-06**: Stable Audio fallback when Suno is unavailable or fails
 - [ ] **SUNO-07**: Async Suno submission before SDXL batch to hide latency
-- [ ] **SUNO-08**: Hard timeout on Suno polling (default 300s) to prevent pipeline hang
+- [x] **SUNO-08**: Hard timeout on Suno polling (default 300s) to prevent pipeline hang
 
 ### Config Extension
 
@@ -60,14 +60,14 @@
 | SDXL-02 | Phase 10 | Complete |
 | SDXL-03 | Phase 10 | Complete |
 | SDXL-04 | Phase 10 | Complete |
-| SUNO-01 | Phase 11 | Pending |
-| SUNO-02 | Phase 11 | Pending |
-| SUNO-03 | Phase 11 | Pending |
-| SUNO-04 | Phase 11 | Pending |
-| SUNO-05 | Phase 11 | Pending |
-| SUNO-06 | Phase 11 | Pending |
+| SUNO-01 | Phase 11 | Complete |
+| SUNO-02 | Phase 11 | Complete |
+| SUNO-03 | Phase 11 | Complete |
+| SUNO-04 | Phase 11 | Complete |
+| SUNO-05 | Phase 11 | Complete |
+| SUNO-06 | Phase 11 | Complete |
 | SUNO-07 | Phase 11 | Pending |
-| SUNO-08 | Phase 11 | Pending |
+| SUNO-08 | Phase 11 | Complete |
 | CFGX-01 | Phase 9 | Complete |
 | CFGX-02 | Phase 9 | Complete |
 | CFGX-03 | Phase 9 | Complete |
