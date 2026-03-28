@@ -32,7 +32,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 14: Vercel Dashboard UI** - Browser-based pipeline config, credit monitoring, and pipeline trigger
 - [x] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard (completed 2026-03-28)
 - [x] **Phase 17: Channel Branding** - YouTube channel data fetch, branding propagation to watermark/thumbnail, cached locally, and auto-generated intro/outro clips (completed 2026-03-28)
-- [x] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs (completed 2026-03-28)
+- [x] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs (completed 2026-03-28)
+- [ ] **Phase 19: Local Gradio UI** - Pipeline execution with real-time streaming, APScheduler-backed job queue, and content roadmap CRUD — full local control without the terminal
 
 ## Phase Details
 
@@ -369,10 +370,26 @@ Plans:
 - [ ] 18-01-PLAN.md — generators/prompt_generator.py: PromptGenerator class with OpenAI-backed generate() returning structured prompt payload (positive, negative, 8 scene variants, music)
 - [ ] 18-02-PLAN.md — --tags CLI flag wired into study_with_me_generator.py with YAML write-back and graceful fallback to existing profile prompts
 
+### Phase 19: Local Gradio UI with pipeline execution, scheduling, and video content roadmap
+
+**Goal:** The existing Gradio app at localhost:7860 gains real-time pipeline execution with streaming stdout, an APScheduler-backed job queue for scheduling future runs, and a content roadmap for planning and tracking upcoming videos — the user can launch, schedule, and plan videos without touching the terminal
+
+**Depends on:** Phase 18
+
+**Requirements**: GRAD-01, GRAD-02, GRAD-03, GRAD-04, GRAD-05, GRAD-06, GRAD-07
+
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 19-01-PLAN.md — scheduler.py: JobQueue with APScheduler DateTrigger, JSON persistence, add/cancel/list operations
+- [ ] 19-02-PLAN.md — roadmap.py: VideoRoadmap with CRUD for planned/producing/published entries, JSON persistence, move/filter operations
+- [ ] 19-03-PLAN.md — gradio_app.py upgrade: streaming Execute tab, Schedule tab (wired to scheduler.py), Content Roadmap tab (wired to roadmap.py)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 16 → 17 → 18
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 16 → 17 → 18 → 19
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -393,12 +410,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 16. Smart Defaults | 3/3 | Complete   | 2026-03-28 |
 | 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
 | 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
-
-### Phase 19: Local Gradio UI with pipeline execution, scheduling, and video content roadmap
-
-**Goal:** [To be planned]
-**Depends on:** Phase 18
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 19 to break down)
+| 19. Local Gradio UI | 0/3 | Planned | - |

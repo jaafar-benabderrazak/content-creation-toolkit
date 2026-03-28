@@ -27,6 +27,16 @@
 - [x] **AGEN-04**: Generated prompts are saved to the profile YAML so they're visible and editable before generation
 - [x] **AGEN-05**: Pipeline can run end-to-end with just tags + profile name — no manual prompt editing required
 
+### Local Gradio UI
+
+- [ ] **GRAD-01**: User can launch the Study Video pipeline from the Gradio UI Execute tab; pipeline stdout streams line-by-line without freezing the browser tab
+- [ ] **GRAD-02**: Execute tab accepts an optional tags field forwarded as --tags to the pipeline subprocess
+- [ ] **GRAD-03**: User can queue a pipeline run for a future datetime; the scheduler fires the subprocess at the scheduled time
+- [ ] **GRAD-04**: Schedule tab shows all queued jobs with status (pending/running/done/failed) and supports job cancellation
+- [ ] **GRAD-05**: User can add a planned video entry (title, tags, profile, notes) to the content roadmap from the Gradio UI
+- [ ] **GRAD-06**: Content Roadmap tab lists entries with status badges and supports status transitions (planned → producing → published)
+- [ ] **GRAD-07**: Roadmap entries can be reordered (move up/down) and deleted from the UI
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -53,10 +63,17 @@
 | AGEN-03 | Phase 18 | Complete |
 | AGEN-04 | Phase 18 | Complete |
 | AGEN-05 | Phase 18 | Complete |
+| GRAD-01 | Phase 19 | Planned |
+| GRAD-02 | Phase 19 | Planned |
+| GRAD-03 | Phase 19 | Planned |
+| GRAD-04 | Phase 19 | Planned |
+| GRAD-05 | Phase 19 | Planned |
+| GRAD-06 | Phase 19 | Planned |
+| GRAD-07 | Phase 19 | Planned |
 
 **Coverage:**
-- v1.2 requirements: 13 total
-- Mapped to phases: 13
+- v1.2 requirements: 20 total
+- Mapped to phases: 20
 - Unmapped: 0
 
 ---
