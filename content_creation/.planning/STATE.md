@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Phase 14 — Vercel Dashboard UI (plan 3/4 complete)
+**Current focus:** Phase 14 — Vercel Dashboard UI (plan 4/4 complete)
 
 ## Current Position
 
 Phase: 14 — Vercel Dashboard UI for Pipeline Config, Token/Credit Monitoring, and Top-Up Controls
-Plan: 03 complete (3/4 plans done in phase)
-Status: 14-03 done — credit/quota monitoring API routes and Credits page with CreditCard components
-Last activity: 2026-03-28 — 14-03 complete: /api/credits/{suno,replicate,openai,youtube} routes, CreditCard component, /credits page
+Plan: 04 complete (4/4 plans done in phase)
+Status: 14-04 done — pipeline trigger webhook, /api/status POST+GET, GenerationLog polling component, /status page
+Last activity: 2026-03-28 — 14-04 complete: store.ts in-memory log, /api/status (POST webhook auth + GET), /api/trigger, GenerationLog 3s polling, /status page with trigger button
 
 Progress: [████░░░░░░] 40% (v1.1 milestone)
 
@@ -90,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase 14]: shadcn/ui components written manually — CLI prompts are interactive TTY-only; non-interactive execution requires direct file authoring
 - [Phase 14]: CreditResponse type exported from suno/route.ts and imported by all sibling credit routes — single source of truth
 - [Phase 14]: YouTube quota reads from YOUTUBE_QUOTA_USED env var — no programmatic API access possible; pipeline must update env var after each upload
+- [Phase 14]: In-memory status log (module-level array) accepted for serverless warm-instance persistence — cold starts reset the log, acceptable for a local control panel
+- [Phase 14]: PIPELINE_WEBHOOK_SECRET missing on server returns 401 same as wrong secret — prevents accidental open endpoint when env var is not set
 
 ### Roadmap Evolution
 
@@ -114,6 +116,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T21:55:14Z
-Stopped at: Completed 14-03-PLAN.md — credit API routes (suno, replicate, openai, youtube) and Credits page with CreditCard components
+Last session: 2026-03-28T21:58:09Z
+Stopped at: Completed 14-04-PLAN.md — pipeline trigger + status monitor: /api/status, /api/trigger, GenerationLog, /status page
 Resume file: None

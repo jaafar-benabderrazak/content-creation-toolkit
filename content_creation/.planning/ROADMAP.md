@@ -320,11 +320,11 @@ Plans:
 **Goal:** A browser-based dashboard deployed on Vercel provides pipeline config editing, live credit balance monitoring across all API providers, top-up links, pipeline trigger via webhook, and a live generation status log — the user never needs to edit YAML files or SSH into the local machine to manage the pipeline
 
 **Depends on:** Phase 13 (can also run independently — no Python pipeline dependency)
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans executed
 
 Plans:
 
-- [ ] 14-01-PLAN.md — Next.js 15 project scaffold with shadcn/ui, Tailwind, vercel.json, and .env.example
-- [ ] 14-02-PLAN.md — Config editor: GET/PUT YAML profile API routes + ProfileEditor UI component
-- [ ] 14-03-PLAN.md — Credit monitor: API routes for Suno/Replicate/OpenAI/YouTube + CreditCard UI components
-- [ ] 14-04-PLAN.md — Pipeline trigger + status log: POST status receiver, trigger forwarder, GenerationLog polling component
+- [x] 14-01-PLAN.md — Next.js 15 project scaffold with shadcn/ui, Tailwind, vercel.json, and .env.example
+- [x] 14-02-PLAN.md — Config editor: GET/PUT YAML profile API routes + ProfileEditor UI component
+- [x] 14-03-PLAN.md — Credit monitor: API routes for Suno/Replicate/OpenAI/YouTube + CreditCard UI components
+- [x] 14-04-PLAN.md — Pipeline trigger + status log: POST status receiver, trigger forwarder, GenerationLog polling component
