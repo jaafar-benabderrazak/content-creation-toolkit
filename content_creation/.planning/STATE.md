@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.1 — AI Generation Quality (Phase 11: Suno Music Integration)
+**Current focus:** Phase 14 — Vercel Dashboard UI (plan 1/4 complete)
 
 ## Current Position
 
-Phase: 11 — Suno Music Integration
-Plan: 02 complete (2/2 plans done in phase — Phase 11 COMPLETE)
-Status: Phase 11 complete — 11-02 done (ThreadPoolExecutor Suno wiring in study_with_me_generator.py)
-Last activity: 2026-03-28 — 11-02 complete: Suno submission before SDXL batch, future.result() after images, suno_generation progress key, executor cleanup
+Phase: 14 — Vercel Dashboard UI for Pipeline Config, Token/Credit Monitoring, and Top-Up Controls
+Plan: 01 complete (1/4 plans done in phase)
+Status: 14-01 done — Next.js 16 dashboard scaffold with sidebar nav, shadcn/ui components, Vercel config
+Last activity: 2026-03-28 — 14-01 complete: dashboard/ directory with Next.js 16.2.1, layout.tsx sidebar, vercel.json, .env.example
 
 Progress: [████░░░░░░] 40% (v1.1 milestone)
 
@@ -34,6 +34,7 @@ Progress: [████░░░░░░] 40% (v1.1 milestone)
 | Phase 10-sdxl-generator-extraction-and-image-caching P01 | 1 | 2 tasks | 2 files |
 | Phase 11-suno-music-integration P01 | 3 | 2 tasks | 3 files |
 | Phase 11-suno-music-integration P02 | 5 | 1 tasks | 1 files |
+| Phase 14 P01 | 18 | 2 tasks | 17 files |
 
 ### Recent Trend
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 11-suno-music-integration]: generate_music catches broad Exception covering TimeoutError, HTTPError, RuntimeError — no failure escapes public interface
 - [Phase 11-suno-music-integration]: ThreadPoolExecutor(max_workers=1) used in orchestrator — synchronous main() has no event loop; concurrent.futures is the correct async primitive here
 - [Phase 11-suno-music-integration]: _suno_executor.shutdown(wait=False) called after audio block — future already resolved at that point; avoids blocking video assembly
+- [Phase 14]: Next.js 16.2.1 used instead of 15.x — CVE-2025-66478 patched; autoprefixer required explicitly by Turbopack build
+- [Phase 14]: shadcn/ui components written manually — CLI prompts are interactive TTY-only; non-interactive execution requires direct file authoring
 
 ### Roadmap Evolution
 
@@ -108,6 +111,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:22:14Z
-Stopped at: Completed 11-02-PLAN.md — ThreadPoolExecutor Suno wiring complete; study_with_me_generator.py updated; Phase 11 done
+Last session: 2026-03-28T21:45:03Z
+Stopped at: Completed 14-01-PLAN.md — Next.js 16 dashboard scaffold with sidebar nav, shadcn/ui, Vercel config; dashboard/ directory created
 Resume file: None

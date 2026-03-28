@@ -41,7 +41,7 @@
 
 ### Vercel Dashboard UI
 
-- [ ] **DASH-01**: A Next.js 15 dashboard project exists at dashboard/ with shadcn/ui, Tailwind, and vercel.json — `vercel deploy` from dashboard/ succeeds
+- [x] **DASH-01**: A Next.js 15 dashboard project exists at dashboard/ with shadcn/ui, Tailwind, and vercel.json — `vercel deploy` from dashboard/ succeeds
 - [ ] **DASH-02**: User can select a named profile (lofi_study, tech_tutorial, cinematic) in the browser, edit any field, click Save, and the YAML file on disk is updated — no terminal required
 - [ ] **DASH-03**: Dashboard shows current credit balances for Suno (kie.ai), Replicate, and OpenAI, fetched live from each provider's API on page load
 - [ ] **DASH-04**: Each credit card has a Top Up button that opens the provider's billing page in a new tab; missing API keys show "Not configured" badge instead of an error
