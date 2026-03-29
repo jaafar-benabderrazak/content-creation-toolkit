@@ -17,11 +17,48 @@ interface RoadmapEntry {
   status: string;
 }
 
+const COST_TABLE = {
+  image: { seedream: 0.04, dalle: 0.08, local: 0 },
+  music: { suno: 0.01, fallback: 0 },  // per credit (~100 credits per song)
+  prompts: { claude: 0.003, openai: 0.002 },
+  youtube: 0, // free (quota-based)
+  remotion: 0, // local render
+};
+
+function estimateCost(budget: string): { total: number; breakdown: Record<string, number> } {
+  const b = budget || "standard";
+  const breakdown: Record<string, number> = {};
+
+  if (b === "free") {
+    breakdown["Image (Local SD)"] = 0;
+    breakdown["Music (Silent)"] = 0;
+    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
+  } else if (b === "budget") {
+    breakdown["Image (DALL-E)"] = COST_TABLE.image.dalle;
+    breakdown["Music (Suno x2)"] = COST_TABLE.music.suno * 2;
+    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
+  } else if (b === "standard") {
+    breakdown["Image (Seedream)"] = COST_TABLE.image.seedream;
+    breakdown["Music (Suno x2)"] = COST_TABLE.music.suno * 2;
+    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
+    breakdown["YouTube Upload"] = 0;
+  } else if (b === "premium") {
+    breakdown["Image (Seedream HD)"] = COST_TABLE.image.seedream * 2;
+    breakdown["Music (Suno x4)"] = COST_TABLE.music.suno * 4;
+    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
+    breakdown["YouTube Upload"] = 0;
+  }
+
+  const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
+  return { total, breakdown };
+}
+
 export default function StatusPage() {
   const [triggering, setTriggering] = useState(false);
   const [triggerResult, setTriggerResult] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState("lofi_study");
   const [tags, setTags] = useState("");
+  const [budget, setBudget] = useState("standard");
   const [roadmapEntries, setRoadmapEntries] = useState<RoadmapEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState("");
 
@@ -48,7 +85,7 @@ export default function StatusPage() {
       const res = await fetch("/api/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: selectedProfile, tags }),
+        body: JSON.stringify({ profile: selectedProfile, tags, budget }),
       });
       const data = await res.json();
       if (data.triggered) {
@@ -114,10 +151,43 @@ export default function StatusPage() {
                 <option value="cinematic">cinematic</option>
               </select>
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Budget</label>
+              <select
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="free">Free (local only)</option>
+                <option value="budget">Budget (~$0.09)</option>
+                <option value="standard">Standard (~$0.06)</option>
+                <option value="premium">Premium (~$0.12)</option>
+              </select>
+            </div>
             <Button onClick={handleTrigger} disabled={triggering}>
               {triggering ? "Triggering..." : "Generate Video"}
             </Button>
           </div>
+
+          {/* Cost Estimate */}
+          <Card className="bg-muted/30 border-dashed">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Estimated Cost</span>
+                <span className="text-lg font-bold">
+                  ${estimateCost(budget).total.toFixed(3)}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {Object.entries(estimateCost(budget).breakdown).map(([key, val]) => (
+                  <div key={key} className="flex justify-between text-xs text-muted-foreground">
+                    <span>{key}</span>
+                    <span>{val === 0 ? "Free" : `$${val.toFixed(3)}`}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {triggerResult && (
             <p className={triggerResult.startsWith("Error") ? "text-red-500 text-sm" : "text-green-500 text-sm"}>
