@@ -455,9 +455,11 @@ Plans:
 
 ### Phase 24: Instagram style reference system — scrape radstream aesthetic, img2img with reference images, style-consistent generation
 
-**Goal:** [To be planned]
+**Goal:** A configurable style reference subsystem scrapes a target Instagram account (default @radstream), extracts dominant colors and mood descriptors into a persistent profile, and injects reference images into Seedream 5 (via image_input) or local IP-Adapter (InstantStyle) so every generated scene shares the account's visual aesthetic without copying composition
 **Depends on:** Phase 23
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 24 to break down)
+- [ ] 24-01-PLAN.md — generators/style_reference.py: StyleReferenceManager with instaloader scraper, colorthief+KMeans extractor, profile.json persistence, CLI
+- [ ] 24-02-PLAN.md — StyleRefSettings sub-model in pipeline_config.py + style_ref block in cinematic.yaml
+- [ ] 24-03-PLAN.md — Wire style_ref_handle into ImageGenerator.generate_scenes() (Seedream 5 + IP-Adapter) and style_ref_paths into thumbnail_gen.py
