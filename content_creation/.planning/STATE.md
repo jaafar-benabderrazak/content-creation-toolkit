@@ -94,6 +94,7 @@ Recent decisions affecting v1.2 work:
 ### Roadmap Evolution
 
 - Phase 19 added: Local Gradio UI — pipeline execution, scheduling, video content roadmap/queue
+- Phase 24 added: Instagram style reference system — @radstream aesthetic, img2img with reference images
 
 ### Pending Todos
 

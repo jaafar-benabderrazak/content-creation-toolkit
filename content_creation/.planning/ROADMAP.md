@@ -452,3 +452,12 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 23 to break down)
+
+### Phase 24: Instagram style reference system — scrape radstream aesthetic, img2img with reference images, style-consistent generation
+
+**Goal:** [To be planned]
+**Depends on:** Phase 23
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 24 to break down)
