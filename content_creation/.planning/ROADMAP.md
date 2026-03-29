@@ -434,3 +434,12 @@ Plans:
 - [x] 21-01-PLAN.md — Extend PromptGenerator with 4 new output keys + thumbnail_text field on PublishSettings
 - [x] 21-02-PLAN.md — _run_prompt_generation writes new fields to YAML publish block; preview_prompts shows full 7-section chain
 - [ ] 21-03-PLAN.md — pipeline_runner.py uses thumbnail_text (falls back to youtube_title) in generate_thumbnail call
+
+### Phase 22: Remote pipeline trigger via ngrok tunnel with local HTTP server
+
+**Goal:** [To be planned]
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 22 to break down)
