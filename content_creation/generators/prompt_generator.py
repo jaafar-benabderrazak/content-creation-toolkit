@@ -8,6 +8,10 @@ Converts user tags and a profile style string into a full prompt payload:
   - negative_prompt: SDXL negative prompt (5-10 terms)
   - scene_templates: list of exactly 8 distinct scene variation prompts (40-60 words each)
   - music_prompt: Suno-compatible music prompt (20-30 words)
+  - thumbnail_text: short punchy text overlay for the thumbnail (3-7 words, ALL CAPS)
+  - youtube_title: SEO-optimized YouTube title (60 chars max)
+  - youtube_description: 150-200 word YouTube description
+  - youtube_tags: JSON array of exactly 15-20 SEO tags
 
 Falls back to OpenAI if ANTHROPIC_API_KEY is not set.
 
@@ -37,7 +41,16 @@ class PromptGenerationError(Exception):
     """Raised when prompt generation fails."""
 
 
-_REQUIRED_KEYS = {"positive_prompt", "negative_prompt", "scene_templates", "music_prompt"}
+_REQUIRED_KEYS = {
+    "positive_prompt",
+    "negative_prompt",
+    "scene_templates",
+    "music_prompt",
+    "thumbnail_text",
+    "youtube_title",
+    "youtube_description",
+    "youtube_tags",
+}
 _SCENE_TEMPLATE_COUNT = 8
 
 _SYSTEM_PROMPT = (
@@ -53,7 +66,15 @@ _USER_PROMPT = (
     "- negative_prompt: SDXL negative prompt (5-10 terms, comma-separated) optimized for this style\n"
     "- scene_templates: list of exactly 8 distinct scene variation prompts, "
     "each 40-60 words, covering different moments/lighting/compositions derived from the tags\n"
-    "- music_prompt: Suno-compatible music prompt (20-30 words) matching the mood of the tags\n\n"
+    "- music_prompt: Suno-compatible music prompt (20-30 words) matching the mood of the tags\n"
+    "- thumbnail_text: short punchy text overlay for the thumbnail (3-7 words, ALL CAPS, "
+    "derived from the positive prompt atmosphere — e.g. \"MIDNIGHT STUDY VIBES\" or \"GOLDEN HOUR FOCUS\")\n"
+    "- youtube_title: SEO-optimized YouTube title (60 chars max) including mood/atmosphere keywords "
+    "derived from the tags and positive_prompt style\n"
+    "- youtube_description: 150-200 word YouTube description with relevant keywords derived from scene themes; "
+    "include 2-3 paragraph breaks; end with a call to subscribe\n"
+    "- youtube_tags: JSON array of exactly 15-20 SEO tags derived from the tags input and generated content; "
+    "mix broad (lofi study, study with me) and specific (rainy day studying, cozy study session)\n\n"
     "Return JSON only. No markdown."
 )
 
@@ -161,6 +182,20 @@ class PromptGenerator:
                 f"scene_templates must have {_SCENE_TEMPLATE_COUNT} items, got {len(templates)}"
             )
 
+        ytags = data.get("youtube_tags", [])
+        if not isinstance(ytags, list):
+            raise PromptGenerationError(
+                f"youtube_tags must be a list, got {type(ytags).__name__}"
+            )
+        if not (15 <= len(ytags) <= 20):
+            raise PromptGenerationError(
+                f"youtube_tags must have 15-20 items, got {len(ytags)}"
+            )
+
     @staticmethod
     def _build_profile_style(config: "PipelineConfig") -> str:
         return config.video.style_prompt
+
+
+# Module-level alias so callers can import _validate directly
+_validate = PromptGenerator._validate
