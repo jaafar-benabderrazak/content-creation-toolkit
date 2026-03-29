@@ -76,11 +76,24 @@ def enhance_thumbnail_image(
     image_path: Path,
     prompt: str = "",
     output_path: Optional[Path] = None,
+    style_ref_paths: Optional[list] = None,
 ) -> Path:
     """Transform the best frame into a thumbnail-optimized image via img2img.
 
-    Uses Replicate (Seedream img2img) or local Pillow enhancement as fallback.
+    Uses Replicate (Seedream 5 img2img) or local Pillow enhancement as fallback.
     The goal: make the frame more dramatic, vibrant, and eye-catching.
+
+    Parameters
+    ----------
+    image_path : Path
+        Source frame to enhance.
+    prompt : str
+        Enhancement prompt.
+    output_path : Path, optional
+        Where to save the result.
+    style_ref_paths : list, optional
+        Paths to style reference images injected into Seedream 5 image_input
+        for aesthetic conditioning. Capped at 4 images to limit payload size.
     """
     import os
     from PIL import Image, ImageEnhance, ImageFilter
@@ -96,7 +109,7 @@ def enhance_thumbnail_image(
     enhance_prompt = f"youtube thumbnail style, vibrant, dramatic lighting, cinematic, {prompt}"
     neg_prompt = "blurry, low quality, text, watermark, ugly, deformed"
 
-    # --- Try 1: Seedream img2img via Replicate ---
+    # --- Try 1: Seedream 5 img2img via Replicate ---
     replicate_token = os.environ.get("REPLICATE_API_TOKEN")
     if replicate_token and prompt:
         try:
@@ -104,23 +117,29 @@ def enhance_thumbnail_image(
             os.environ["REPLICATE_API_TOKEN"] = replicate_token
             data_uri = f"data:image/jpeg;base64,{b64}"
 
-            logger.info(f"[Thumbnail] img2img via Seedream (Replicate)...")
-            result = replicate.run(
-                "bytedance/seedream-3",
-                input={
-                    "image": data_uri,
-                    "prompt": enhance_prompt,
-                    "aspect_ratio": "16:9",
-                    "output_format": "png",
-                    "num_outputs": 1,
-                },
-            )
+            inp = {
+                "image": data_uri,
+                "prompt": enhance_prompt,
+                "aspect_ratio": "16:9",
+                "output_format": "png",
+                "num_outputs": 1,
+            }
+
+            if style_ref_paths:
+                from generators.image_gen import _style_ref_to_data_uris
+                ref_uris = _style_ref_to_data_uris(style_ref_paths, max_refs=4)
+                if ref_uris:
+                    inp["image_input"] = ref_uris
+                    logger.info(f"[Thumbnail] Style ref: {len(ref_uris)} images injected into Seedream")
+
+            logger.info(f"[Thumbnail] img2img via Seedream 5 (Replicate)...")
+            result = replicate.run("bytedance/seedream-5-lite", input=inp)
             url = result[0] if isinstance(result, list) else result
             img_data = req.get(str(url)).content
             img = Image.open(io.BytesIO(img_data)).convert("RGB")
             img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
             img.save(str(out), "JPEG", quality=95)
-            logger.info("[Thumbnail] Enhanced via Seedream img2img")
+            logger.info("[Thumbnail] Enhanced via Seedream 5 img2img")
             return out
         except Exception as e:
             logger.warning(f"[Thumbnail] Seedream failed ({e}), trying next...")
@@ -369,6 +388,7 @@ def generate_thumbnail(
     sample_count: int = 10,
     avatar_path: Optional[Path] = None,
     enhance_prompt: str = "",
+    style_ref_paths: Optional[list] = None,
 ) -> Optional[Path]:
     """Full pipeline: extract best frame → img2img enhance → composite text → save.
 
@@ -389,6 +409,9 @@ def generate_thumbnail(
     enhance_prompt : str
         Prompt for img2img enhancement (e.g., the positive_prompt from the video).
         If empty, skips API img2img and uses local Pillow enhancement only.
+    style_ref_paths : list, optional
+        Paths to style reference images forwarded to enhance_thumbnail_image()
+        for Seedream 5 aesthetic conditioning.
     """
     best = select_best_frame(video_path, sample_count)
     if not best:
@@ -399,6 +422,7 @@ def generate_thumbnail(
         best,
         prompt=enhance_prompt,
         output_path=best.with_name(f"{best.stem}_enhanced.jpg"),
+        style_ref_paths=style_ref_paths,
     )
 
     # Step 2: Composite text + branding + avatar
