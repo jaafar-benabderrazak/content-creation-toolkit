@@ -80,6 +80,7 @@ class PublishSettings(BaseModel):
     youtube_category_id: str = "27"
     youtube_privacy: str = Field(default="private", pattern=r"^(public|unlisted|private)$")
     thumbnail_enabled: bool = True
+    thumbnail_text: str = ""  # AI-generated short text overlay for thumbnail; overrides title when set
 
 
 class NotifySettings(BaseModel):
