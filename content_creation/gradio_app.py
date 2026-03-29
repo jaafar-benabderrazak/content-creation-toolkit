@@ -96,7 +96,7 @@ def save_config(
             "youtube_enabled": youtube_enabled,
             "youtube_title": youtube_title,
             "youtube_description": youtube_description,
-            "youtube_tags": [t.strip() for t in youtube_tags.split(",") if t.strip()],
+            "youtube_tags": [t.strip() for t in (youtube_tags or "").split(",") if t.strip()],
             "youtube_privacy": youtube_privacy,
         },
         notify={
