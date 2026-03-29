@@ -206,6 +206,14 @@ def generate_image_api(
         except Exception as e:
             logger.warning(f"[ImageGen] Seedream failed ({e}), trying DALL-E 3...")
 
+    # Try Google Gemini (Imagen) via Gemini API
+    google_key = os.environ.get("GOOGLE_API_KEY")
+    if google_key:
+        try:
+            return _generate_gemini(prompt, google_key)
+        except Exception as e:
+            logger.warning(f"[ImageGen] Gemini failed ({e}), trying DALL-E 3...")
+
     # Try DALL-E 3 (no style ref support)
     openai_key = api_key or os.environ.get("OPENAI_API_KEY")
     if openai_key:
@@ -254,6 +262,68 @@ def _generate_seedream(
     img = Image.open(io.BytesIO(image_data)).convert("RGB")
     logger.info(f"[ImageGen] Seedream done: {img.size}")
     return img
+
+
+def _generate_gemini(prompt: str, api_key: str) -> Image.Image:
+    """Generate image via Google Gemini (Imagen) API."""
+    import requests as req
+    import base64
+
+    logger.info(f"[ImageGen] Gemini Imagen: {prompt[:70]}...")
+
+    # Try Gemini 3.1 Flash Image Preview (best multimodal image gen)
+    for model_name in ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview", "gemini-2.5-flash-image"]:
+        try:
+            resp = req.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent",
+                params={"key": api_key},
+                headers={"Content-Type": "application/json"},
+                json={
+                    "contents": [{"parts": [{"text": f"Generate a high-quality cinematic image: {prompt}"}]}],
+                    "generationConfig": {"responseModalities": ["IMAGE", "TEXT"]},
+                },
+                timeout=90,
+            )
+            if resp.ok:
+                data = resp.json()
+                for candidate in data.get("candidates", []):
+                    for part in candidate.get("content", {}).get("parts", []):
+                        if "inlineData" in part:
+                            img_b64 = part["inlineData"]["data"]
+                            img = Image.open(io.BytesIO(base64.b64decode(img_b64))).convert("RGB")
+                            logger.info(f"[ImageGen] Gemini ({model_name}) done: {img.size}")
+                            return img
+            logger.warning(f"[ImageGen] Gemini {model_name}: {resp.status_code}")
+        except Exception as e:
+            logger.warning(f"[ImageGen] Gemini {model_name} failed: {e}")
+
+    # Fallback: try Imagen 4.0
+    for imagen_model in ["imagen-4.0-fast-generate-001", "imagen-4.0-generate-001"]:
+        try:
+            resp2 = req.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{imagen_model}:predict",
+                params={"key": api_key},
+                headers={"Content-Type": "application/json"},
+                json={
+                    "instances": [{"prompt": prompt}],
+                    "parameters": {"sampleCount": 1, "aspectRatio": "16:9"},
+                },
+                timeout=90,
+            )
+            if resp2.ok:
+                data = resp2.json()
+                predictions = data.get("predictions", [])
+                if predictions:
+                    img_b64 = predictions[0].get("bytesBase64Encoded", "")
+                    if img_b64:
+                        img = Image.open(io.BytesIO(base64.b64decode(img_b64))).convert("RGB")
+                        logger.info(f"[ImageGen] {imagen_model} done: {img.size}")
+                        return img
+            logger.warning(f"[ImageGen] {imagen_model}: {resp2.status_code}")
+        except Exception as e:
+            logger.warning(f"[ImageGen] {imagen_model} failed: {e}")
+
+    raise RuntimeError("All Gemini/Imagen models failed")
 
 
 def _generate_dalle(
