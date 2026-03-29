@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 24 of 24 (v1.4 — Instagram style reference system, @radstream aesthetic, img2img with reference images)
-Plan: 2 of 3 completed in current phase
+Plan: 3 of 3 completed in current phase
 Status: In Progress
-Last activity: 2026-03-29 — 24-02 complete: StyleRefSettings schema added to PipelineConfig; cinematic.yaml wired to radstream
+Last activity: 2026-03-29 — 24-01 complete: StyleReferenceManager, StyleProfile, scraper, extractor, profile.json persistence
 
-Progress: [███████░░░] 70% (v1.4 milestone — 2/3 plans complete)
+Progress: [█████████░] 90% (v1.4 milestone — 3/3 plans complete — awaiting 24-03)
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Progress: [███████░░░] 70% (v1.4 milestone — 2/3 plans com
 | Phase 21 P01 | 2min | 2 tasks | 2 files |
 | Phase 21 P03 | 1 | 1 tasks | 1 files |
 | Phase 24 P02 | 3 | 1 tasks | 2 files |
+| Phase 24 P01 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 24-02]: session_file left as Optional[str] = None, commented out in YAML — sensitive path, not a hardcoded value
 - [Phase 24-02]: style_strength default 0.6 — safe midpoint matching IP-Adapter scale / Seedream image_input weight semantics
 - [Phase 24-02]: backend pattern constraint ^(replicate|local_ipadapter)$ — explicit allowlist prevents silent misconfiguration
+- [Phase 24]: Lazy-import instaloader/colorthief inside functions — StyleReferenceManager importable without optional packages
+- [Phase 24]: Manual fallback: user drops .jpg into .cache/style_reference/<handle>/posts/ and runs --extract-only to produce profile.json without Instagram access
 
 ### Roadmap Evolution
 
