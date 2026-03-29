@@ -17,40 +17,148 @@ interface RoadmapEntry {
   status: string;
 }
 
-const COST_TABLE = {
-  image: { seedream: 0.04, dalle: 0.08, local: 0 },
-  music: { suno: 0.01, fallback: 0 },  // per credit (~100 credits per song)
-  prompts: { claude: 0.003, openai: 0.002 },
-  youtube: 0, // free (quota-based)
-  remotion: 0, // local render
+// Per-unit costs from provider pricing pages (March 2026)
+const PRICING = {
+  // Image generation
+  seedream_replicate: 0.035,       // per image, Replicate bytedance/seedream-3
+  dalle3_hd: 0.080,                // per image, 1792x1024 HD
+  dalle3_standard: 0.040,          // per image, 1024x1024 standard
+  local_sd: 0,                     // free, CPU
+
+  // Music generation (kie.ai Suno wrapper)
+  suno_per_credit: 0.005,          // $0.005 per kie.ai credit
+  suno_credits_per_song: 10,       // ~10 credits per V4.5 generation (2 tracks)
+  stable_audio: 0,                 // free, local GPU
+
+  // AI prompt generation
+  claude_sonnet_input: 0.003,      // per 1K input tokens
+  claude_sonnet_output: 0.015,     // per 1K output tokens
+  claude_est_input_tokens: 0.5,    // ~500 tokens system+user prompt
+  claude_est_output_tokens: 1.2,   // ~1200 tokens for 8 sections
+  openai_gpt4o_mini: 0.002,       // est. per call
+
+  // YouTube
+  youtube_quota_per_upload: 1600,   // units (10,000/day free)
+  youtube_cost: 0,                  // free within quota
+
+  // Video rendering
+  remotion_local: 0,               // free, local CPU
+  remotion_cloud: 0.05,            // est. if using Remotion Lambda (future)
+
+  // Notifications
+  discord_webhook: 0,              // free
+  slack_webhook: 0,                // free
+
+  // Thumbnail
+  thumbnail_local: 0,              // free, Pillow
+  thumbnail_api: 0,                // extracted from video, no extra cost
+
+  // Post-processing
+  ffmpeg_local: 0,                 // free
+
+  // ngrok
+  ngrok_free: 0,
 };
 
-function estimateCost(budget: string): { total: number; breakdown: Record<string, number> } {
-  const b = budget || "standard";
-  const breakdown: Record<string, number> = {};
+interface CostLine {
+  service: string;
+  provider: string;
+  detail: string;
+  cost: number;
+  unit: string;
+}
 
-  if (b === "free") {
-    breakdown["Image (Local SD)"] = 0;
-    breakdown["Music (Silent)"] = 0;
-    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
-  } else if (b === "budget") {
-    breakdown["Image (DALL-E)"] = COST_TABLE.image.dalle;
-    breakdown["Music (Suno x2)"] = COST_TABLE.music.suno * 2;
-    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
-  } else if (b === "standard") {
-    breakdown["Image (Seedream)"] = COST_TABLE.image.seedream;
-    breakdown["Music (Suno x2)"] = COST_TABLE.music.suno * 2;
-    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
-    breakdown["YouTube Upload"] = 0;
-  } else if (b === "premium") {
-    breakdown["Image (Seedream HD)"] = COST_TABLE.image.seedream * 2;
-    breakdown["Music (Suno x4)"] = COST_TABLE.music.suno * 4;
-    breakdown["Prompts (Claude)"] = COST_TABLE.prompts.claude;
-    breakdown["YouTube Upload"] = 0;
+function estimateCost(budget: string, sceneDuration: number = 120): { total: number; lines: CostLine[] } {
+  const lines: CostLine[] = [];
+  const sceneCount = Math.max(Math.ceil(sceneDuration / 5), 8); // ~1 scene per 5 min, min 8
+  const musicTracks = 2;
+  const sunoGenerations = Math.ceil(sceneDuration / 240); // 1 gen per 4 min max
+
+  // 1. Prompt generation (always Claude)
+  const promptInputCost = PRICING.claude_est_input_tokens * PRICING.claude_sonnet_input;
+  const promptOutputCost = PRICING.claude_est_output_tokens * PRICING.claude_sonnet_output;
+  const promptTotal = promptInputCost + promptOutputCost;
+  lines.push({
+    service: "Prompt Generation",
+    provider: "Claude Sonnet",
+    detail: `~500 in + ~1200 out tokens (8 sections)`,
+    cost: promptTotal,
+    unit: "per run",
+  });
+
+  // 2. Image generation
+  if (budget === "free") {
+    lines.push({ service: "Image Generation", provider: "Local SD 1.5", detail: `1 base image + ${sceneCount} variants (CPU ~2 min)`, cost: 0, unit: "free" });
+  } else if (budget === "budget") {
+    lines.push({ service: "Image Generation", provider: "DALL-E 3 Standard", detail: `1 image 1024x1024 + ${sceneCount} PIL variants`, cost: PRICING.dalle3_standard, unit: "per image" });
+  } else if (budget === "standard") {
+    lines.push({ service: "Image Generation", provider: "Seedream (Replicate)", detail: `1 image 16:9 + ${sceneCount} PIL variants`, cost: PRICING.seedream_replicate, unit: "per image" });
+  } else {
+    lines.push({ service: "Image Generation", provider: "DALL-E 3 HD", detail: `1 image 1792x1024 HD + ${sceneCount} PIL variants`, cost: PRICING.dalle3_hd, unit: "per image" });
   }
 
-  const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
-  return { total, breakdown };
+  // 3. Music generation
+  if (budget === "free") {
+    lines.push({ service: "Music Generation", provider: "Silent (fallback)", detail: "No Suno credits — silent audio", cost: 0, unit: "free" });
+  } else {
+    const sunoCredits = sunoGenerations * PRICING.suno_credits_per_song;
+    const sunoCost = sunoCredits * PRICING.suno_per_credit;
+    lines.push({
+      service: "Music Generation",
+      provider: "Suno V4.5 (kie.ai)",
+      detail: `${sunoGenerations} gen x ${PRICING.suno_credits_per_song} credits = ${sunoCredits} credits (${musicTracks} tracks/gen)`,
+      cost: sunoCost,
+      unit: `${sunoCredits} credits`,
+    });
+  }
+
+  // 4. Video rendering
+  lines.push({
+    service: "Video Rendering",
+    provider: "Remotion (local)",
+    detail: `${sceneCount} scenes, ${sceneDuration} min, 1080p H.264 CRF 16-18`,
+    cost: 0,
+    unit: "free (local CPU)",
+  });
+
+  // 5. Post-processing
+  lines.push({
+    service: "Post-Processing",
+    provider: "FFmpeg (local)",
+    detail: "Watermark, subtitles, intro/outro",
+    cost: 0,
+    unit: "free",
+  });
+
+  // 6. Thumbnail
+  lines.push({
+    service: "Thumbnail",
+    provider: "Pillow + OpenCV (local)",
+    detail: "Best frame extraction + text composite, 1280x720 JPEG",
+    cost: 0,
+    unit: "free",
+  });
+
+  // 7. Discord notification
+  lines.push({
+    service: "Notifications",
+    provider: "Discord + Slack webhooks",
+    detail: "Preview + approval + publish notification",
+    cost: 0,
+    unit: "free",
+  });
+
+  // 8. YouTube upload
+  lines.push({
+    service: "YouTube Upload",
+    provider: "YouTube Data API v3",
+    detail: `1,600 quota units (${Math.floor(10000 / 1600)} uploads/day free)`,
+    cost: 0,
+    unit: "free (within quota)",
+  });
+
+  const total = lines.reduce((sum, l) => sum + l.cost, 0);
+  return { total, lines };
 }
 
 export default function StatusPage() {
@@ -170,24 +278,73 @@ export default function StatusPage() {
           </div>
 
           {/* Cost Estimate */}
-          <Card className="bg-muted/30 border-dashed">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Estimated Cost</span>
-                <span className="text-lg font-bold">
-                  ${estimateCost(budget).total.toFixed(3)}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {Object.entries(estimateCost(budget).breakdown).map(([key, val]) => (
-                  <div key={key} className="flex justify-between text-xs text-muted-foreground">
-                    <span>{key}</span>
-                    <span>{val === 0 ? "Free" : `$${val.toFixed(3)}`}</span>
+          {(() => {
+            const est = estimateCost(budget);
+            const paidLines = est.lines.filter(l => l.cost > 0);
+            const freeLines = est.lines.filter(l => l.cost === 0);
+            return (
+              <Card className="bg-muted/30 border-dashed">
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium">Estimated Cost per Video</span>
+                    <Badge className={est.total === 0 ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"}>
+                      {est.total === 0 ? "FREE" : `$${est.total.toFixed(3)}`}
+                    </Badge>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+
+                  {/* Paid services */}
+                  {paidLines.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Paid Services</p>
+                      <table className="w-full text-xs">
+                        <tbody>
+                          {paidLines.map((l, i) => (
+                            <tr key={i} className="border-b border-dashed border-muted">
+                              <td className="py-1.5 font-medium">{l.service}</td>
+                              <td className="py-1.5 text-muted-foreground">{l.provider}</td>
+                              <td className="py-1.5 text-muted-foreground">{l.detail}</td>
+                              <td className="py-1.5 text-right font-mono">${l.cost.toFixed(3)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Free services */}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Free Services</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      {freeLines.map((l, i) => (
+                        <div key={i} className="flex justify-between text-xs text-muted-foreground">
+                          <span>{l.service}</span>
+                          <span className="text-green-500">Free</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Totals */}
+                  <div className="mt-3 pt-2 border-t flex justify-between text-sm">
+                    <span className="font-medium">Total per video</span>
+                    <span className="font-bold">${est.total.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>10 videos</span>
+                    <span>${(est.total * 10).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>60 videos (full lofi roadmap)</span>
+                    <span>${(est.total * 60).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>210 videos (full roadmap)</span>
+                    <span>${(est.total * 210).toFixed(2)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {triggerResult && (
             <p className={triggerResult.startsWith("Error") ? "text-red-500 text-sm" : "text-green-500 text-sm"}>
