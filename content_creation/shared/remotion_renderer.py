@@ -210,7 +210,8 @@ def _render(
         composition,
         str(output_path.absolute()),
         "--props", str(props_file.absolute()),
-        "--frames", f"0-{frames - 1}",
+        # Don't pass --frames when calculateMetadata handles duration
+        # (avoids frame range exceeding computed durationInFrames)
         "--fps", str(fps),
         "--width", str(width),
         "--height", str(height),
