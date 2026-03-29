@@ -49,9 +49,11 @@ const PRICING = {
   discord_webhook: 0,              // free
   slack_webhook: 0,                // free
 
-  // Thumbnail
-  thumbnail_local: 0,              // free, Pillow
-  thumbnail_api: 0,                // extracted from video, no extra cost
+  // Thumbnail img2img enhancement
+  thumb_seedream: 0.035,           // Seedream img2img via Replicate
+  thumb_imagen: 0.020,             // Google Imagen 3.0 via Gemini API (est.)
+  thumb_sdxl: 0.030,               // SDXL img2img via Replicate
+  thumb_local: 0,                  // Pillow enhancement (free)
 
   // Post-processing
   ffmpeg_local: 0,                 // free
@@ -130,11 +132,44 @@ function estimateCost(budget: string, sceneDuration: number = 120): { total: num
     unit: "free",
   });
 
-  // 6. Thumbnail
+  // 6. Thumbnail img2img + text overlay
+  if (budget === "free") {
+    lines.push({
+      service: "Thumbnail Enhancement",
+      provider: "Pillow (local)",
+      detail: "Contrast/color/sharpness boost + Impact font text overlay",
+      cost: 0,
+      unit: "free",
+    });
+  } else if (budget === "budget") {
+    lines.push({
+      service: "Thumbnail Enhancement",
+      provider: "Google Imagen 3.0",
+      detail: "img2img via Gemini API, guidanceScale 60 → 1280x720",
+      cost: PRICING.thumb_imagen,
+      unit: "per image",
+    });
+  } else if (budget === "standard") {
+    lines.push({
+      service: "Thumbnail Enhancement",
+      provider: "Seedream img2img",
+      detail: "Best frame → Seedream (Replicate) → 16:9 enhanced",
+      cost: PRICING.thumb_seedream,
+      unit: "per image",
+    });
+  } else {
+    lines.push({
+      service: "Thumbnail Enhancement",
+      provider: "Seedream + SDXL variants",
+      detail: "Seedream primary ($0.035) + SDXL backup ($0.030), pick best",
+      cost: PRICING.thumb_seedream + PRICING.thumb_sdxl,
+      unit: "2 images",
+    });
+  }
   lines.push({
-    service: "Thumbnail",
-    provider: "Pillow + OpenCV (local)",
-    detail: "Best frame extraction + text composite, 1280x720 JPEG",
+    service: "Thumbnail Text Overlay",
+    provider: "Pillow (local)",
+    detail: "Impact font, glow, outline, gradient, vignette, avatar logo",
     cost: 0,
     unit: "free",
   });
