@@ -103,9 +103,87 @@ class PipelineHandler(BaseHTTPRequestHandler):
             })
             return
 
-        self._send_json(404, {"error": "Not found. Endpoints: /health, /status, /trigger, /logs"})
+        # --- Content Roadmap ---
+        if self.path.startswith("/roadmap"):
+            from urllib.parse import urlparse, parse_qs
+            from roadmap import get_roadmap
+            qs = parse_qs(urlparse(self.path).query)
+            status_filter = qs.get("status", [None])[0]
+            entries = get_roadmap().list_entries(status_filter=status_filter)
+            self._send_json(200, {
+                "entries": [
+                    {"id": e.id, "title": e.title, "tags": e.tags,
+                     "profile": e.profile, "status": e.status, "notes": e.notes}
+                    for e in entries
+                ],
+                "total": len(entries),
+            })
+            return
+
+        # --- Scheduler / Jobs ---
+        if self.path.startswith("/jobs"):
+            from scheduler import get_queue
+            jobs = get_queue().list_jobs()
+            self._send_json(200, {
+                "jobs": [
+                    {"id": j.id, "profile": j.profile, "tags": j.tags,
+                     "scheduled_at": j.scheduled_at, "status": j.status}
+                    for j in jobs
+                ],
+            })
+            return
+
+        # --- Prompt Preview ---
+        if self.path.startswith("/preview-prompts"):
+            from urllib.parse import urlparse, parse_qs
+            qs = parse_qs(urlparse(self.path).query)
+            tags = qs.get("tags", [""])[0]
+            profile = qs.get("profile", ["cinematic"])[0]
+            if not tags:
+                self._send_json(400, {"error": "tags parameter required"})
+                return
+            try:
+                from generators.prompt_generator import PromptGenerator
+                pg = PromptGenerator()
+                result = pg.generate(tags, profile)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+            return
+
+        # --- Execution History ---
+        if self.path.startswith("/history"):
+            from execution_log import get_execution_history
+            entries = get_execution_history(30)
+            self._send_json(200, {"entries": entries})
+            return
+
+        self._send_json(404, {"error": "Endpoints: /health, /status, /trigger, /logs, /roadmap, /jobs, /preview-prompts, /history"})
 
     def do_POST(self):
+        if self.path == "/roadmap":
+            if not self._auth_check():
+                return
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = json.loads(self.rfile.read(content_length)) if content_length > 0 else {}
+            action = body.get("action", "")
+            from roadmap import get_roadmap
+            rm = get_roadmap()
+            if action == "add":
+                e = rm.add_entry(body["title"], body.get("tags", ""), body.get("profile", "cinematic"), body.get("notes", ""))
+                self._send_json(200, {"id": e.id, "title": e.title})
+                return
+            if action == "update_status":
+                ok = rm.update_status(body["id"], body["status"])
+                self._send_json(200, {"ok": ok})
+                return
+            if action == "delete":
+                ok = rm.delete_entry(body["id"])
+                self._send_json(200, {"ok": ok})
+                return
+            self._send_json(400, {"error": "action must be add/update_status/delete"})
+            return
+
         if self.path != "/trigger":
             self._send_json(404, {"error": "POST to /trigger"})
             return

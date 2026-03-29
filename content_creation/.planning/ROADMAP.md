@@ -443,3 +443,12 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 22 to break down)
+
+### Phase 23: Unify Gradio features into Next.js dashboard — scheduling, content roadmap, prompt preview, roadmap picker
+
+**Goal:** [To be planned]
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 23 to break down)
