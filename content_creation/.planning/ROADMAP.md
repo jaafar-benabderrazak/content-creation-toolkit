@@ -457,7 +457,7 @@ Plans:
 
 **Goal:** A configurable style reference subsystem scrapes a target Instagram account (default @radstream), extracts dominant colors and mood descriptors into a persistent profile, and injects reference images into Seedream 5 (via image_input) or local IP-Adapter (InstantStyle) so every generated scene shares the account's visual aesthetic without copying composition
 **Depends on:** Phase 23
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 24-01-PLAN.md — generators/style_reference.py: StyleReferenceManager with instaloader scraper, colorthief+KMeans extractor, profile.json persistence, CLI

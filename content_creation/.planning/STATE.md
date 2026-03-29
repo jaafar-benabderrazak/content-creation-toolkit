@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.3 — AI-Generated YouTube Metadata (Phase 21)
+**Current focus:** Milestone v1.4 — Instagram Style Reference System (Phase 24)
 
 ## Current Position
 
-Phase: 21 of 21 (v1.3 — AI-Generated Thumbnail Text, YouTube Metadata, and Full Prompt Chain Visualization in UI)
-Plan: 3 of 3 completed in current phase
-Status: Complete
-Last activity: 2026-03-29 — 21-03 complete: thumbnail_text or youtube_title fallback in generate_thumbnail call
+Phase: 24 of 24 (v1.4 — Instagram style reference system, @radstream aesthetic, img2img with reference images)
+Plan: 2 of 3 completed in current phase
+Status: In Progress
+Last activity: 2026-03-29 — 24-02 complete: StyleRefSettings schema added to PipelineConfig; cinematic.yaml wired to radstream
 
-Progress: [██████████] 100% (v1.3 milestone — 3/3 plans complete)
+Progress: [███████░░░] 70% (v1.4 milestone — 2/3 plans complete)
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [██████████] 100% (v1.3 milestone — 3/3 plans co
 | Phase 19 P03 | 5 | 3 tasks | 1 files |
 | Phase 21 P01 | 2min | 2 tasks | 2 files |
 | Phase 21 P03 | 1 | 1 tasks | 1 files |
+| Phase 24 P02 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,10 @@ Recent decisions affecting v1.2 work:
 - [Phase 21]: _validate alias at module level: static method exposed for direct import compatibility
 - [Phase 21]: thumbnail_text placed after youtube_tags in PublishSettings — no ENV_VAR_MAP entry (generated content, not credential)
 - [Phase 21]: youtube_tags count validation: range 15-20 enforced in _validate() matching _USER_PROMPT spec
+- [Phase 24-02]: StyleRefSettings placed after BrandingSettings in pipeline_config.py — style conditioning logically follows branding in the model hierarchy
+- [Phase 24-02]: session_file left as Optional[str] = None, commented out in YAML — sensitive path, not a hardcoded value
+- [Phase 24-02]: style_strength default 0.6 — safe midpoint matching IP-Adapter scale / Seedream image_input weight semantics
+- [Phase 24-02]: backend pattern constraint ^(replicate|local_ipadapter)$ — explicit allowlist prevents silent misconfiguration
 
 ### Roadmap Evolution
 
@@ -112,5 +117,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 21-03-PLAN.md — thumbnail_text or youtube_title fallback in generate_thumbnail; Phase 21 (v1.3) complete
+Stopped at: Completed 24-02-PLAN.md — StyleRefSettings schema added to PipelineConfig; cinematic.yaml wired to radstream
 Resume file: None
