@@ -411,3 +411,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
 | 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
 | 19. Local Gradio UI | 3/3 | Complete   | 2026-03-29 |
+
+### Phase 20: Persistent channel config and auto-generated 60-video lofi content roadmap
+
+**Goal:** [To be planned]
+**Depends on:** Phase 19
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 20 to break down)
