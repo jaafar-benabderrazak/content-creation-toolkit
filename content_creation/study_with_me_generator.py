@@ -652,9 +652,9 @@ def build_enhanced_video(
 # ---- Prompt Generation Helper -----------------------------------------------
 
 def _run_prompt_generation(tags: str, config_path: str, config) -> None:
-    """Generate SDXL + Suno prompts from tags via OpenAI and write them to the profile YAML.
+    """Generate SDXL + Suno prompts from tags via Claude/OpenAI and write them to the profile YAML.
 
-    Falls back silently to existing profile prompts if OPENAI_API_KEY is absent or the API call fails.
+    Falls back silently to existing profile prompts if no API key is available or the call fails.
     """
     from generators.prompt_generator import PromptGenerator, PromptGenerationError
     import yaml

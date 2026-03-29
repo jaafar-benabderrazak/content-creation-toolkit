@@ -76,8 +76,8 @@ def preview_prompts(tags: str) -> list[list[str]]:
         rows.append(["--- AI Generation from Tags ---", f'Tags: "{tags.strip()}"'])
         try:
             import os
-            if not os.environ.get("OPENAI_API_KEY"):
-                rows.append(["Status", "OPENAI_API_KEY not set — will use profile prompts"])
+            if not os.environ.get("ANTHROPIC_API_KEY") and not os.environ.get("OPENAI_API_KEY"):
+                rows.append(["Status", "No API key set (ANTHROPIC_API_KEY or OPENAI_API_KEY) — will use profile prompts"])
             else:
                 from generators.prompt_generator import PromptGenerator
                 profile_style = "cinematic"
