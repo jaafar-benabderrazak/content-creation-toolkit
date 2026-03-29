@@ -95,6 +95,21 @@ class BrandingSettings(BaseModel):
     refresh_branding: bool = False  # when True, discard cache and re-fetch on next run
 
 
+class StyleRefSettings(BaseModel):
+    handle: str  # Instagram handle, e.g. "radstream" (without @)
+    backend: str = Field(
+        default="replicate",
+        pattern=r"^(replicate|local_ipadapter)$",
+    )
+    post_limit: int = Field(default=30, ge=1, le=100)
+    max_reference_images: int = Field(default=6, ge=1, le=14)
+    refresh: bool = False  # when True, re-scrape and rebuild profile on next run
+    session_file: Optional[str] = None  # path to instaloader session file
+    style_strength: float = Field(default=0.6, ge=0.0, le=1.0)
+    # style_strength: 0.0 = no style conditioning, 1.0 = full; used as IP-Adapter scale
+    # or Seedream image_input weight (0.6 is a safe default that adds style without bleed)
+
+
 class PipelineConfig(BaseModel):
     profile: str = "default"
     video: VideoSettings = Field(default_factory=VideoSettings)
@@ -102,6 +117,7 @@ class PipelineConfig(BaseModel):
     publish: PublishSettings = Field(default_factory=PublishSettings)
     notify: NotifySettings = Field(default_factory=NotifySettings)
     branding: BrandingSettings = Field(default_factory=BrandingSettings)
+    style_ref: Optional[StyleRefSettings] = None
     sdxl: Optional[SDXLSettings] = None
     suno: Optional[SunoSettings] = None
 
