@@ -118,17 +118,23 @@ def render_study_video(
         total_frames = len(image_uris) * int(scene_duration * fps)
 
     # Handle audio: copy to public/assets/ for staticFile() serving
-    # Skip silent/tiny audio files (< 1KB = Suno fallback silence)
+    # Only include real music (MP3 from Suno, not silent WAV fallback)
     audio_file_uri = ""
-    if audio_path and audio_path.exists() and audio_path.stat().st_size > 1024:
-        effective_audio = _ensure_wav(audio_path) if audio_visualization else audio_path
-        # Copy BEFORE the render call — Remotion needs it in public/ at bundle time
-        audio_dest = public_dir / effective_audio.name
-        shutil.copy2(str(effective_audio), str(audio_dest))
-        audio_file_uri = f"/assets/{effective_audio.name}"
-        logger.info(f"[Remotion] Audio: {effective_audio.name} ({effective_audio.stat().st_size / 1024:.0f} KB)")
+    if audio_path and audio_path.exists():
+        suffix = audio_path.suffix.lower()
+        size_kb = audio_path.stat().st_size / 1024
+        # Real Suno tracks are MP3 > 500KB; silent fallbacks are large WAV or tiny
+        is_real_music = suffix == ".mp3" and size_kb > 500
+        if is_real_music:
+            effective_audio = audio_path
+            audio_dest = public_dir / effective_audio.name
+            shutil.copy2(str(effective_audio), str(audio_dest))
+            audio_file_uri = f"/assets/{effective_audio.name}"
+            logger.info(f"[Remotion] Audio: {effective_audio.name} ({size_kb:.0f} KB)")
+        else:
+            logger.info(f"[Remotion] Skipping audio ({suffix}, {size_kb:.0f} KB) — not real music")
     else:
-        logger.info("[Remotion] No audio (silent or missing) — rendering without audio")
+        logger.info("[Remotion] No audio file — rendering without audio")
 
     props = {
         "images": image_uris,
