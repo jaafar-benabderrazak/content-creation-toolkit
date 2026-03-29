@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 const ADMIN_USER = process.env.DASHBOARD_USER || "admin";
 const ADMIN_PASS = process.env.DASHBOARD_PASSWORD || "changeme";
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+const SESSION_SECRET = process.env.SESSION_SECRET || "fallback-dev-secret-change-in-production";
 const SESSION_COOKIE = "dashboard_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 

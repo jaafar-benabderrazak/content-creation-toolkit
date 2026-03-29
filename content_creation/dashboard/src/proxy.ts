@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
 const SESSION_COOKIE = "dashboard_session";
-const SESSION_SECRET = process.env.SESSION_SECRET || "";
+const SESSION_SECRET = process.env.SESSION_SECRET || "fallback-dev-secret-change-in-production";
 
 function verifyToken(token: string): boolean {
   try {
