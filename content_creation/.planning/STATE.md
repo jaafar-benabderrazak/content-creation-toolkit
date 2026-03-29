@@ -11,10 +11,10 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 Phase: 24 of 24 (v1.4 — Instagram style reference system, @radstream aesthetic, img2img with reference images)
 Plan: 3 of 3 completed in current phase
-Status: In Progress
-Last activity: 2026-03-29 — 24-01 complete: StyleReferenceManager, StyleProfile, scraper, extractor, profile.json persistence
+Status: Complete
+Last activity: 2026-03-29 — 24-03 complete: style ref wired into generate_scenes() (Seedream 5 + IP-Adapter) and enhance_thumbnail_image()
 
-Progress: [█████████░] 90% (v1.4 milestone — 3/3 plans complete — awaiting 24-03)
+Progress: [██████████] 100% (v1.4 milestone — 3/3 plans complete — Phase 24 done)
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [█████████░] 90% (v1.4 milestone — 3/3 plans com
 | Phase 21 P03 | 1 | 1 tasks | 1 files |
 | Phase 24 P02 | 3 | 1 tasks | 2 files |
 | Phase 24 P01 | 5 | 1 tasks | 1 files |
+| Phase 24 P03 | 3 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 24-02]: backend pattern constraint ^(replicate|local_ipadapter)$ — explicit allowlist prevents silent misconfiguration
 - [Phase 24]: Lazy-import instaloader/colorthief inside functions — StyleReferenceManager importable without optional packages
 - [Phase 24]: Manual fallback: user drops .jpg into .cache/style_reference/<handle>/posts/ and runs --extract-only to produce profile.json without Instagram access
+- [Phase 24]: style_ref_handle included in cache key so styled and unstyled scene images are stored separately
+- [Phase 24]: Seedream upgraded from seedream-3 to seedream-5-lite in both image_gen.py and thumbnail_gen.py
 
 ### Roadmap Evolution
 
