@@ -52,6 +52,15 @@ def preview_prompts(tags: str) -> list[list[str]]:
                 rows.append(["Suno Genre", cfg.suno.genre])
                 rows.append(["Suno Model", cfg.suno.model_version])
             rows.append(["Music Prompt (profile)", cfg.video.music_prompt])
+            # Show existing publish metadata from saved config
+            rows.append(["", ""])
+            rows.append(["--- Publish Metadata (saved) ---", ""])
+            rows.append(["Thumbnail Text (saved)", cfg.publish.thumbnail_text or "(not set)"])
+            rows.append(["YouTube Title (saved)", cfg.publish.youtube_title or "(not set)"])
+            saved_desc = cfg.publish.youtube_description or ""
+            rows.append(["YouTube Description (saved)", saved_desc[:100] + ("..." if len(saved_desc) > 100 else "") or "(not set)"])
+            saved_tags = cfg.publish.youtube_tags or []
+            rows.append(["YouTube Tags (saved)", f"{len(saved_tags)} tags: " + ", ".join(saved_tags[:5]) + ("..." if len(saved_tags) > 5 else "") if saved_tags else "(not set)"])
         except Exception as e:
             rows.append(["Error loading profile", str(e)])
     else:
@@ -95,6 +104,12 @@ def preview_prompts(tags: str) -> list[list[str]]:
                 scenes = result.get("scene_templates", [])
                 for i, s in enumerate(scenes[:8], 1):
                     rows.append([f"AI Scene {i}", s])
+                rows.append(["AI Thumbnail Text", result.get("thumbnail_text", "?")])
+                rows.append(["AI YouTube Title", result.get("youtube_title", "?")])
+                ai_desc = result.get("youtube_description", "")
+                rows.append(["AI YouTube Description", ai_desc[:120] + ("..." if len(ai_desc) > 120 else "")])
+                ai_tags = result.get("youtube_tags", [])
+                rows.append(["AI YouTube Tags", f"{len(ai_tags)} tags: " + ", ".join(ai_tags[:6]) + ("..." if len(ai_tags) > 6 else "")])
         except Exception as e:
             rows.append(["AI Generation Failed", str(e)])
 
