@@ -118,12 +118,17 @@ def render_study_video(
         total_frames = len(image_uris) * int(scene_duration * fps)
 
     # Handle audio: copy to public/assets/ for staticFile() serving
+    # Skip silent/tiny audio files (< 1KB = Suno fallback silence)
     audio_file_uri = ""
-    if audio_path and audio_path.exists():
+    if audio_path and audio_path.exists() and audio_path.stat().st_size > 1024:
         effective_audio = _ensure_wav(audio_path) if audio_visualization else audio_path
+        # Copy BEFORE the render call — Remotion needs it in public/ at bundle time
         audio_dest = public_dir / effective_audio.name
         shutil.copy2(str(effective_audio), str(audio_dest))
         audio_file_uri = f"/assets/{effective_audio.name}"
+        logger.info(f"[Remotion] Audio: {effective_audio.name} ({effective_audio.stat().st_size / 1024:.0f} KB)")
+    else:
+        logger.info("[Remotion] No audio (silent or missing) — rendering without audio")
 
     props = {
         "images": image_uris,
@@ -221,6 +226,7 @@ def _render(
         "--color-space", "bt709",
         "--audio-codec", "aac",
         "--audio-bitrate", "320k",
+        "--no-bundle-cache",
     ]
 
     logger.info(f"[Remotion] Rendering {composition} → {output_path}")
