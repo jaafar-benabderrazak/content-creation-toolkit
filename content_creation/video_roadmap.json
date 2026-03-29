@@ -598,5 +598,1505 @@
     "status": "planned",
     "created_at": "2026-03-29T00:29:49.150037",
     "updated_at": "2026-03-29T00:29:49.150037"
+  },
+  {
+    "id": "1be32234d60740f38407770392508af5",
+    "title": "[Solarpunk] Solar Garden Study",
+    "tags": "solarpunk, rooftop garden, solar panels, green city, warm sunlight",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.010605",
+    "updated_at": "2026-03-29T13:39:32.010605"
+  },
+  {
+    "id": "60f34611aa104352bb62a5c638e3e2bf",
+    "title": "[Solarpunk] Living Wall Library",
+    "tags": "solarpunk, vertical garden, library, natural light, eco-architecture",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.026732",
+    "updated_at": "2026-03-29T13:39:32.026732"
+  },
+  {
+    "id": "00f53191800f41bdbd18a0d823ed8877",
+    "title": "[Solarpunk] Wind Turbine Vista",
+    "tags": "solarpunk, wind farm, meadow, clean energy, peaceful, open sky",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.036308",
+    "updated_at": "2026-03-29T13:39:32.036308"
+  },
+  {
+    "id": "f5af01dfe6d447a5b0e9286a2f6d071e",
+    "title": "[Solarpunk] Bamboo Tower Study",
+    "tags": "solarpunk, bamboo architecture, open air, tropical, birds, breezy",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.045651",
+    "updated_at": "2026-03-29T13:39:32.045651"
+  },
+  {
+    "id": "cdd7034d9d284e3796b6094129bc0435",
+    "title": "[Solarpunk] Community Garden Focus",
+    "tags": "solarpunk, community, garden, shared space, cooperative, green",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.054611",
+    "updated_at": "2026-03-29T13:39:32.054611"
+  },
+  {
+    "id": "84c99a4c0e0548c2b66a3436017327cd",
+    "title": "[Solarpunk] Greenhouse Classroom",
+    "tags": "solarpunk, greenhouse, glass dome, plants, warm, educational",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.065725",
+    "updated_at": "2026-03-29T13:39:32.065725"
+  },
+  {
+    "id": "c05d0784001e49d787d3e4ea6a449c04",
+    "title": "[Solarpunk] Solar Treehouse",
+    "tags": "solarpunk, treehouse, solar panels, forest canopy, sustainable",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.072971",
+    "updated_at": "2026-03-29T13:39:32.072971"
+  },
+  {
+    "id": "3cdcb4e612df4c2b8249412a1e397cbe",
+    "title": "[Solarpunk] Algae Farm Lab",
+    "tags": "solarpunk, biofuel, algae, laboratory, green glow, futuristic",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.081137",
+    "updated_at": "2026-03-29T13:39:32.081137"
+  },
+  {
+    "id": "8a4fe40308b5473c8f6b31f5ed4ded10",
+    "title": "[Solarpunk] Floating Garden Island",
+    "tags": "solarpunk, floating island, water, lily pads, serene, utopian",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.088567",
+    "updated_at": "2026-03-29T13:39:32.088567"
+  },
+  {
+    "id": "b2861c844d3245b8b763e0c4b5aa8b63",
+    "title": "[Solarpunk] Moss-Covered Ruins",
+    "tags": "solarpunk, overgrown ruins, moss, nature reclaiming, peaceful",
+    "profile": "cinematic",
+    "notes": "Solarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.096446",
+    "updated_at": "2026-03-29T13:39:32.096446"
+  },
+  {
+    "id": "71b049673a7f4d4bbfc4e22c908d5a22",
+    "title": "[Cyberpunk] Neon Alley Study",
+    "tags": "cyberpunk, neon, alley, rain, hologram, dark, futuristic",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.103520",
+    "updated_at": "2026-03-29T13:39:32.103520"
+  },
+  {
+    "id": "2128efc96c9c4773ab5a72e1216c9144",
+    "title": "[Cyberpunk] Rooftop Hacker Station",
+    "tags": "cyberpunk, rooftop, city skyline, screens, night, antenna",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.110707",
+    "updated_at": "2026-03-29T13:39:32.110707"
+  },
+  {
+    "id": "4e34a35f76ae4191ada742ce0e80fd73",
+    "title": "[Cyberpunk] Underground Data Haven",
+    "tags": "cyberpunk, underground, servers, cables, blue light, secret",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.119038",
+    "updated_at": "2026-03-29T13:39:32.119038"
+  },
+  {
+    "id": "1f51692be1114a7d831e417389759778",
+    "title": "[Cyberpunk] Mega-Corp Lobby",
+    "tags": "cyberpunk, corporate, glass, chrome, cold, imposing",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.126020",
+    "updated_at": "2026-03-29T13:39:32.126020"
+  },
+  {
+    "id": "a92e80f177994183bb454e1b63c1de56",
+    "title": "[Cyberpunk] Night Market Corner",
+    "tags": "cyberpunk, night market, food stalls, neon signs, crowded, rain",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.134152",
+    "updated_at": "2026-03-29T13:39:32.134152"
+  },
+  {
+    "id": "21fa36e73a5547c9b8661d699c9c72c7",
+    "title": "[Cyberpunk] Abandoned Metro",
+    "tags": "cyberpunk, metro, abandoned, graffiti, flickering lights, urban",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.141079",
+    "updated_at": "2026-03-29T13:39:32.141079"
+  },
+  {
+    "id": "24d5cb84bc6a46c59a80f3b4d853dfbe",
+    "title": "[Cyberpunk] Holographic Library",
+    "tags": "cyberpunk, hologram, library, floating data, blue, futuristic",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.148051",
+    "updated_at": "2026-03-29T13:39:32.148051"
+  },
+  {
+    "id": "7edd4acbfc054ea78ddfd1720f2c1f4e",
+    "title": "[Cyberpunk] Capsule Hotel Pod",
+    "tags": "cyberpunk, capsule, minimal, screens, isolated, compact",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.155189",
+    "updated_at": "2026-03-29T13:39:32.155189"
+  },
+  {
+    "id": "5251a20c31ea44cbae8004631a405c53",
+    "title": "[Cyberpunk] Synthwave Arcade",
+    "tags": "cyberpunk, arcade, retro screens, purple neon, synthwave",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.162364",
+    "updated_at": "2026-03-29T13:39:32.162364"
+  },
+  {
+    "id": "d21e6391a1a845efaf263e6892dab99f",
+    "title": "[Cyberpunk] Drone Delivery Rooftop",
+    "tags": "cyberpunk, drones, rooftop, cargo, night, city lights",
+    "profile": "cinematic",
+    "notes": "Cyberpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.168777",
+    "updated_at": "2026-03-29T13:39:32.168777"
+  },
+  {
+    "id": "aa4b6f6b54e14c89b961560ddf0e7aee",
+    "title": "[Steampunk] Brass Clocktower",
+    "tags": "steampunk, clocktower, gears, brass, victorian, mechanical",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.177175",
+    "updated_at": "2026-03-29T13:39:32.177175"
+  },
+  {
+    "id": "c8467be23e934121a8ec73d90f624509",
+    "title": "[Steampunk] Airship Quarters",
+    "tags": "steampunk, airship, cabin, maps, compass, leather, clouds",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.184464",
+    "updated_at": "2026-03-29T13:39:32.184464"
+  },
+  {
+    "id": "d49c228f0a7c41e1add7bac68e0dd7ab",
+    "title": "[Steampunk] Victorian Lab",
+    "tags": "steampunk, laboratory, glass tubes, steam, copper, experiments",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.191278",
+    "updated_at": "2026-03-29T13:39:32.191278"
+  },
+  {
+    "id": "9ef4f25e18804b8792d8d36bb5a34ff4",
+    "title": "[Steampunk] Gear Room Library",
+    "tags": "steampunk, library, gears, pipes, old books, warm light",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.198196",
+    "updated_at": "2026-03-29T13:39:32.198196"
+  },
+  {
+    "id": "adf2aa487d434def9ea23315015ac2f3",
+    "title": "[Steampunk] Steam Train Car",
+    "tags": "steampunk, train, steam, countryside, compartment, velvet",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.209808",
+    "updated_at": "2026-03-29T13:39:32.209808"
+  },
+  {
+    "id": "6c0e2b0dba5a4222af1bc05fda2d43c0",
+    "title": "[Steampunk] Inventors Workshop",
+    "tags": "steampunk, workshop, tools, blueprints, oil lamps, cluttered",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.218811",
+    "updated_at": "2026-03-29T13:39:32.218811"
+  },
+  {
+    "id": "b714df5ed0b6490cbafd0a96852305a0",
+    "title": "[Steampunk] Gaslit Chamber",
+    "tags": "steampunk, gaslight, chamber, dark wood, brass fixtures, moody",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.229169",
+    "updated_at": "2026-03-29T13:39:32.229169"
+  },
+  {
+    "id": "e43e626a53c7436e88da72ce392e6ac9",
+    "title": "[Steampunk] Mechanical Garden",
+    "tags": "steampunk, mechanical flowers, clockwork butterflies, whimsical",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.238562",
+    "updated_at": "2026-03-29T13:39:32.238562"
+  },
+  {
+    "id": "da5031b453e347938d2cae1c330925d9",
+    "title": "[Steampunk] Observatory Tower",
+    "tags": "steampunk, observatory, telescope, stars, brass dome, night",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.257438",
+    "updated_at": "2026-03-29T13:39:32.257438"
+  },
+  {
+    "id": "e47d00ea61a54c60acf04691b0de1d84",
+    "title": "[Steampunk] Underground Forge",
+    "tags": "steampunk, forge, underground, fire, metal, industrial, hot",
+    "profile": "cinematic",
+    "notes": "Steampunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.271474",
+    "updated_at": "2026-03-29T13:39:32.271474"
+  },
+  {
+    "id": "9715716dbfe044489345f2e41db2e5e0",
+    "title": "[Biopunk] Bio-Lab Pod",
+    "tags": "biopunk, laboratory, DNA helix, green glow, organic, wet",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.279448",
+    "updated_at": "2026-03-29T13:39:32.279448"
+  },
+  {
+    "id": "f8b6df50ab4749c3862d79cde8036172",
+    "title": "[Biopunk] Living Wall Office",
+    "tags": "biopunk, organic architecture, bioluminescent, living walls",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.290252",
+    "updated_at": "2026-03-29T13:39:32.290252"
+  },
+  {
+    "id": "682f78f5994c4fe889a40212b7acff63",
+    "title": "[Biopunk] Gene Splice Library",
+    "tags": "biopunk, genetic, specimens, jars, dark, scientific, eerie",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.298889",
+    "updated_at": "2026-03-29T13:39:32.298889"
+  },
+  {
+    "id": "f302ab8391da4541a664bc6cdee00493",
+    "title": "[Biopunk] Mycelium Room",
+    "tags": "biopunk, mushrooms, mycelium, dark, glowing, underground",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.306470",
+    "updated_at": "2026-03-29T13:39:32.306470"
+  },
+  {
+    "id": "5d5b7bfd983d44f2828cd15e96443b46",
+    "title": "[Biopunk] Coral Reef Desk",
+    "tags": "biopunk, coral, underwater dome, bioluminescent, tropical",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.314485",
+    "updated_at": "2026-03-29T13:39:32.314485"
+  },
+  {
+    "id": "d1d9e340cd7747a485062a49034632ad",
+    "title": "[Biopunk] Terraformed Greenhouse",
+    "tags": "biopunk, terraforming, alien plants, humid, experimental",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.323597",
+    "updated_at": "2026-03-29T13:39:32.323597"
+  },
+  {
+    "id": "4d3317f9bb6941379e3ccb68c7f4e9b3",
+    "title": "[Biopunk] Symbiotic Chair",
+    "tags": "biopunk, organic furniture, living chair, tendrils, warm",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.332083",
+    "updated_at": "2026-03-29T13:39:32.332083"
+  },
+  {
+    "id": "3cb6fd0ac68b4e32b5c7731c08f0b838",
+    "title": "[Biopunk] Bioelectric Room",
+    "tags": "biopunk, electricity, organic, neural, pulsing light",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.340918",
+    "updated_at": "2026-03-29T13:39:32.340918"
+  },
+  {
+    "id": "8dc37c2400b14143b411bf5a459e381c",
+    "title": "[Biopunk] Spore Cloud Study",
+    "tags": "biopunk, spores, floating, atmospheric, mysterious, hazy",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.349679",
+    "updated_at": "2026-03-29T13:39:32.349679"
+  },
+  {
+    "id": "604424b3539047eb97e92149e7b60a3a",
+    "title": "[Biopunk] Chimera Garden",
+    "tags": "biopunk, hybrid creatures, garden, surreal, dreamlike, colorful",
+    "profile": "cinematic",
+    "notes": "Biopunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.358445",
+    "updated_at": "2026-03-29T13:39:32.358445"
+  },
+  {
+    "id": "47f34e1730154c2bafc34ebafe006f42",
+    "title": "[Dieselpunk] War Room Desk",
+    "tags": "dieselpunk, war room, maps, radio, 1940s, military, sepia",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.367926",
+    "updated_at": "2026-03-29T13:39:32.367926"
+  },
+  {
+    "id": "896fb06bee454a92abbe2d4788b42f39",
+    "title": "[Dieselpunk] Art Deco Lounge",
+    "tags": "dieselpunk, art deco, gold, black, geometric, jazz age",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.375931",
+    "updated_at": "2026-03-29T13:39:32.375931"
+  },
+  {
+    "id": "ea08c1433e004dfc936ba1f008f2a8a8",
+    "title": "[Dieselpunk] Factory Floor",
+    "tags": "dieselpunk, factory, heavy machinery, smoke, rivets, industrial",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.384691",
+    "updated_at": "2026-03-29T13:39:32.384691"
+  },
+  {
+    "id": "bd0c70e8115f459f8976c8747ba9f539",
+    "title": "[Dieselpunk] Bomber Cockpit",
+    "tags": "dieselpunk, aircraft, cockpit, instruments, leather, altitude",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.393508",
+    "updated_at": "2026-03-29T13:39:32.393508"
+  },
+  {
+    "id": "6b73e89e71cb4a97bb5aaf7f8e164f27",
+    "title": "[Dieselpunk] Underground Bunker",
+    "tags": "dieselpunk, bunker, concrete, dim lights, propaganda posters",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.401800",
+    "updated_at": "2026-03-29T13:39:32.401800"
+  },
+  {
+    "id": "85e030e2c103422a8f580da05645c882",
+    "title": "[Dieselpunk] Diesel Train Car",
+    "tags": "dieselpunk, locomotive, smoke, countryside, vintage, wood",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.408941",
+    "updated_at": "2026-03-29T13:39:32.408941"
+  },
+  {
+    "id": "f5bb4bff53e445a68f551020de3c4d93",
+    "title": "[Dieselpunk] Propaganda Office",
+    "tags": "dieselpunk, office, typewriter, posters, filing cabinets, noir",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.417619",
+    "updated_at": "2026-03-29T13:39:32.417619"
+  },
+  {
+    "id": "7fa3b226d31546729c8b193bbcd11c0a",
+    "title": "[Dieselpunk] Harbor Warehouse",
+    "tags": "dieselpunk, harbor, warehouse, crates, fog, industrial docks",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.424524",
+    "updated_at": "2026-03-29T13:39:32.424524"
+  },
+  {
+    "id": "abf630ad203b43e28aa607230de000f7",
+    "title": "[Dieselpunk] Radio Tower Station",
+    "tags": "dieselpunk, radio tower, broadcast, dials, vacuum tubes",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.436879",
+    "updated_at": "2026-03-29T13:39:32.436879"
+  },
+  {
+    "id": "8dd27eb32742476a90d55ab3850ad4b0",
+    "title": "[Dieselpunk] Trench Command Post",
+    "tags": "dieselpunk, trench, sandbags, maps, lantern, determination",
+    "profile": "cinematic",
+    "notes": "Dieselpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.445910",
+    "updated_at": "2026-03-29T13:39:32.445910"
+  },
+  {
+    "id": "764f788a099240079bdf2e8d9ce1c889",
+    "title": "[Atompunk] Retro Space Station",
+    "tags": "atompunk, space station, 1950s retro, chrome, atomic age",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.453762",
+    "updated_at": "2026-03-29T13:39:32.453762"
+  },
+  {
+    "id": "e43c94444eed4ddab5038b46cff4d05e",
+    "title": "[Atompunk] Nuclear Family Study",
+    "tags": "atompunk, 1950s home, pastel colors, atomic design, cheerful",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.463486",
+    "updated_at": "2026-03-29T13:39:32.463486"
+  },
+  {
+    "id": "0893640fb4144281b9c63d22229fd461",
+    "title": "[Atompunk] Fallout Shelter",
+    "tags": "atompunk, fallout shelter, concrete, supplies, vintage radio",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.473234",
+    "updated_at": "2026-03-29T13:39:32.473234"
+  },
+  {
+    "id": "7eed8aad3a6d47aba440fd01a88a8f53",
+    "title": "[Atompunk] Atomic Lab",
+    "tags": "atompunk, laboratory, atom models, white coats, clean, bright",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.482150",
+    "updated_at": "2026-03-29T13:39:32.482150"
+  },
+  {
+    "id": "5e9ec9029e0b439eaf48199b630a40ea",
+    "title": "[Atompunk] Drive-In Night",
+    "tags": "atompunk, drive-in, cars, neon, 1950s, american, nostalgic",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.491475",
+    "updated_at": "2026-03-29T13:39:32.491475"
+  },
+  {
+    "id": "3022f491ad4b4b4c95cf73c63306d93f",
+    "title": "[Atompunk] Jet Age Lounge",
+    "tags": "atompunk, jet age, lounge, swooping curves, modernist",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.500742",
+    "updated_at": "2026-03-29T13:39:32.500742"
+  },
+  {
+    "id": "381d84c33c0b4bafbc6d871916e35909",
+    "title": "[Atompunk] Moon Base Study",
+    "tags": "atompunk, moon base, crater view, retro computers, space",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.511022",
+    "updated_at": "2026-03-29T13:39:32.511022"
+  },
+  {
+    "id": "1a10f294d8ea4588b6bd9be6e05efffd",
+    "title": "[Atompunk] Diner Booth Study",
+    "tags": "atompunk, diner, chrome, jukebox, milkshake, red vinyl",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.519793",
+    "updated_at": "2026-03-29T13:39:32.519793"
+  },
+  {
+    "id": "f4b10407ae154eedad5f0b62820074c1",
+    "title": "[Atompunk] Tiki Bar Study",
+    "tags": "atompunk, tiki, tropical, bamboo, atomic cocktails, exotic",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.527164",
+    "updated_at": "2026-03-29T13:39:32.527164"
+  },
+  {
+    "id": "df1bd5a7ba094404b0d30eb50523aadc",
+    "title": "[Atompunk] Suburban Lab Garage",
+    "tags": "atompunk, garage, experiments, suburban, inventor, 1950s",
+    "profile": "cinematic",
+    "notes": "Atompunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.534599",
+    "updated_at": "2026-03-29T13:39:32.534599"
+  },
+  {
+    "id": "391c24b79484442f9e53739d8119ae15",
+    "title": "[Oceanpunk] Submarine Study",
+    "tags": "oceanpunk, submarine, porthole, deep sea, blue, pressure",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.541036",
+    "updated_at": "2026-03-29T13:39:32.541036"
+  },
+  {
+    "id": "fb308b83c25440d58ea555183d14f774",
+    "title": "[Oceanpunk] Coral City Library",
+    "tags": "oceanpunk, underwater city, coral, bioluminescent, dome",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.547913",
+    "updated_at": "2026-03-29T13:39:32.547913"
+  },
+  {
+    "id": "5955b1053ef547fbb9f17756d8d23971",
+    "title": "[Oceanpunk] Kelp Forest Study",
+    "tags": "oceanpunk, kelp forest, sunbeams, bubbles, peaceful, green",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.555706",
+    "updated_at": "2026-03-29T13:39:32.555706"
+  },
+  {
+    "id": "a00098664a514930a5593910d7ae370b",
+    "title": "[Oceanpunk] Deep Sea Observatory",
+    "tags": "oceanpunk, deep ocean, glass dome, abyss, creatures",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.564006",
+    "updated_at": "2026-03-29T13:39:32.564006"
+  },
+  {
+    "id": "c43bd2bca5f64c18bcab65d5c92b25f6",
+    "title": "[Oceanpunk] Pirate Ship Cabin",
+    "tags": "oceanpunk, pirate ship, cabin, maps, compass, wooden",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.572139",
+    "updated_at": "2026-03-29T13:39:32.572139"
+  },
+  {
+    "id": "acd702e755f642e3935a23bedc19f492",
+    "title": "[Oceanpunk] Tidal Power Station",
+    "tags": "oceanpunk, tidal energy, machinery, waves, industrial",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.579519",
+    "updated_at": "2026-03-29T13:39:32.579519"
+  },
+  {
+    "id": "77541ea99b2446bcb7d27a0fe4c474e2",
+    "title": "[Oceanpunk] Shipwreck Study",
+    "tags": "oceanpunk, shipwreck, treasure, overgrown, mysterious, old",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.586785",
+    "updated_at": "2026-03-29T13:39:32.586785"
+  },
+  {
+    "id": "dae3d0d6886f4190a639360e414e4a8d",
+    "title": "[Oceanpunk] Floating Market",
+    "tags": "oceanpunk, floating market, boats, colorful, water, busy",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.595521",
+    "updated_at": "2026-03-29T13:39:32.595521"
+  },
+  {
+    "id": "e52e8d76150e4d2b8db4aa4251c42a63",
+    "title": "[Oceanpunk] Lighthouse Room",
+    "tags": "oceanpunk, lighthouse, storm, isolated, rotating light",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.603919",
+    "updated_at": "2026-03-29T13:39:32.603919"
+  },
+  {
+    "id": "7dcaae9b3cda4fcb824c92c0f531ce97",
+    "title": "[Oceanpunk] Abyssal Vent Lab",
+    "tags": "oceanpunk, hydrothermal vent, extreme, dark, glowing",
+    "profile": "cinematic",
+    "notes": "Oceanpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.613005",
+    "updated_at": "2026-03-29T13:39:32.613005"
+  },
+  {
+    "id": "162c74a141d14ccab4fb3a6b4aac030f",
+    "title": "[Desertpunk] Sand Dune Outpost",
+    "tags": "desertpunk, sand dunes, outpost, scrap metal, sunset",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.621617",
+    "updated_at": "2026-03-29T13:39:32.621617"
+  },
+  {
+    "id": "7aef7a394c8a45feb6ca0b306aa6f15a",
+    "title": "[Desertpunk] Oasis Study Camp",
+    "tags": "desertpunk, oasis, palm trees, water, tent, relief, hot",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.631165",
+    "updated_at": "2026-03-29T13:39:32.631165"
+  },
+  {
+    "id": "4b10f194464a4af8b853245829bc4eca",
+    "title": "[Desertpunk] Buried City Study",
+    "tags": "desertpunk, buried ruins, sand, excavation, ancient",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.640861",
+    "updated_at": "2026-03-29T13:39:32.640861"
+  },
+  {
+    "id": "f12e13a003174efe8e25d7e693942f8c",
+    "title": "[Desertpunk] Solar Still Workshop",
+    "tags": "desertpunk, solar still, water collection, survival",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.652148",
+    "updated_at": "2026-03-29T13:39:32.652148"
+  },
+  {
+    "id": "5014f08689b9459a987155aaedbb56e4",
+    "title": "[Desertpunk] Caravan Study Tent",
+    "tags": "desertpunk, caravan, nomad, tent, campfire, stars",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.662086",
+    "updated_at": "2026-03-29T13:39:32.662086"
+  },
+  {
+    "id": "6b25c9861df841a0b3e1627c194a8781",
+    "title": "[Desertpunk] Sandstorm Shelter",
+    "tags": "desertpunk, sandstorm, shelter, goggles, wrapped, intense",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.671883",
+    "updated_at": "2026-03-29T13:39:32.671883"
+  },
+  {
+    "id": "d55bba57da7b41049a83812105b584d0",
+    "title": "[Desertpunk] Canyon Cliff Study",
+    "tags": "desertpunk, canyon, cliff dwelling, red rock, panoramic",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.680436",
+    "updated_at": "2026-03-29T13:39:32.680436"
+  },
+  {
+    "id": "19dcc8b988a94bf799674ef8c6b639d6",
+    "title": "[Desertpunk] Scrap Tower Lookout",
+    "tags": "desertpunk, scrap metal tower, lookout, wasteland, rusty",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.688443",
+    "updated_at": "2026-03-29T13:39:32.688443"
+  },
+  {
+    "id": "6eeb9b32e7724f2abf3f7825ab256edc",
+    "title": "[Desertpunk] Underground Aquifer",
+    "tags": "desertpunk, underground, water, cave, cool, hidden",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.696497",
+    "updated_at": "2026-03-29T13:39:32.696497"
+  },
+  {
+    "id": "7dd2625a5f3b4fa3af2a13066c812495",
+    "title": "[Desertpunk] Solar Panel Farm",
+    "tags": "desertpunk, solar panels, desert, technology, sand, bright",
+    "profile": "cinematic",
+    "notes": "Desertpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.704317",
+    "updated_at": "2026-03-29T13:39:32.704317"
+  },
+  {
+    "id": "3bddc6fde7fd4c538f79965f58af5214",
+    "title": "[Clockpunk] Leonardo Workshop",
+    "tags": "clockpunk, renaissance, workshop, inventions, sketches, wood",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.713514",
+    "updated_at": "2026-03-29T13:39:32.713514"
+  },
+  {
+    "id": "7027a5bc6e16442f904e10861ca07b34",
+    "title": "[Clockpunk] Clock Cathedral",
+    "tags": "clockpunk, cathedral, giant clock, stained glass, gears",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.724020",
+    "updated_at": "2026-03-29T13:39:32.724020"
+  },
+  {
+    "id": "f4ae46b4e0df48a4a1b2b6bfae48c8bc",
+    "title": "[Clockpunk] Automaton Library",
+    "tags": "clockpunk, automaton, mechanical servant, library, old books",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.736970",
+    "updated_at": "2026-03-29T13:39:32.736970"
+  },
+  {
+    "id": "6c4d5d49a4eb47958d922a045c38a8be",
+    "title": "[Clockpunk] Spring-Powered Desk",
+    "tags": "clockpunk, springs, coils, tension, brass, mechanical",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.745392",
+    "updated_at": "2026-03-29T13:39:32.745392"
+  },
+  {
+    "id": "cdbb91d797de4790aa2e3b64b323ccd1",
+    "title": "[Clockpunk] Pendulum Tower",
+    "tags": "clockpunk, pendulum, tower, swinging, rhythmic, hypnotic",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.755510",
+    "updated_at": "2026-03-29T13:39:32.755510"
+  },
+  {
+    "id": "fed90bce2dfc4f318b0dc52943fa20f7",
+    "title": "[Clockpunk] Astrolabe Observatory",
+    "tags": "clockpunk, astrolabe, stars, navigation, copper, ancient",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.764647",
+    "updated_at": "2026-03-29T13:39:32.764647"
+  },
+  {
+    "id": "3023249a109e4b4385d573efbce8adad",
+    "title": "[Clockpunk] Music Box Study",
+    "tags": "clockpunk, music box, delicate, pins, melody, ornate",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.773310",
+    "updated_at": "2026-03-29T13:39:32.773310"
+  },
+  {
+    "id": "c0e22ecddd184953be3f9e3d009ea01b",
+    "title": "[Clockpunk] Water Clock Chamber",
+    "tags": "clockpunk, water clock, clepsydra, flowing, ancient",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.782634",
+    "updated_at": "2026-03-29T13:39:32.782634"
+  },
+  {
+    "id": "7fbe0aa5a7ce41659bea3966863f878d",
+    "title": "[Clockpunk] Mechanical Theater",
+    "tags": "clockpunk, theater, marionettes, gears, stage, dramatic",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.794337",
+    "updated_at": "2026-03-29T13:39:32.794337"
+  },
+  {
+    "id": "5f2486ce719549f5b39388ba25230fb1",
+    "title": "[Clockpunk] Escapement Garden",
+    "tags": "clockpunk, garden, mechanical flowers, ticking, peaceful",
+    "profile": "cinematic",
+    "notes": "Clockpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.802900",
+    "updated_at": "2026-03-29T13:39:32.802900"
+  },
+  {
+    "id": "33f2b32bb898421983c9fd14adfd6d02",
+    "title": "[Mythpunk] Enchanted Forest",
+    "tags": "mythpunk, enchanted forest, glowing runes, ancient trees",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.811359",
+    "updated_at": "2026-03-29T13:39:32.811359"
+  },
+  {
+    "id": "d49f83466fb940beae1aab6662b224a5",
+    "title": "[Mythpunk] Dragon Library Tower",
+    "tags": "mythpunk, dragon, tower, treasure, books, mythical",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.820708",
+    "updated_at": "2026-03-29T13:39:32.820708"
+  },
+  {
+    "id": "15a1b2f4e7ef4de1b81384b7693c015d",
+    "title": "[Mythpunk] Fairy Ring Circle",
+    "tags": "mythpunk, fairy ring, mushrooms, moonlight, ethereal",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.829622",
+    "updated_at": "2026-03-29T13:39:32.829622"
+  },
+  {
+    "id": "b2abf80eac3d425e8a9fc0c86533b8b0",
+    "title": "[Mythpunk] Kraken Ink Study",
+    "tags": "mythpunk, kraken, ink, deep sea, tentacles, scrolls",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.838124",
+    "updated_at": "2026-03-29T13:39:32.838124"
+  },
+  {
+    "id": "a08c09ff5b634a46a73b3960ac494888",
+    "title": "[Mythpunk] Phoenix Nest Study",
+    "tags": "mythpunk, phoenix, fire, rebirth, warm, ember glow",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.847775",
+    "updated_at": "2026-03-29T13:39:32.847775"
+  },
+  {
+    "id": "95c6d9951dbf4b649ece8613767d36a1",
+    "title": "[Mythpunk] Minotaur Labyrinth",
+    "tags": "mythpunk, labyrinth, stone walls, torches, mystery",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.857643",
+    "updated_at": "2026-03-29T13:39:32.857643"
+  },
+  {
+    "id": "71f2243d2d2b4ba98d5f9a2a872871c6",
+    "title": "[Mythpunk] Valkyrie Sky Study",
+    "tags": "mythpunk, valkyrie, sky, aurora, norse, ethereal",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.867953",
+    "updated_at": "2026-03-29T13:39:32.867953"
+  },
+  {
+    "id": "f9595742a4cb498e8805285f2765f4e7",
+    "title": "[Mythpunk] Merfolk Library",
+    "tags": "mythpunk, merfolk, underwater, shells, pearls, iridescent",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.881196",
+    "updated_at": "2026-03-29T13:39:32.881196"
+  },
+  {
+    "id": "e6b056614ad743a98d8098d74081f9f3",
+    "title": "[Mythpunk] Golem Workshop",
+    "tags": "mythpunk, golem, clay, inscription, magical, workshop",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.893744",
+    "updated_at": "2026-03-29T13:39:32.893744"
+  },
+  {
+    "id": "0890d3c8cc5d4000886f22cf29fa5307",
+    "title": "[Mythpunk] World Tree Nook",
+    "tags": "mythpunk, yggdrasil, world tree, roots, cosmic, mystical",
+    "profile": "cinematic",
+    "notes": "Mythpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.904829",
+    "updated_at": "2026-03-29T13:39:32.904829"
+  },
+  {
+    "id": "ea31403371bd4243848e22396cec573e",
+    "title": "[Hopepunk] Community Center",
+    "tags": "hopepunk, community, together, warm, diverse, hopeful",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.914762",
+    "updated_at": "2026-03-29T13:39:32.914762"
+  },
+  {
+    "id": "84a6e4feebde41bea696ab79942d57fc",
+    "title": "[Hopepunk] Protest Art Studio",
+    "tags": "hopepunk, protest, art, colorful, murals, resistance",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.924060",
+    "updated_at": "2026-03-29T13:39:32.924060"
+  },
+  {
+    "id": "95e8ba583a7a427182ff0dc520e06868",
+    "title": "[Hopepunk] Garden of Resilience",
+    "tags": "hopepunk, garden, growth, flowers, sunlight, recovery",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.934970",
+    "updated_at": "2026-03-29T13:39:32.934970"
+  },
+  {
+    "id": "b03ed2e597d14496baf600c43297762f",
+    "title": "[Hopepunk] Mutual Aid Library",
+    "tags": "hopepunk, mutual aid, books, sharing, cozy, kindness",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.945325",
+    "updated_at": "2026-03-29T13:39:32.945325"
+  },
+  {
+    "id": "f4620155fe404faa9c1d37a3837e433f",
+    "title": "[Hopepunk] Rainbow Bridge Study",
+    "tags": "hopepunk, rainbow, bridge, connection, hope, vibrant",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.957651",
+    "updated_at": "2026-03-29T13:39:32.957651"
+  },
+  {
+    "id": "c75c29d0cedd4065aa1f3a1db75b6f52",
+    "title": "[Hopepunk] Candlelight Vigil",
+    "tags": "hopepunk, candles, vigil, together, night, solidarity",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.967028",
+    "updated_at": "2026-03-29T13:39:32.967028"
+  },
+  {
+    "id": "9582aee2d14e4f6e9895ac3eca43b40d",
+    "title": "[Hopepunk] Seed Vault Study",
+    "tags": "hopepunk, seeds, vault, future, preservation, hope",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.977305",
+    "updated_at": "2026-03-29T13:39:32.977305"
+  },
+  {
+    "id": "0408427710ee46bc820a38bfaaaa5bfd",
+    "title": "[Hopepunk] Repair Cafe",
+    "tags": "hopepunk, repair, cafe, fixing things, community, sustainable",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.986260",
+    "updated_at": "2026-03-29T13:39:32.986260"
+  },
+  {
+    "id": "7eea653845d240ec8dcceb6e01e61fec",
+    "title": "[Hopepunk] Freedom Press",
+    "tags": "hopepunk, printing press, truth, resistance, ink, words",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:32.994876",
+    "updated_at": "2026-03-29T13:39:32.994876"
+  },
+  {
+    "id": "9b98b6208f7f4b618f1bdb899ef5d17d",
+    "title": "[Hopepunk] Sunrise Rooftop",
+    "tags": "hopepunk, sunrise, rooftop, new day, hope, golden",
+    "profile": "cinematic",
+    "notes": "Hopepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.003027",
+    "updated_at": "2026-03-29T13:39:33.003027"
+  },
+  {
+    "id": "5b3bb6ba59ea4c8c873e2d3cf75c3e52",
+    "title": "[Grimdark] Ruined Cathedral",
+    "tags": "grimdark, ruined cathedral, dark, crumbling, candles, ominous",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.011639",
+    "updated_at": "2026-03-29T13:39:33.011639"
+  },
+  {
+    "id": "e13f5af245b04da7a5adaf37eb7630bc",
+    "title": "[Grimdark] War-Torn Hall",
+    "tags": "grimdark, war, destruction, rubble, determination, bleak",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.020095",
+    "updated_at": "2026-03-29T13:39:33.020095"
+  },
+  {
+    "id": "90cc7f87d70b41c49485898e72b58c85",
+    "title": "[Grimdark] Plague Doctor Study",
+    "tags": "grimdark, plague doctor, herbs, dark, medieval, mysterious",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.027715",
+    "updated_at": "2026-03-29T13:39:33.027715"
+  },
+  {
+    "id": "6c4ed5b5b656480dbf3ab7e51b816dd3",
+    "title": "[Grimdark] Dungeon Study Cell",
+    "tags": "grimdark, dungeon, chains, stone, torchlight, imprisoned",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.036460",
+    "updated_at": "2026-03-29T13:39:33.036460"
+  },
+  {
+    "id": "c24d287327fe4f1983523df189d766ee",
+    "title": "[Grimdark] Battlefield Tent",
+    "tags": "grimdark, battlefield, tent, maps, exhaustion, grim",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.045049",
+    "updated_at": "2026-03-29T13:39:33.045049"
+  },
+  {
+    "id": "179d0b92c7f04e4593a8134253111fea",
+    "title": "[Grimdark] Empty Throne Room",
+    "tags": "grimdark, throne, empty, dark, power, corruption",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.053331",
+    "updated_at": "2026-03-29T13:39:33.053331"
+  },
+  {
+    "id": "9ba3aa5f721f4b7c9585a3918ae5d9e9",
+    "title": "[Grimdark] Necromancer Library",
+    "tags": "grimdark, necromancer, skulls, dark magic, forbidden",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.061522",
+    "updated_at": "2026-03-29T13:39:33.061522"
+  },
+  {
+    "id": "61be44d3ff9640df8f3f6d41a3fc5ffb",
+    "title": "[Grimdark] Witch Trial Study",
+    "tags": "grimdark, witch trial, fire, darkness, defiance",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.069888",
+    "updated_at": "2026-03-29T13:39:33.069888"
+  },
+  {
+    "id": "885f4d309d454cdab268608d47ad8d89",
+    "title": "[Grimdark] Haunted Manor",
+    "tags": "grimdark, haunted, manor, ghosts, dusty, abandoned, eerie",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.078062",
+    "updated_at": "2026-03-29T13:39:33.078062"
+  },
+  {
+    "id": "e6a14a2a1b0045c69ecc23899f9872b4",
+    "title": "[Grimdark] Apocalypse Bunker",
+    "tags": "grimdark, apocalypse, bunker, last hope, dim, survival",
+    "profile": "cinematic",
+    "notes": "Grimdark universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.085639",
+    "updated_at": "2026-03-29T13:39:33.085639"
+  },
+  {
+    "id": "bed4476205ed499c9d5d86ec240223d3",
+    "title": "[Stonepunk] Cave by Firelight",
+    "tags": "stonepunk, cave, fire, shadows, paintings, primitive",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.096423",
+    "updated_at": "2026-03-29T13:39:33.096423"
+  },
+  {
+    "id": "834a0f2d740c44db87b6c6a846682edb",
+    "title": "[Stonepunk] Megalith Library",
+    "tags": "stonepunk, megaliths, stone circles, ancient, cosmic",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.105581",
+    "updated_at": "2026-03-29T13:39:33.105581"
+  },
+  {
+    "id": "2290c9b6ecde45849699e25963c4f3c7",
+    "title": "[Stonepunk] Mammoth Bone Hut",
+    "tags": "stonepunk, mammoth bones, tent, ice age, furs, primitive",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.114471",
+    "updated_at": "2026-03-29T13:39:33.114471"
+  },
+  {
+    "id": "c16de240a9f3463ebb6756317ce98133",
+    "title": "[Stonepunk] Obsidian Workshop",
+    "tags": "stonepunk, obsidian, knapping, sharp, volcanic, crafting",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.122182",
+    "updated_at": "2026-03-29T13:39:33.122182"
+  },
+  {
+    "id": "09e732c1def44165a5badb7a80e086c6",
+    "title": "[Stonepunk] Cliff Dwelling",
+    "tags": "stonepunk, cliff dwelling, carved, ancient, panoramic",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.138347",
+    "updated_at": "2026-03-29T13:39:33.138347"
+  },
+  {
+    "id": "117abde2644d4a0bbbee011b5f1019e6",
+    "title": "[Stonepunk] Totem Pole Ring",
+    "tags": "stonepunk, totem poles, circle, spiritual, carved, forest",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.149830",
+    "updated_at": "2026-03-29T13:39:33.149830"
+  },
+  {
+    "id": "d5f0f142f9a2437595de52961f3fc73b",
+    "title": "[Stonepunk] River Stone Spot",
+    "tags": "stonepunk, river, smooth stones, water, peaceful, natural",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.159892",
+    "updated_at": "2026-03-29T13:39:33.159892"
+  },
+  {
+    "id": "19991cbe2cfd44398d7b2ce0544d9968",
+    "title": "[Stonepunk] Volcanic Forge",
+    "tags": "stonepunk, volcano, forge, heat, obsidian, powerful, red",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.169861",
+    "updated_at": "2026-03-29T13:39:33.169861"
+  },
+  {
+    "id": "192826cb142f424bbcdf4abd2a870f87",
+    "title": "[Stonepunk] Ice Cave Study",
+    "tags": "stonepunk, ice cave, crystals, frozen, blue, ancient, cold",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.181398",
+    "updated_at": "2026-03-29T13:39:33.181398"
+  },
+  {
+    "id": "a8f2e63fee8c4bec89886a99bdc3d453",
+    "title": "[Stonepunk] Petroglyph Wall",
+    "tags": "stonepunk, petroglyphs, rock art, ancient symbols, desert",
+    "profile": "cinematic",
+    "notes": "Stonepunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.190555",
+    "updated_at": "2026-03-29T13:39:33.190555"
+  },
+  {
+    "id": "7bb3c3c3878d48399c0f71930824c9d0",
+    "title": "[Raypunk] Ray Gun Laboratory",
+    "tags": "raypunk, ray guns, laboratory, retro sci-fi, chrome",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.199707",
+    "updated_at": "2026-03-29T13:39:33.199707"
+  },
+  {
+    "id": "1b7068a50b4c48b19fdb9e173ef0388b",
+    "title": "[Raypunk] Rocket Ship Study",
+    "tags": "raypunk, rocket ship, space, porthole, stars, vintage",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.208785",
+    "updated_at": "2026-03-29T13:39:33.208785"
+  },
+  {
+    "id": "768edba0854045d08fd2ffd2515d9d4c",
+    "title": "[Raypunk] Martian Colony",
+    "tags": "raypunk, mars, colony, dome, red planet, retro futurism",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.217538",
+    "updated_at": "2026-03-29T13:39:33.217538"
+  },
+  {
+    "id": "e1742c238dbd4949a05730ceb8b1e822",
+    "title": "[Raypunk] Flying Saucer Interior",
+    "tags": "raypunk, flying saucer, alien, chrome, circular",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.226897",
+    "updated_at": "2026-03-29T13:39:33.226897"
+  },
+  {
+    "id": "9100951ae3ac4f3b805d2d4236fa0724",
+    "title": "[Raypunk] Robot Butler Study",
+    "tags": "raypunk, robot, butler, art deco, chrome, helpful",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.235434",
+    "updated_at": "2026-03-29T13:39:33.235434"
+  },
+  {
+    "id": "cab781b486dc4866a7bef412894e2f85",
+    "title": "[Raypunk] Space Opera Bridge",
+    "tags": "raypunk, spaceship bridge, captain chair, stars, dramatic",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.243137",
+    "updated_at": "2026-03-29T13:39:33.243137"
+  },
+  {
+    "id": "7328190c9a214ca5996c1141ec3248ed",
+    "title": "[Raypunk] Alien Bazaar",
+    "tags": "raypunk, alien bazaar, exotic, colorful, strange creatures",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.252023",
+    "updated_at": "2026-03-29T13:39:33.252023"
+  },
+  {
+    "id": "85f2743f47984c22939b2317ac119810",
+    "title": "[Raypunk] Death Ray Observatory",
+    "tags": "raypunk, observatory, death ray, villain lair, chrome",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.260560",
+    "updated_at": "2026-03-29T13:39:33.260560"
+  },
+  {
+    "id": "45028b7aa3754287aacb9193adf48ddd",
+    "title": "[Raypunk] Asteroid Mining",
+    "tags": "raypunk, asteroid, mining, space, industrial, retro",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.269444",
+    "updated_at": "2026-03-29T13:39:33.269444"
+  },
+  {
+    "id": "1acb1e6e48374468b7de2a1d566b6024",
+    "title": "[Raypunk] Zeppelin Space Dock",
+    "tags": "raypunk, zeppelin, space dock, retro, massive, art deco",
+    "profile": "cinematic",
+    "notes": "Raypunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.278217",
+    "updated_at": "2026-03-29T13:39:33.278217"
+  },
+  {
+    "id": "a355ebc2c97d4abeaa7fa908caaa74f8",
+    "title": "[Lunarpunk] Moonlit Garden",
+    "tags": "lunarpunk, moonlight, garden, silver, mystical, nocturnal",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.287530",
+    "updated_at": "2026-03-29T13:39:33.287530"
+  },
+  {
+    "id": "b29026e2b93e4d478f4cec9f35abaed4",
+    "title": "[Lunarpunk] Crystal Cave Study",
+    "tags": "lunarpunk, crystals, cave, glowing, mystical, purple",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.296380",
+    "updated_at": "2026-03-29T13:39:33.296380"
+  },
+  {
+    "id": "b8938007bf994b698b780f6437ce8655",
+    "title": "[Lunarpunk] Moth Lantern Study",
+    "tags": "lunarpunk, moths, lanterns, soft light, night, ethereal",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.305939",
+    "updated_at": "2026-03-29T13:39:33.305939"
+  },
+  {
+    "id": "d537ad31b192403e98f8ce5bc149b458",
+    "title": "[Lunarpunk] Silver Forest Study",
+    "tags": "lunarpunk, silver trees, moonbeams, enchanted, quiet",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.318454",
+    "updated_at": "2026-03-29T13:39:33.318454"
+  },
+  {
+    "id": "0e149d9deb904fbf84669cd07e1fbcb3",
+    "title": "[Lunarpunk] Tidal Pool Study",
+    "tags": "lunarpunk, tidal pool, moon, reflection, bioluminescent",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.327038",
+    "updated_at": "2026-03-29T13:39:33.327038"
+  },
+  {
+    "id": "aac267f1ef1247a8829eb72a41edf621",
+    "title": "[Lunarpunk] Owl Library Tower",
+    "tags": "lunarpunk, owl, library, tower, moon, wisdom, ancient",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.337241",
+    "updated_at": "2026-03-29T13:39:33.337241"
+  },
+  {
+    "id": "71cbeaba369246299b0b8ee61d5976a1",
+    "title": "[Lunarpunk] Mushroom Grove",
+    "tags": "lunarpunk, mushrooms, glowing, forest floor, mystical",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.347162",
+    "updated_at": "2026-03-29T13:39:33.347162"
+  },
+  {
+    "id": "bda36820d5df4b6dbf9b116a441b6f45",
+    "title": "[Lunarpunk] Eclipse Circle",
+    "tags": "lunarpunk, eclipse, stone circle, cosmic, spiritual, dark",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.357538",
+    "updated_at": "2026-03-29T13:39:33.357538"
+  },
+  {
+    "id": "599f4903baa246ffac16c2fabebb0fdc",
+    "title": "[Lunarpunk] Starwoven Den",
+    "tags": "lunarpunk, stars, woven fabric, cosmic, handmade, cozy",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.368846",
+    "updated_at": "2026-03-29T13:39:33.368846"
+  },
+  {
+    "id": "a2437759aee942ad8f1e79bbe86354c0",
+    "title": "[Lunarpunk] Dew Drop Morning",
+    "tags": "lunarpunk, dew drops, spider web, dawn, delicate",
+    "profile": "cinematic",
+    "notes": "Lunarpunk universe",
+    "status": "planned",
+    "created_at": "2026-03-29T13:39:33.380281",
+    "updated_at": "2026-03-29T13:39:33.380281"
   }
 ]
