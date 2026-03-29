@@ -115,7 +115,7 @@ def run_shared_pipeline(
             thumb_out = current_video.with_name(f"{current_video.stem}_thumb.jpg")
             thumbnail_path = generate_thumbnail(
                 current_video, thumb_out,
-                title=config.publish.youtube_title,
+                title=config.publish.thumbnail_text or config.publish.youtube_title,
                 branding=config.post.watermark_text,
                 avatar_path=avatar_path,
             )
