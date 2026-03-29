@@ -16,6 +16,13 @@ Enhancements over the original:
 """
 from __future__ import annotations
 
+# Load .env before anything else
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Compatibility fix for Python 3.12+
 import sys
 import pkgutil
