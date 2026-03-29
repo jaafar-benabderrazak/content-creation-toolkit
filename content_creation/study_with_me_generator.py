@@ -1075,22 +1075,20 @@ def main():
         })
         
         print("=" * 60)
-        print("✅ ENHANCED STUDY VIDEO GENERATION COMPLETED!")
+        print("[DONE] ENHANCED STUDY VIDEO GENERATION COMPLETED!")
         print("=" * 60)
-        print(f"📹 Video saved to: {args.out}")
+        print(f"[Video] Saved to: {args.out}")
         if args.save_assets:
-            print(f"📁 Assets saved to: {work_dir}")
-        print(f"⏱️  Duration: {args.minutes} minutes")
-        print(f"🎨 Generated {len(image_paths)} unique scenes")
+            print(f"[Assets] Saved to: {work_dir}")
+        print(f"[Duration] {args.minutes} minutes")
+        print(f"[Scenes] Generated {len(image_paths)} unique scenes")
         if final_audio_path:
-            print(f"🎵 Enhanced audio track included")
-        print()
-        print("Your enhanced study-with-me video is ready! 🎉")
-        
+            print("[Audio] Enhanced audio track included")
+
         # Show file size
         if args.out.exists():
             size_mb = args.out.stat().st_size / (1024 * 1024)
-            print(f"📊 File size: {size_mb:.1f} MB")
+            print(f"[Size] {size_mb:.1f} MB")
         
     except Exception as e:
         print(f"[ERROR] Video generation failed: {e}")
