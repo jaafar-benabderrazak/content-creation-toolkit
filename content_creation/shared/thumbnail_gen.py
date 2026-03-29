@@ -72,6 +72,74 @@ def select_best_frame(video_path: Path, sample_count: int = 10) -> Optional[Path
     return best
 
 
+def enhance_thumbnail_image(
+    image_path: Path,
+    prompt: str = "",
+    output_path: Optional[Path] = None,
+) -> Path:
+    """Transform the best frame into a thumbnail-optimized image via img2img.
+
+    Uses Replicate (Seedream img2img) or local Pillow enhancement as fallback.
+    The goal: make the frame more dramatic, vibrant, and eye-catching.
+    """
+    import os
+    from PIL import Image, ImageEnhance, ImageFilter
+
+    out = output_path or image_path.with_name(f"{image_path.stem}_enhanced.jpg")
+
+    # Try API-based img2img (Replicate SDXL img2img)
+    replicate_token = os.environ.get("REPLICATE_API_TOKEN")
+    if replicate_token and prompt:
+        try:
+            import replicate
+            import requests
+            import io
+            import base64
+
+            os.environ["REPLICATE_API_TOKEN"] = replicate_token
+
+            # Encode image to base64 data URI
+            img_bytes = image_path.read_bytes()
+            b64 = base64.b64encode(img_bytes).decode()
+            data_uri = f"data:image/jpeg;base64,{b64}"
+
+            logger.info(f"[Thumbnail] img2img via Replicate: {prompt[:60]}...")
+            result = replicate.run(
+                "stability-ai/sdxl",
+                input={
+                    "image": data_uri,
+                    "prompt": f"youtube thumbnail style, vibrant, dramatic, {prompt}",
+                    "negative_prompt": "blurry, low quality, text, watermark",
+                    "prompt_strength": 0.35,  # Low strength = keep composition, enhance style
+                    "num_inference_steps": 25,
+                    "width": 1280,
+                    "height": 720,
+                },
+            )
+            url = result[0] if isinstance(result, list) else result
+            img_data = requests.get(str(url)).content
+            img = Image.open(io.BytesIO(img_data)).convert("RGB")
+            img.save(str(out), "JPEG", quality=95)
+            logger.info(f"[Thumbnail] img2img enhanced via Replicate")
+            return out
+        except Exception as e:
+            logger.warning(f"[Thumbnail] img2img API failed ({e}), using local enhancement")
+
+    # Fallback: aggressive local Pillow enhancement
+    img = Image.open(image_path).convert("RGB")
+    img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
+
+    # Dramatic enhancement for thumbnail pop
+    img = ImageEnhance.Contrast(img).enhance(1.4)
+    img = ImageEnhance.Color(img).enhance(1.3)
+    img = ImageEnhance.Sharpness(img).enhance(1.5)
+    img = ImageEnhance.Brightness(img).enhance(1.08)
+
+    img.save(str(out), "JPEG", quality=95)
+    logger.info(f"[Thumbnail] Enhanced locally (contrast+color+sharpness boost)")
+    return out
+
+
 def composite_text(
     image_path: Path,
     output_path: Path,
@@ -237,10 +305,41 @@ def generate_thumbnail(
     branding: str = "",
     sample_count: int = 10,
     avatar_path: Optional[Path] = None,
+    enhance_prompt: str = "",
 ) -> Optional[Path]:
-    """Full pipeline: extract best frame -> composite text -> save."""
+    """Full pipeline: extract best frame → img2img enhance → composite text → save.
+
+    Parameters
+    ----------
+    video_path : Path
+        Source video to extract frames from.
+    output_path : Path
+        Where to save the final thumbnail JPEG.
+    title : str
+        Text to overlay (e.g., "ROOFTOP STUDY VIBES"). Usually from thumbnail_text.
+    branding : str
+        Channel name or watermark text (top-right pill).
+    sample_count : int
+        Number of frames to sample for sharpness scoring.
+    avatar_path : Path, optional
+        Channel avatar for corner logo.
+    enhance_prompt : str
+        Prompt for img2img enhancement (e.g., the positive_prompt from the video).
+        If empty, skips API img2img and uses local Pillow enhancement only.
+    """
     best = select_best_frame(video_path, sample_count)
     if not best:
         return None
 
-    return composite_text(best, output_path, title=title, branding=branding, avatar_path=avatar_path)
+    # Step 1: Enhance the frame (img2img or local boost)
+    enhanced = enhance_thumbnail_image(
+        best,
+        prompt=enhance_prompt,
+        output_path=best.with_name(f"{best.stem}_enhanced.jpg"),
+    )
+
+    # Step 2: Composite text + branding + avatar
+    return composite_text(
+        enhanced, output_path,
+        title=title, branding=branding, avatar_path=avatar_path,
+    )
