@@ -922,39 +922,37 @@ def main():
             print(f"[Images] Only {len(image_paths)} images found, generating remaining...")
     
     if len(image_paths) < args.image_count:
-        print("[Images] Generating enhanced scenes with Stable Diffusion XL...")
-        
-        # Prepare scene data with style variations
-        scenes_data = []
-        for i in range(args.image_count):
-            base_scene = ENHANCED_SCENES[i % len(ENHANCED_SCENES)].copy()
-            base_scene["prompt"] += f", {args.style}"
-            scenes_data.append(base_scene)
-        
-        try:
-            # Build SDXLSettings from active config — use defaults if no config loaded
-            from config.pipeline_config import SDXLSettings
-            _sdxl_cfg = getattr(pipeline_config, 'sdxl', None) or SDXLSettings(
-                negative_prompt=(
-                    "blurry, low quality, distorted, deformed, bad anatomy, "
-                    "watermark, signature, text, logo, ugly, duplicate, morbid"
-                )
-            )
-            # Override steps/guidance from quality_preset (matches existing behavior)
-            preset = getattr(video_config, 'quality_preset', 'medium')
-            _steps_map = {'high': (35, 8.0), 'medium': (25, 7.5), 'fast': (15, 7.0)}
-            _s, _g = _steps_map.get(preset, (25, 7.5))
-            _sdxl_cfg.steps = _s
-            _sdxl_cfg.guidance_scale = _g
+        print("[Images] Generating scenes (1 base image + variants)...")
 
-            generator = SDXLGenerator(cache_dir=work_dir / ".cache" / "images")
-            new_paths = generator.generate_batch(
-                scenes=scenes_data,
-                sdxl_cfg=_sdxl_cfg,
+        try:
+            from generators.image_gen import ImageGenerator
+
+            _img_gen = ImageGenerator(cache_dir=work_dir / ".cache" / "images")
+            # Get the positive prompt from config or style arg
+            _positive = args.style
+            if pipeline_config and hasattr(pipeline_config, 'sdxl') and pipeline_config.sdxl:
+                _positive = getattr(pipeline_config.sdxl, 'positive_prompt', args.style) or args.style
+            _negative = ""
+            if pipeline_config and hasattr(pipeline_config, 'sdxl') and pipeline_config.sdxl:
+                _negative = pipeline_config.sdxl.negative_prompt or ""
+
+            new_paths = _img_gen.generate_scenes(
+                prompt=_positive,
+                negative_prompt=_negative,
+                scene_count=args.image_count,
                 profile=getattr(pipeline_config, 'profile', 'default') if pipeline_config else 'default',
-                out_dir=img_dir,
+                quality='hd',
+                target_resolution=(video_config.resolution[0], video_config.resolution[1]),
+                multi_image=False,  # Single image + variants by default
             )
             image_paths.extend(new_paths)
+
+            # Also prepare scenes_data for downstream (Remotion needs it)
+            scenes_data = []
+            for i in range(len(new_paths)):
+                base_scene = ENHANCED_SCENES[i % len(ENHANCED_SCENES)].copy()
+                base_scene["prompt"] += f", {args.style}"
+                scenes_data.append(base_scene)
             
             # Save progress
             save_progress(work_dir, "images", {
