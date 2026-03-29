@@ -70,11 +70,22 @@ interface CostLine {
   unit: string;
 }
 
-function estimateCost(budget: string, sceneDuration: number = 120): { total: number; lines: CostLine[] } {
+interface CostParams {
+  budget: string;
+  durationMinutes: number;
+  imageCount: number;
+  multiImage: boolean;
+  songCount: number;
+  thumbnailCount: number;
+}
+
+function estimateCost(params: CostParams): { total: number; lines: CostLine[] } {
+  const { budget, durationMinutes, imageCount, multiImage, songCount, thumbnailCount } = params;
   const lines: CostLine[] = [];
-  const sceneCount = Math.max(Math.ceil(sceneDuration / 5), 8); // ~1 scene per 5 min, min 8
-  const musicTracks = 2;
-  const sunoGenerations = Math.ceil(sceneDuration / 240); // 1 gen per 4 min max
+  const sceneCount = imageCount;
+  const apiImageCalls = multiImage ? imageCount : 1; // multi = N API calls, single = 1 + variants
+  const sunoGenerations = Math.max(songCount, Math.ceil(durationMinutes / 240)); // 1 gen per 4 min max
+  const musicTracks = sunoGenerations * 2; // 2 tracks per generation
 
   // 1. Prompt generation (always Claude)
   const promptInputCost = PRICING.claude_est_input_tokens * PRICING.claude_sonnet_input;
@@ -89,36 +100,73 @@ function estimateCost(budget: string, sceneDuration: number = 120): { total: num
   });
 
   // 2. Image generation
+  const imgMode = multiImage ? `${apiImageCalls} distinct images` : `1 base + ${sceneCount} variants`;
   if (budget === "free") {
-    lines.push({ service: "Image Generation", provider: "Local SD 1.5", detail: `1 base image + ${sceneCount} variants (CPU ~2 min)`, cost: 0, unit: "free" });
+    lines.push({
+      service: "Image Generation",
+      provider: "Local SD 1.5 (CPU)",
+      detail: `${imgMode}, ~${multiImage ? apiImageCalls * 2 : 2} min on CPU`,
+      cost: 0,
+      unit: "free",
+    });
   } else if (budget === "budget") {
-    lines.push({ service: "Image Generation", provider: "DALL-E 3 Standard", detail: `1 image 1024x1024 + ${sceneCount} PIL variants`, cost: PRICING.dalle3_standard, unit: "per image" });
+    const cost = PRICING.dalle3_standard * apiImageCalls;
+    lines.push({
+      service: "Image Generation",
+      provider: "DALL-E 3 Standard",
+      detail: `${apiImageCalls} API call${apiImageCalls > 1 ? "s" : ""} x $${PRICING.dalle3_standard} = ${imgMode}`,
+      cost,
+      unit: `${apiImageCalls} image${apiImageCalls > 1 ? "s" : ""}`,
+    });
   } else if (budget === "standard") {
-    lines.push({ service: "Image Generation", provider: "Seedream (Replicate)", detail: `1 image 16:9 + ${sceneCount} PIL variants`, cost: PRICING.seedream_replicate, unit: "per image" });
+    const cost = PRICING.seedream_replicate * apiImageCalls;
+    lines.push({
+      service: "Image Generation",
+      provider: "Seedream (Replicate)",
+      detail: `${apiImageCalls} API call${apiImageCalls > 1 ? "s" : ""} x $${PRICING.seedream_replicate} = ${imgMode}`,
+      cost,
+      unit: `${apiImageCalls} image${apiImageCalls > 1 ? "s" : ""}`,
+    });
   } else {
-    lines.push({ service: "Image Generation", provider: "DALL-E 3 HD", detail: `1 image 1792x1024 HD + ${sceneCount} PIL variants`, cost: PRICING.dalle3_hd, unit: "per image" });
+    const cost = PRICING.dalle3_hd * apiImageCalls;
+    lines.push({
+      service: "Image Generation",
+      provider: "DALL-E 3 HD",
+      detail: `${apiImageCalls} API call${apiImageCalls > 1 ? "s" : ""} x $${PRICING.dalle3_hd} = ${imgMode}`,
+      cost,
+      unit: `${apiImageCalls} image${apiImageCalls > 1 ? "s" : ""}`,
+    });
   }
 
   // 3. Music generation
   if (budget === "free") {
-    lines.push({ service: "Music Generation", provider: "Silent (fallback)", detail: "No Suno credits — silent audio", cost: 0, unit: "free" });
+    lines.push({
+      service: "Music Generation",
+      provider: "Silent (fallback)",
+      detail: `No API credits — ${durationMinutes} min of silence`,
+      cost: 0,
+      unit: "free",
+    });
   } else {
     const sunoCredits = sunoGenerations * PRICING.suno_credits_per_song;
     const sunoCost = sunoCredits * PRICING.suno_per_credit;
+    const stitchNote = sunoGenerations > 1 ? `, stitched to ${durationMinutes} min` : "";
     lines.push({
       service: "Music Generation",
       provider: "Suno V4.5 (kie.ai)",
-      detail: `${sunoGenerations} gen x ${PRICING.suno_credits_per_song} credits = ${sunoCredits} credits (${musicTracks} tracks/gen)`,
+      detail: `${sunoGenerations} gen x ${PRICING.suno_credits_per_song} credits = ${sunoCredits} credits → ${musicTracks} tracks${stitchNote}`,
       cost: sunoCost,
       unit: `${sunoCredits} credits`,
     });
   }
 
   // 4. Video rendering
+  const estRenderMin = Math.ceil(durationMinutes * 0.5); // ~0.5x realtime on CPU
+
   lines.push({
     service: "Video Rendering",
     provider: "Remotion (local)",
-    detail: `${sceneCount} scenes, ${sceneDuration} min, 1080p H.264 CRF 16-18`,
+    detail: `${sceneCount} scenes, ${durationMinutes} min, 1080p H.264 (~${estRenderMin} min render)`,
     cost: 0,
     unit: "free (local CPU)",
   });
@@ -142,28 +190,31 @@ function estimateCost(budget: string, sceneDuration: number = 120): { total: num
       unit: "free",
     });
   } else if (budget === "budget") {
+    const cost = PRICING.thumb_imagen * thumbnailCount;
     lines.push({
       service: "Thumbnail Enhancement",
       provider: "Google Imagen 3.0",
-      detail: "img2img via Gemini API, guidanceScale 60 → 1280x720",
-      cost: PRICING.thumb_imagen,
-      unit: "per image",
+      detail: `${thumbnailCount} thumbnail${thumbnailCount > 1 ? "s" : ""} x $${PRICING.thumb_imagen} (img2img via Gemini)`,
+      cost,
+      unit: `${thumbnailCount} image${thumbnailCount > 1 ? "s" : ""}`,
     });
   } else if (budget === "standard") {
+    const cost = PRICING.thumb_seedream * thumbnailCount;
     lines.push({
       service: "Thumbnail Enhancement",
       provider: "Seedream img2img",
-      detail: "Best frame → Seedream (Replicate) → 16:9 enhanced",
-      cost: PRICING.thumb_seedream,
-      unit: "per image",
+      detail: `${thumbnailCount} thumbnail${thumbnailCount > 1 ? "s" : ""} x $${PRICING.thumb_seedream} (best frame → Seedream)`,
+      cost,
+      unit: `${thumbnailCount} image${thumbnailCount > 1 ? "s" : ""}`,
     });
   } else {
+    const cost = (PRICING.thumb_seedream + PRICING.thumb_sdxl) * thumbnailCount;
     lines.push({
       service: "Thumbnail Enhancement",
-      provider: "Seedream + SDXL variants",
-      detail: "Seedream primary ($0.035) + SDXL backup ($0.030), pick best",
-      cost: PRICING.thumb_seedream + PRICING.thumb_sdxl,
-      unit: "2 images",
+      provider: "Seedream + SDXL",
+      detail: `${thumbnailCount} x 2 variants ($${PRICING.thumb_seedream} + $${PRICING.thumb_sdxl}), pick best`,
+      cost,
+      unit: `${thumbnailCount * 2} images`,
     });
   }
   lines.push({
@@ -202,6 +253,11 @@ export default function StatusPage() {
   const [selectedProfile, setSelectedProfile] = useState("lofi_study");
   const [tags, setTags] = useState("");
   const [budget, setBudget] = useState("standard");
+  const [durationMin, setDurationMin] = useState(120);
+  const [imageCount, setImageCount] = useState(8);
+  const [multiImage, setMultiImage] = useState(false);
+  const [songCount, setSongCount] = useState(1);
+  const [thumbnailCount, setThumbnailCount] = useState(1);
   const [roadmapEntries, setRoadmapEntries] = useState<RoadmapEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState("");
 
@@ -312,9 +368,41 @@ export default function StatusPage() {
             </Button>
           </div>
 
+          {/* Generation Parameters */}
+          <div className="grid grid-cols-5 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Duration (min)</label>
+              <input type="number" value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value) || 1)}
+                min={1} max={480} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Scenes</label>
+              <input type="number" value={imageCount} onChange={(e) => setImageCount(Number(e.target.value) || 1)}
+                min={1} max={100} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Songs</label>
+              <input type="number" value={songCount} onChange={(e) => setSongCount(Number(e.target.value) || 0)}
+                min={0} max={10} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Thumbnails</label>
+              <input type="number" value={thumbnailCount} onChange={(e) => setThumbnailCount(Number(e.target.value) || 1)}
+                min={1} max={5} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Image Mode</label>
+              <select value={multiImage ? "multi" : "single"} onChange={(e) => setMultiImage(e.target.value === "multi")}
+                className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm">
+                <option value="single">1 image + variants</option>
+                <option value="multi">Distinct per scene</option>
+              </select>
+            </div>
+          </div>
+
           {/* Cost Estimate */}
           {(() => {
-            const est = estimateCost(budget);
+            const est = estimateCost({ budget, durationMinutes: durationMin, imageCount, multiImage, songCount, thumbnailCount });
             const paidLines = est.lines.filter(l => l.cost > 0);
             const freeLines = est.lines.filter(l => l.cost === 0);
             return (
