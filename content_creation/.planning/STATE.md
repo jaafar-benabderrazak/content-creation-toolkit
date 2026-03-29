@@ -43,6 +43,7 @@ Progress: [█████░░░░░] 50% (v1.2 milestone — 6/? plans com
 | Phase 18-ai-prompt-generation P01 | 1 | 1 tasks | 1 files |
 | Phase 19 P02 | 1 | 2 tasks | 1 files |
 | Phase 19 P01 | ~5 min | 2 tasks | 3 files |
+| Phase 19 P03 | 5 | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting v1.2 work:
 - [Phase 19]: Atomic save via .tmp + Path.replace prevents corrupt JSON on crash
 - [Phase 19]: status validation raises ValueError inline in update_status — fast fail at mutation point
 - [Phase 19]: Module-level get_roadmap() lazy singleton — zero overhead on import, safe for multi-call UI code
+- [Phase 19]: stream_pipeline uses subprocess.Popen generator with 500-line rolling buffer — non-blocking stdout streaming in Gradio
+- [Phase 19]: Execute/Schedule/Roadmap tab helper functions defined at module level above build_ui() — importable and testable independently
 
 ### Roadmap Evolution
 
