@@ -41,6 +41,7 @@ Progress: [█████░░░░░] 50% (v1.2 milestone — 5/? plans com
 | Phase 17 P03 | 1 | 1 tasks | 1 files |
 | Phase 17 P04 | 2 | 1 tasks | 1 files |
 | Phase 18-ai-prompt-generation P01 | 1 | 1 tasks | 1 files |
+| Phase 19 P02 | 1 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting v1.2 work:
 - [Phase 18-02]: _run_prompt_generation uses lazy imports (yaml, generators.prompt_generator) — zero overhead when --tags is not used
 - [Phase 18-02]: YAML write-back uses yaml.safe_load → mutate → yaml.dump(sort_keys=False) — preserves field ordering in profile YAML
 - [Phase 18-02]: cinematic.yaml positive_prompt was already present; Task 2 was a verification pass with no file change
+- [Phase 19]: Atomic save via .tmp + Path.replace prevents corrupt JSON on crash
+- [Phase 19]: status validation raises ValueError inline in update_status — fast fail at mutation point
+- [Phase 19]: Module-level get_roadmap() lazy singleton — zero overhead on import, safe for multi-call UI code
 
 ### Roadmap Evolution
 
@@ -94,5 +98,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 18-02-PLAN.md — --tags CLI flag and PromptGenerator YAML write-back in study_with_me_generator.py (Phase 18 complete)
+Stopped at: Completed 19-02-PLAN.md — VideoRoadmap CRUD backend in roadmap.py
 Resume file: None
