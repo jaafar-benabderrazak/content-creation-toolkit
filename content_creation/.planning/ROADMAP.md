@@ -420,3 +420,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 20 to break down)
+
+### Phase 21: AI-generated thumbnail text, YouTube metadata, and full prompt chain visualization in UI
+
+**Goal:** [To be planned]
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
