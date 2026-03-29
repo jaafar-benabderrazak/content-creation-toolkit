@@ -203,7 +203,7 @@ def save_config(
         },
         post={
             "watermark_enabled": watermark_enabled,
-            "watermark_text": watermark_text,
+            "watermark_text": watermark_text or "",
             "subtitles_enabled": subtitles_enabled,
         },
         publish={
@@ -448,7 +448,7 @@ def build_ui() -> gr.Blocks:
                 prompt_preview = gr.Dataframe(
                     headers=["Type", "Content"],
                     datatype=["str", "str"],
-                    col_count=(2, "fixed"),
+                    column_count=(2, "fixed"),
                     interactive=False,
                     wrap=True,
                     value=[["—", "Select a profile and optionally enter tags, then click Preview"]],
@@ -486,7 +486,7 @@ def build_ui() -> gr.Blocks:
                 exec_history = gr.Dataframe(
                     headers=["Time", "Status", "Pipeline", "Tags", "Output"],
                     datatype=["str", "str", "str", "str", "str"],
-                    col_count=(5, "fixed"),
+                    column_count=(5, "fixed"),
                     interactive=False,
                     value=format_history(),
                 )
@@ -595,7 +595,7 @@ def build_ui() -> gr.Blocks:
                 rm_display = gr.Dataframe(
                     headers=["#", "Title", "Status", "Tags", "ID"],
                     datatype=["str", "str", "str", "str", "str"],
-                    col_count=(5, "fixed"),
+                    column_count=(5, "fixed"),
                     interactive=False,
                     wrap=True,
                 )
