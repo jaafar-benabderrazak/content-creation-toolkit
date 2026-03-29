@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 # Auth: shared secret between Vercel dashboard and local server
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "pipeline-local-secret")
 ACTIVE_RUNS: dict[str, dict] = {}
+RUN_LOGS: dict[str, list[str]] = {}  # run_id → list of log lines (live)
 
 
 class PipelineHandler(BaseHTTPRequestHandler):
@@ -77,7 +78,32 @@ class PipelineHandler(BaseHTTPRequestHandler):
             })
             return
 
-        self._send_json(404, {"error": "Not found. Endpoints: /health, /status, /trigger"})
+        if self.path.startswith("/logs"):
+            # /logs?run_id=xxx&offset=0
+            from urllib.parse import urlparse, parse_qs
+            qs = parse_qs(urlparse(self.path).query)
+            run_id = qs.get("run_id", [""])[0]
+            offset = int(qs.get("offset", ["0"])[0])
+
+            if not run_id:
+                # Return latest run's logs
+                if ACTIVE_RUNS:
+                    run_id = list(ACTIVE_RUNS.keys())[-1]
+                elif RUN_LOGS:
+                    run_id = list(RUN_LOGS.keys())[-1]
+
+            lines = RUN_LOGS.get(run_id, [])
+            status = ACTIVE_RUNS.get(run_id, {}).get("status", "unknown")
+            self._send_json(200, {
+                "run_id": run_id,
+                "status": status,
+                "total_lines": len(lines),
+                "offset": offset,
+                "lines": lines[offset:offset + 200],
+            })
+            return
+
+        self._send_json(404, {"error": "Not found. Endpoints: /health, /status, /trigger, /logs"})
 
     def do_POST(self):
         if self.path != "/trigger":
@@ -109,29 +135,36 @@ class PipelineHandler(BaseHTTPRequestHandler):
 
         logger.info(f"[Trigger] Starting run {run_id}: profile={profile}, tags={tags!r}")
 
-        # Run in background thread
+        # Run in background thread with live stdout streaming
         def _run():
             ACTIVE_RUNS[run_id] = {"status": "running", "cmd": cmd, "started": datetime.now().isoformat()}
+            RUN_LOGS[run_id] = []
             try:
-                result = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=7200,
+                proc = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                    text=True, bufsize=1,
                 )
-                status = "done" if result.returncode == 0 else "failed"
-                last_lines = (result.stdout or "")[-2000:]
-                if result.stderr:
-                    last_lines += f"\n--- STDERR ---\n{result.stderr[-500:]}"
-                update_execution(run_id, status, result.returncode, last_lines)
+                for line in proc.stdout:
+                    stripped = line.rstrip()
+                    RUN_LOGS[run_id].append(stripped)
+                    # Cap at 2000 lines to prevent memory bloat
+                    if len(RUN_LOGS[run_id]) > 2000:
+                        RUN_LOGS[run_id] = RUN_LOGS[run_id][-1500:]
+                    logger.info(f"[Run {run_id[:8]}] {stripped}")
+
+                proc.wait()
+                exit_code = proc.returncode
+                status = "done" if exit_code == 0 else "failed"
+                RUN_LOGS[run_id].append(f"\n[Exit code: {exit_code}]")
+                last_lines = "\n".join(RUN_LOGS[run_id][-50:])
+                update_execution(run_id, status, exit_code, last_lines)
                 ACTIVE_RUNS[run_id]["status"] = status
-                logger.info(f"[Trigger] Run {run_id} {status} (exit={result.returncode})")
+                logger.info(f"[Trigger] Run {run_id} {status} (exit={exit_code})")
 
-                # Send status back to Vercel dashboard if configured
-                _notify_dashboard(run_id, status, output, result.returncode)
+                _notify_dashboard(run_id, status, output, exit_code)
 
-            except subprocess.TimeoutExpired:
-                update_execution(run_id, "failed", -1, "Timeout after 2 hours")
-                ACTIVE_RUNS[run_id]["status"] = "timeout"
-                logger.error(f"[Trigger] Run {run_id} timed out")
             except Exception as e:
+                RUN_LOGS.setdefault(run_id, []).append(f"[ERROR] {e}")
                 update_execution(run_id, "failed", -1, str(e))
                 ACTIVE_RUNS[run_id]["status"] = "error"
                 logger.error(f"[Trigger] Run {run_id} error: {e}")

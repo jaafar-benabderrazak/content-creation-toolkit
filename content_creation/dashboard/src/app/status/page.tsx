@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GenerationLog } from "@/components/status/GenerationLog";
+import { LiveLogs } from "@/components/status/LiveLogs";
 
 export default function StatusPage() {
   const [triggering, setTriggering] = useState(false);
@@ -94,9 +95,21 @@ export default function StatusPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Generation Log</CardTitle>
+          <CardTitle>Live Pipeline Output</CardTitle>
           <CardDescription>
-            Live updates from the local pipeline (polls every 3s)
+            Real-time stdout from the local pipeline server (polls every 2s via ngrok)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LiveLogs />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Event Log</CardTitle>
+          <CardDescription>
+            Status events from webhook callbacks
           </CardDescription>
         </CardHeader>
         <CardContent>
