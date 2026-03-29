@@ -684,6 +684,14 @@ def _run_prompt_generation(tags: str, config_path: str, config) -> None:
         raw["suno"] = {}
     raw["suno"]["prompt_tags"] = result["music_prompt"]
 
+    # Ensure publish block exists
+    if "publish" not in raw or raw["publish"] is None:
+        raw["publish"] = {}
+    raw["publish"]["thumbnail_text"] = result["thumbnail_text"]
+    raw["publish"]["youtube_title"] = result["youtube_title"]
+    raw["publish"]["youtube_description"] = result["youtube_description"]
+    raw["publish"]["youtube_tags"] = result["youtube_tags"]
+
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
@@ -691,6 +699,9 @@ def _run_prompt_generation(tags: str, config_path: str, config) -> None:
     print(f"[Tags]   positive_prompt: {result['positive_prompt'][:60]}...")
     print(f"[Tags]   scene_templates: {len(result['scene_templates'])} variants")
     print(f"[Tags]   music_prompt:    {result['music_prompt'][:60]}...")
+    print(f"[Tags]   thumbnail_text:   {result['thumbnail_text']}")
+    print(f"[Tags]   youtube_title:    {result['youtube_title'][:60]}...")
+    print(f"[Tags]   youtube_tags:     {len(result['youtube_tags'])} tags")
 
 
 # ---- Enhanced Main Function -------------------------------------------------
