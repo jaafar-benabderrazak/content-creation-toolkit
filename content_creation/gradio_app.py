@@ -33,6 +33,76 @@ PROFILES_DIR = Path("config/profiles")
 LAST_RUN_FILE = Path("configs/last_run.yaml")
 
 
+def preview_prompts(tags: str) -> list[list[str]]:
+    """Show current profile prompts and AI-generated prompts if tags provided."""
+    rows = []
+
+    # Load current profile prompts from last saved config
+    if LAST_RUN_FILE.exists():
+        try:
+            cfg = PipelineConfig.from_yaml(LAST_RUN_FILE)
+            if cfg.sdxl:
+                rows.append(["SDXL Positive (profile)", getattr(cfg.sdxl, "positive_prompt", cfg.video.style_prompt) if hasattr(cfg.sdxl, "positive_prompt") else cfg.video.style_prompt])
+                rows.append(["SDXL Negative (profile)", cfg.sdxl.negative_prompt])
+                rows.append(["SDXL Quality Suffix", cfg.sdxl.quality_suffix or "(none)"])
+                rows.append(["SDXL Steps / CFG", f"{cfg.sdxl.steps} steps, guidance {cfg.sdxl.guidance_scale}"])
+            else:
+                rows.append(["Style Prompt (profile)", cfg.video.style_prompt])
+            if cfg.suno:
+                rows.append(["Suno Genre", cfg.suno.genre])
+                rows.append(["Suno Model", cfg.suno.model_version])
+            rows.append(["Music Prompt (profile)", cfg.video.music_prompt])
+        except Exception as e:
+            rows.append(["Error loading profile", str(e)])
+    else:
+        rows.append(["No saved config", "Save config first in Video Settings tab"])
+
+    # Load scene templates from YAML
+    if LAST_RUN_FILE.exists():
+        try:
+            raw = yaml.safe_load(LAST_RUN_FILE.read_text(encoding="utf-8")) or {}
+            templates = (raw.get("sdxl") or {}).get("scene_templates", [])
+            if templates:
+                rows.append(["", ""])
+                rows.append(["--- Scene Templates ---", f"{len(templates)} templates"])
+                for i, t in enumerate(templates[:8], 1):
+                    rows.append([f"  Scene {i}", t])
+        except Exception:
+            pass
+
+    # AI-generated prompts preview (if tags provided and OpenAI available)
+    if tags and tags.strip():
+        rows.append(["", ""])
+        rows.append(["--- AI Generation from Tags ---", f'Tags: "{tags.strip()}"'])
+        try:
+            import os
+            if not os.environ.get("OPENAI_API_KEY"):
+                rows.append(["Status", "OPENAI_API_KEY not set — will use profile prompts"])
+            else:
+                from generators.prompt_generator import PromptGenerator
+                profile_style = "cinematic"
+                if LAST_RUN_FILE.exists():
+                    try:
+                        raw = yaml.safe_load(LAST_RUN_FILE.read_text(encoding="utf-8")) or {}
+                        profile_style = raw.get("profile", "cinematic")
+                    except Exception:
+                        pass
+                gen = PromptGenerator()
+                result = gen.generate(tags.strip(), profile_style)
+                rows.append(["AI Positive Prompt", result.get("positive_prompt", "?")])
+                rows.append(["AI Negative Prompt", result.get("negative_prompt", "?")])
+                rows.append(["AI Music Prompt", result.get("music_prompt", "?")])
+                scenes = result.get("scene_templates", [])
+                for i, s in enumerate(scenes[:8], 1):
+                    rows.append([f"AI Scene {i}", s])
+        except Exception as e:
+            rows.append(["AI Generation Failed", str(e)])
+
+    if not rows:
+        rows = [["—", "No data"]]
+    return rows
+
+
 def _build_roadmap_choices() -> list[str]:
     """Build dropdown choices from planned roadmap entries."""
     entries = get_roadmap().list_entries(status_filter="planned")
@@ -358,6 +428,23 @@ def build_ui() -> gr.Blocks:
                     placeholder="lofi, rain, cozy, study",
                 )
                 exec_btn = gr.Button("Launch Pipeline", variant="primary")
+
+                gr.Markdown("### Prompt Preview")
+                prompt_preview = gr.Dataframe(
+                    headers=["Type", "Content"],
+                    datatype=["str", "str"],
+                    col_count=(2, "fixed"),
+                    interactive=False,
+                    wrap=True,
+                    value=[["—", "Select a profile and optionally enter tags, then click Preview"]],
+                )
+                preview_btn = gr.Button("Preview Prompts")
+
+                preview_btn.click(
+                    fn=preview_prompts,
+                    inputs=[exec_tags],
+                    outputs=[prompt_preview],
+                )
 
                 # Wire roadmap selection → auto-fill tags + output path
                 exec_roadmap_pick.change(
