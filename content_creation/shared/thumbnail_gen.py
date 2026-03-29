@@ -87,43 +87,106 @@ def enhance_thumbnail_image(
 
     out = output_path or image_path.with_name(f"{image_path.stem}_enhanced.jpg")
 
-    # Try API-based img2img (Replicate SDXL img2img)
+    import requests as req
+    import io
+    import base64
+
+    img_bytes = image_path.read_bytes()
+    b64 = base64.b64encode(img_bytes).decode()
+    enhance_prompt = f"youtube thumbnail style, vibrant, dramatic lighting, cinematic, {prompt}"
+    neg_prompt = "blurry, low quality, text, watermark, ugly, deformed"
+
+    # --- Try 1: Seedream img2img via Replicate ---
     replicate_token = os.environ.get("REPLICATE_API_TOKEN")
     if replicate_token and prompt:
         try:
             import replicate
-            import requests
-            import io
-            import base64
-
             os.environ["REPLICATE_API_TOKEN"] = replicate_token
-
-            # Encode image to base64 data URI
-            img_bytes = image_path.read_bytes()
-            b64 = base64.b64encode(img_bytes).decode()
             data_uri = f"data:image/jpeg;base64,{b64}"
 
-            logger.info(f"[Thumbnail] img2img via Replicate: {prompt[:60]}...")
+            logger.info(f"[Thumbnail] img2img via Seedream (Replicate)...")
+            result = replicate.run(
+                "bytedance/seedream-3",
+                input={
+                    "image": data_uri,
+                    "prompt": enhance_prompt,
+                    "aspect_ratio": "16:9",
+                    "output_format": "png",
+                    "num_outputs": 1,
+                },
+            )
+            url = result[0] if isinstance(result, list) else result
+            img_data = req.get(str(url)).content
+            img = Image.open(io.BytesIO(img_data)).convert("RGB")
+            img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
+            img.save(str(out), "JPEG", quality=95)
+            logger.info("[Thumbnail] Enhanced via Seedream img2img")
+            return out
+        except Exception as e:
+            logger.warning(f"[Thumbnail] Seedream failed ({e}), trying next...")
+
+    # --- Try 2: Google Imagen via Gemini API ---
+    google_key = os.environ.get("GOOGLE_API_KEY")
+    if google_key and prompt:
+        try:
+            logger.info("[Thumbnail] img2img via Imagen (Google)...")
+            resp = req.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict",
+                headers={"Content-Type": "application/json"},
+                params={"key": google_key},
+                json={
+                    "instances": [{
+                        "prompt": enhance_prompt,
+                        "image": {"bytesBase64Encoded": b64},
+                    }],
+                    "parameters": {
+                        "sampleCount": 1,
+                        "aspectRatio": "16:9",
+                        "guidanceScale": 60,
+                    },
+                },
+                timeout=30,
+            )
+            if resp.ok:
+                data = resp.json()
+                img_b64 = data["predictions"][0]["bytesBase64Encoded"]
+                img = Image.open(io.BytesIO(base64.b64decode(img_b64))).convert("RGB")
+                img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
+                img.save(str(out), "JPEG", quality=95)
+                logger.info("[Thumbnail] Enhanced via Google Imagen")
+                return out
+            else:
+                logger.warning(f"[Thumbnail] Imagen failed: {resp.status_code}")
+        except Exception as e:
+            logger.warning(f"[Thumbnail] Imagen failed ({e}), trying next...")
+
+    # --- Try 3: SDXL img2img via Replicate ---
+    if replicate_token and prompt:
+        try:
+            import replicate
+            data_uri = f"data:image/jpeg;base64,{b64}"
+
+            logger.info("[Thumbnail] img2img via SDXL (Replicate)...")
             result = replicate.run(
                 "stability-ai/sdxl",
                 input={
                     "image": data_uri,
-                    "prompt": f"youtube thumbnail style, vibrant, dramatic, {prompt}",
-                    "negative_prompt": "blurry, low quality, text, watermark",
-                    "prompt_strength": 0.35,  # Low strength = keep composition, enhance style
+                    "prompt": enhance_prompt,
+                    "negative_prompt": neg_prompt,
+                    "prompt_strength": 0.35,
                     "num_inference_steps": 25,
                     "width": 1280,
                     "height": 720,
                 },
             )
             url = result[0] if isinstance(result, list) else result
-            img_data = requests.get(str(url)).content
+            img_data = req.get(str(url)).content
             img = Image.open(io.BytesIO(img_data)).convert("RGB")
             img.save(str(out), "JPEG", quality=95)
-            logger.info(f"[Thumbnail] img2img enhanced via Replicate")
+            logger.info("[Thumbnail] Enhanced via SDXL img2img")
             return out
         except Exception as e:
-            logger.warning(f"[Thumbnail] img2img API failed ({e}), using local enhancement")
+            logger.warning(f"[Thumbnail] SDXL img2img failed ({e}), using local enhancement")
 
     # Fallback: aggressive local Pillow enhancement
     img = Image.open(image_path).convert("RGB")
