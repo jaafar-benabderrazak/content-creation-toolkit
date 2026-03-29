@@ -97,6 +97,8 @@ class EffectsConfig:
     """Visual effects configuration"""
     enable_weather: bool = True
     enable_time_progression: bool = True
+    enable_parallax: bool = True
+    enable_particles: bool = True
     parallax_strength: float = 0.03
     particle_density: int = 20
     lighting_variation: float = 0.15
