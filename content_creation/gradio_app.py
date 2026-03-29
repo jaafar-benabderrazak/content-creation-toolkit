@@ -27,6 +27,29 @@ PROFILES_DIR = Path("config/profiles")
 LAST_RUN_FILE = Path("configs/last_run.yaml")
 
 
+def _build_roadmap_choices() -> list[str]:
+    """Build dropdown choices from planned roadmap entries."""
+    entries = get_roadmap().list_entries(status_filter="planned")
+    if not entries:
+        return ["(no planned videos)"]
+    return [f"{e.id[:8]} | {e.title}" for e in entries]
+
+
+def _select_roadmap_entry(choice: str) -> tuple[str, str]:
+    """Parse a roadmap dropdown selection → (tags, output_path)."""
+    if not choice or choice.startswith("("):
+        return "", "out/video.mp4"
+    entry_id = choice.split("|")[0].strip()
+    full_id = _find_entry_id(entry_id)
+    if not full_id:
+        return "", "out/video.mp4"
+    for e in get_roadmap().list_entries():
+        if e.id == full_id:
+            safe_title = e.title.lower().replace(" ", "_").replace("'", "")[:40]
+            return e.tags, f"out/{safe_title}.mp4"
+    return "", "out/video.mp4"
+
+
 def list_profiles() -> list[str]:
     """List available named profiles."""
     profiles = ["(default)"]
@@ -306,6 +329,16 @@ def build_ui() -> gr.Blocks:
             # Execute tab — streaming pipeline launch
             # ------------------------------------------------------------------
             with gr.Tab("Execute"):
+                gr.Markdown("### Run from Roadmap")
+                with gr.Row():
+                    roadmap_choices = _build_roadmap_choices()
+                    exec_roadmap_pick = gr.Dropdown(
+                        choices=roadmap_choices,
+                        label="Pick from Roadmap (auto-fills tags & output)",
+                        value=None,
+                    )
+                    exec_roadmap_refresh = gr.Button("Refresh List")
+
                 gr.Markdown("### Run Pipeline")
                 with gr.Row():
                     exec_pipeline = gr.Dropdown(
@@ -319,6 +352,18 @@ def build_ui() -> gr.Blocks:
                     placeholder="lofi, rain, cozy, study",
                 )
                 exec_btn = gr.Button("Launch Pipeline", variant="primary")
+
+                # Wire roadmap selection → auto-fill tags + output path
+                exec_roadmap_pick.change(
+                    fn=_select_roadmap_entry,
+                    inputs=[exec_roadmap_pick],
+                    outputs=[exec_tags, exec_out],
+                )
+                exec_roadmap_refresh.click(
+                    fn=lambda: gr.update(choices=_build_roadmap_choices()),
+                    outputs=[exec_roadmap_pick],
+                )
+
                 exec_output = gr.Textbox(
                     label="Pipeline Output", lines=20, interactive=False,
                     autoscroll=True,
