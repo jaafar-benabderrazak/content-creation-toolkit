@@ -91,6 +91,88 @@ def generate_variants(base_image: Image.Image, count: int) -> List[Image.Image]:
 
 
 # ---------------------------------------------------------------------------
+# Style reference helpers
+# ---------------------------------------------------------------------------
+
+def _style_ref_to_data_uris(image_paths: list, max_refs: int = 6) -> list:
+    """Encode reference images as base64 data URIs for Replicate image_input."""
+    import base64
+    import io as _io
+
+    from PIL import Image as _PIL_Image
+
+    uris = []
+    for p in image_paths[:max_refs]:
+        p = Path(p)
+        if not p.exists():
+            continue
+        # Resize to 512px max side to reduce payload size (per research pitfall 4)
+        img = _PIL_Image.open(p).convert("RGB")
+        w, h = img.size
+        if max(w, h) > 512:
+            scale = 512 / max(w, h)
+            img = img.resize((int(w * scale), int(h * scale)), _PIL_Image.LANCZOS)
+        buf = _io.BytesIO()
+        img.save(buf, "JPEG", quality=85)
+        b64 = base64.b64encode(buf.getvalue()).decode()
+        uris.append(f"data:image/jpeg;base64,{b64}")
+    return uris
+
+
+# ---------------------------------------------------------------------------
+# Local IP-Adapter generation (CUDA required)
+# ---------------------------------------------------------------------------
+
+def _generate_ipadapter(
+    prompt: str,
+    style_ref_paths: list,
+    style_strength: float = 0.6,
+) -> Image.Image:
+    """Generate via local SDXL + InstantStyle IP-Adapter. Requires CUDA."""
+    import torch
+    from diffusers import AutoPipelineForText2Image
+    from diffusers.utils import load_image
+
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "IP-Adapter local backend requires CUDA. "
+            "Set style_ref_backend='replicate' to use Replicate instead."
+        )
+
+    pipeline = AutoPipelineForText2Image.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        torch_dtype=torch.float16,
+    ).to("cuda")
+
+    pipeline.load_ip_adapter(
+        "h94/IP-Adapter",
+        subfolder="sdxl_models",
+        weight_name="ip-adapter_sdxl.bin",
+    )
+
+    # InstantStyle: style-only layer targeting (no content/composition bleed)
+    scale = {"up": {"block_0": [0.0, style_strength, 0.0]}}
+    pipeline.set_ip_adapter_scale(scale)
+    # IMPORTANT: enable_model_cpu_offload AFTER load_ip_adapter (per diffusers docs)
+    pipeline.enable_model_cpu_offload()
+
+    style_images = [load_image(str(p)) for p in style_ref_paths[:10] if Path(p).exists()]
+
+    result = pipeline(
+        prompt=prompt,
+        ip_adapter_image=style_images,
+        negative_prompt="text, watermark, low quality, blurry",
+        guidance_scale=5.0,
+        num_inference_steps=30,
+        width=1792,
+        height=1024,
+    ).images[0]
+    del pipeline
+    torch.cuda.empty_cache()
+    return result
+
+
+# ---------------------------------------------------------------------------
 # API-based image generation
 # ---------------------------------------------------------------------------
 
@@ -100,21 +182,31 @@ def generate_image_api(
     quality: str = "hd",
     model: str = "dall-e-3",
     api_key: Optional[str] = None,
+    style_ref_paths: Optional[list] = None,
+    style_ref_backend: str = "replicate",
 ) -> Image.Image:
     """Generate a single image via best available API.
 
-    Priority: Seedream (Replicate) → DALL-E 3 (OpenAI) → Local SD 1.5.
+    Priority: IP-Adapter local (if style_ref_backend=local_ipadapter + CUDA)
+              → Seedream 5 (Replicate) → DALL-E 3 (OpenAI) → Local SD 1.5.
     Returns a PIL Image.
     """
-    # Try Seedream via Replicate first
+    # IP-Adapter local path (CUDA only)
+    if style_ref_paths and style_ref_backend == "local_ipadapter":
+        try:
+            return _generate_ipadapter(prompt, style_ref_paths)
+        except RuntimeError as e:
+            logger.warning(f"[ImageGen] IP-Adapter failed ({e}), falling back to Replicate...")
+
+    # Try Seedream 5 via Replicate first
     replicate_token = os.environ.get("REPLICATE_API_TOKEN")
     if replicate_token:
         try:
-            return _generate_seedream(prompt, replicate_token)
+            return _generate_seedream(prompt, replicate_token, style_ref_paths=style_ref_paths)
         except Exception as e:
             logger.warning(f"[ImageGen] Seedream failed ({e}), trying DALL-E 3...")
 
-    # Try DALL-E 3
+    # Try DALL-E 3 (no style ref support)
     openai_key = api_key or os.environ.get("OPENAI_API_KEY")
     if openai_key:
         try:
@@ -126,22 +218,34 @@ def generate_image_api(
     return _generate_local(prompt)
 
 
-def _generate_seedream(prompt: str, token: str) -> Image.Image:
-    """Generate image via ByteDance Seedream on Replicate."""
+def _generate_seedream(
+    prompt: str,
+    token: str,
+    style_ref_paths: Optional[list] = None,
+) -> Image.Image:
+    """Generate image via ByteDance Seedream 5 on Replicate."""
     import replicate as rep
     import requests as req
 
     os.environ["REPLICATE_API_TOKEN"] = token
-    logger.info(f"[ImageGen] Seedream (Replicate): {prompt[:70]}...")
+    logger.info(f"[ImageGen] Seedream 5 (Replicate): {prompt[:70]}...")
+
+    inp = {
+        "prompt": prompt,
+        "aspect_ratio": "16:9",
+        "output_format": "png",
+        "num_outputs": 1,
+    }
+
+    if style_ref_paths:
+        uris = _style_ref_to_data_uris(style_ref_paths, max_refs=6)
+        if uris:
+            inp["image_input"] = uris
+            logger.info(f"[ImageGen] Seedream 5: {len(uris)} style reference images injected")
 
     output = rep.run(
-        "bytedance/seedream-3",
-        input={
-            "prompt": prompt,
-            "aspect_ratio": "16:9",
-            "output_format": "png",
-            "num_outputs": 1,
-        },
+        "bytedance/seedream-5-lite",
+        input=inp,
     )
 
     # output is a list of FileOutput URLs
@@ -215,6 +319,8 @@ class ImageGenerator:
         multi_image: bool = False,
         api_key: Optional[str] = None,
         seed: int = 42,
+        style_ref_handle: Optional[str] = None,
+        style_ref_backend: str = "replicate",
     ) -> List[Path]:
         """Generate scene images and return their file paths.
 
@@ -241,6 +347,13 @@ class ImageGenerator:
             OpenAI API key override.
         seed : int
             Seed for reproducibility (cache key component).
+        style_ref_handle : str, optional
+            Instagram handle whose cached style profile provides reference
+            images for Seedream 5 image_input / IP-Adapter conditioning.
+            Requires a populated .cache/style_reference/<handle>/profile.json.
+        style_ref_backend : str
+            "replicate" (default) uses Seedream 5 image_input on Replicate.
+            "local_ipadapter" uses InstantStyle IP-Adapter locally (CUDA required).
 
         Returns
         -------
@@ -254,12 +367,31 @@ class ImageGenerator:
             return self._generate_multi(
                 prompt, negative_prompt, scene_count, profile,
                 quality, size, target_resolution, out_dir, api_key, seed,
+                style_ref_handle, style_ref_backend,
             )
         else:
             return self._generate_single_with_variants(
                 prompt, negative_prompt, scene_count, profile,
                 quality, size, target_resolution, out_dir, api_key, seed,
+                style_ref_handle, style_ref_backend,
             )
+
+    def _resolve_style_ref_paths(self, style_ref_handle: str) -> Optional[list]:
+        """Resolve reference image paths from a cached StyleReferenceManager profile."""
+        try:
+            from generators.style_reference import StyleReferenceManager
+            mgr = StyleReferenceManager()
+            paths = [str(p) for p in mgr.get_reference_image_paths(style_ref_handle)]
+            if not paths:
+                logger.warning(
+                    f"[ImageGen] No reference images found for @{style_ref_handle} "
+                    "— generating without style ref"
+                )
+                return None
+            return paths
+        except Exception as e:
+            logger.warning(f"[ImageGen] StyleRef load failed ({e}) — continuing without style ref")
+            return None
 
     def _generate_single_with_variants(
         self,
@@ -273,6 +405,8 @@ class ImageGenerator:
         out_dir: Path,
         api_key: Optional[str],
         seed: int,
+        style_ref_handle: Optional[str] = None,
+        style_ref_backend: str = "replicate",
     ) -> List[Path]:
         """Generate ONE base image, then create variants."""
         params = {
@@ -283,6 +417,7 @@ class ImageGenerator:
             "size": size,
             "seed": seed,
             "mode": "single",
+            "style_ref_handle": style_ref_handle or "",
         }
         key = _cache_key(params)
 
@@ -295,7 +430,20 @@ class ImageGenerator:
             base = Image.open(base_path)
         else:
             logger.info(f"[ImageGen] Generating base image via API...")
-            base = generate_image_api(prompt, size=size, quality=quality, api_key=api_key)
+
+            # Resolve style reference paths if handle provided
+            style_ref_paths = None
+            if style_ref_handle:
+                style_ref_paths = self._resolve_style_ref_paths(style_ref_handle)
+
+            base = generate_image_api(
+                prompt,
+                size=size,
+                quality=quality,
+                api_key=api_key,
+                style_ref_paths=style_ref_paths,
+                style_ref_backend=style_ref_backend,
+            )
             base = base.resize(target_resolution, Image.LANCZOS)
             base.save(str(base_path), "PNG")
             sidecar.write_text(json.dumps(params, indent=2), encoding="utf-8")
@@ -325,8 +473,15 @@ class ImageGenerator:
         out_dir: Path,
         api_key: Optional[str],
         seed: int,
+        style_ref_handle: Optional[str] = None,
+        style_ref_backend: str = "replicate",
     ) -> List[Path]:
         """Generate a distinct image for each scene."""
+        # Resolve style ref paths once for the whole batch
+        style_ref_paths = None
+        if style_ref_handle:
+            style_ref_paths = self._resolve_style_ref_paths(style_ref_handle)
+
         paths = []
         for i in range(scene_count):
             scene_prompt = f"{prompt}, scene {i+1}, variation {i+1}"
@@ -339,6 +494,7 @@ class ImageGenerator:
                 "seed": seed + i,
                 "mode": "multi",
                 "scene_index": i,
+                "style_ref_handle": style_ref_handle or "",
             }
             key = _cache_key(params)
             img_path = out_dir / f"scene_{i:03d}_{key[:12]}.jpg"
@@ -348,7 +504,14 @@ class ImageGenerator:
                 logger.info(f"[ImageGen] Cache hit: scene {i} ({key[:8]})")
             else:
                 logger.info(f"[ImageGen] Generating scene {i+1}/{scene_count}...")
-                img = generate_image_api(scene_prompt, size=size, quality=quality, api_key=api_key)
+                img = generate_image_api(
+                    scene_prompt,
+                    size=size,
+                    quality=quality,
+                    api_key=api_key,
+                    style_ref_paths=style_ref_paths,
+                    style_ref_backend=style_ref_backend,
+                )
                 img = img.resize(target_resolution, Image.LANCZOS)
                 img.save(str(img_path), "JPEG", quality=95)
                 sidecar.write_text(json.dumps(params, indent=2), encoding="utf-8")
