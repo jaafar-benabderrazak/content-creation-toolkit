@@ -227,19 +227,22 @@ def add_roadmap_entry(title: str, tags: str, profile: str, notes: str) -> str:
         return f"Error: {ex}"
 
 
-def list_roadmap(status_filter: str) -> str:
+def list_roadmap(status_filter: str) -> list[list[str]]:
     entries = get_roadmap().list_entries(
         status_filter=None if status_filter == "all" else status_filter
     )
     if not entries:
-        return "(no entries)"
-    lines = []
-    for e in entries:
-        lines.append(
-            f"[{e.status.upper():10}] {e.title} | profile={e.profile} | "
-            f"tags={e.tags or '—'} | id={e.id[:8]}..."
-        )
-    return "\n".join(lines)
+        return [["—", "No entries", "—", "—", "—"]]
+    rows = []
+    for i, e in enumerate(entries, 1):
+        rows.append([
+            str(i),
+            e.title,
+            e.status.upper(),
+            e.tags or "—",
+            e.id[:8],
+        ])
+    return rows
 
 
 def _find_entry_id(partial_id: str) -> Optional[str]:
@@ -327,8 +330,11 @@ def build_ui() -> gr.Blocks:
                 )
 
                 gr.Markdown("### Execution History (persists across reloads)")
-                exec_history = gr.Textbox(
-                    label="Recent Executions", lines=10, interactive=False,
+                exec_history = gr.Dataframe(
+                    headers=["Time", "Status", "Pipeline", "Tags", "Output"],
+                    datatype=["str", "str", "str", "str", "str"],
+                    col_count=(5, "fixed"),
+                    interactive=False,
                     value=format_history(),
                 )
                 exec_refresh_btn = gr.Button("Refresh History")
@@ -426,13 +432,20 @@ def build_ui() -> gr.Blocks:
                 rm_add_status = gr.Textbox(label="Status", interactive=False)
 
                 gr.Markdown("### Roadmap")
-                rm_filter = gr.Dropdown(
-                    choices=["all", "planned", "producing", "published"],
-                    value="all",
-                    label="Filter by Status",
+                with gr.Row():
+                    rm_filter = gr.Dropdown(
+                        choices=["all", "planned", "producing", "published"],
+                        value="all",
+                        label="Filter by Status",
+                    )
+                    rm_refresh_btn = gr.Button("Refresh")
+                rm_display = gr.Dataframe(
+                    headers=["#", "Title", "Status", "Tags", "ID"],
+                    datatype=["str", "str", "str", "str", "str"],
+                    col_count=(5, "fixed"),
+                    interactive=False,
+                    wrap=True,
                 )
-                rm_refresh_btn = gr.Button("Refresh")
-                rm_display = gr.Textbox(label="Entries", lines=12, interactive=False)
 
                 gr.Markdown("### Update Entry")
                 with gr.Row():

@@ -81,16 +81,18 @@ def get_execution_history(limit: int = 20) -> List[dict]:
     return list(reversed(entries[-limit:]))
 
 
-def format_history() -> str:
+def format_history() -> list[list[str]]:
     entries = get_execution_history(20)
     if not entries:
-        return "(no execution history)"
-    lines = []
+        return [["—", "No executions yet", "—", "—", "—"]]
+    rows = []
     for e in entries:
         status_icon = {"running": "...", "done": "OK", "failed": "ERR"}.get(e["status"], "?")
-        exit_str = f" exit={e.get('exit_code', '?')}" if e["status"] != "running" else ""
-        lines.append(
-            f"[{status_icon:3}] {e['started_at'][:19]} | {e['pipeline']} | "
-            f"tags={e.get('tags') or '—'} | {e.get('output_path', '?')}{exit_str}"
-        )
-    return "\n".join(lines)
+        rows.append([
+            e["started_at"][:19],
+            status_icon,
+            e["pipeline"],
+            e.get("tags") or "—",
+            e.get("output_path", "?"),
+        ])
+    return rows
