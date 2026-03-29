@@ -63,8 +63,6 @@ def load_profile(name: str) -> dict:
         "youtube_description": cfg.publish.youtube_description,
         "youtube_tags": ", ".join(cfg.publish.youtube_tags),
         "youtube_privacy": cfg.publish.youtube_privacy,
-        "discord_webhook_url": cfg.notify.discord_webhook_url or "",
-        "slack_webhook_url": cfg.notify.slack_webhook_url or "",
         "require_approval": cfg.notify.require_approval,
     }
 
@@ -73,7 +71,7 @@ def save_config(
     profile, style_prompt, music_prompt, mood, duration_minutes, resolution,
     quality_preset, scene_count, watermark_enabled, watermark_text,
     subtitles_enabled, youtube_enabled, youtube_title, youtube_description,
-    youtube_tags, youtube_privacy, discord_webhook_url, slack_webhook_url,
+    youtube_tags, youtube_privacy,
     require_approval,
 ) -> str:
     """Build PipelineConfig from UI fields and save to YAML."""
@@ -101,8 +99,6 @@ def save_config(
             "youtube_privacy": youtube_privacy,
         },
         notify={
-            "discord_webhook_url": discord_webhook_url or None,
-            "slack_webhook_url": slack_webhook_url or None,
             "require_approval": require_approval,
         },
     )
@@ -358,8 +354,7 @@ def build_ui() -> gr.Blocks:
             # Notifications tab
             # ------------------------------------------------------------------
             with gr.Tab("Notifications"):
-                discord_url = gr.Textbox(label="Discord Webhook URL")
-                slack_url = gr.Textbox(label="Slack Webhook URL")
+                gr.Markdown("*Discord/Slack webhook URLs are loaded from environment variables (`NOTF_DISCORD_WEBHOOK_URL`, `NOTF_SLACK_WEBHOOK_URL`). No need to set them here.*")
                 approval = gr.Checkbox(label="Require Approval Before Publish", value=True)
 
             # ------------------------------------------------------------------
@@ -461,7 +456,7 @@ def build_ui() -> gr.Blocks:
             profile_name, style_prompt, music_prompt, mood, duration, resolution,
             quality, scenes, watermark_on, watermark_txt, subtitles_on,
             yt_enabled, yt_title, yt_desc, yt_tags, yt_privacy,
-            discord_url, slack_url, approval,
+            approval,
         ]
 
         def on_load(name):
@@ -474,7 +469,6 @@ def build_ui() -> gr.Blocks:
                 vals["subtitles_enabled"], vals["youtube_enabled"],
                 vals["youtube_title"], vals["youtube_description"],
                 vals["youtube_tags"], vals["youtube_privacy"],
-                vals["discord_webhook_url"], vals["slack_webhook_url"],
                 vals["require_approval"],
             ]
 

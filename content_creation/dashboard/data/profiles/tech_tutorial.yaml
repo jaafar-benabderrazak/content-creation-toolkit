@@ -39,8 +39,7 @@ publish:
   thumbnail_enabled: true
 
 notify:
-  discord_webhook_url: null
-  slack_webhook_url: null
+  # webhook URLs loaded from env vars (NOTF_DISCORD_WEBHOOK_URL, NOTF_SLACK_WEBHOOK_URL)
   require_approval: true
   approval_timeout_seconds: 3600
 
