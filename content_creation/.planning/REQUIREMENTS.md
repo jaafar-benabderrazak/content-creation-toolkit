@@ -31,11 +31,11 @@
 
 - [ ] **GRAD-01**: User can launch the Study Video pipeline from the Gradio UI Execute tab; pipeline stdout streams line-by-line without freezing the browser tab
 - [ ] **GRAD-02**: Execute tab accepts an optional tags field forwarded as --tags to the pipeline subprocess
-- [ ] **GRAD-03**: User can queue a pipeline run for a future datetime; the scheduler fires the subprocess at the scheduled time
-- [ ] **GRAD-04**: Schedule tab shows all queued jobs with status (pending/running/done/failed) and supports job cancellation
-- [ ] **GRAD-05**: User can add a planned video entry (title, tags, profile, notes) to the content roadmap from the Gradio UI
-- [ ] **GRAD-06**: Content Roadmap tab lists entries with status badges and supports status transitions (planned → producing → published)
-- [ ] **GRAD-07**: Roadmap entries can be reordered (move up/down) and deleted from the UI
+- [x] **GRAD-03**: User can queue a pipeline run for a future datetime; the scheduler fires the subprocess at the scheduled time
+- [x] **GRAD-04**: Schedule tab shows all queued jobs with status (pending/running/done/failed) and supports job cancellation
+- [x] **GRAD-05**: User can add a planned video entry (title, tags, profile, notes) to the content roadmap from the Gradio UI
+- [x] **GRAD-06**: Content Roadmap tab lists entries with status badges and supports status transitions (planned → producing → published)
+- [x] **GRAD-07**: Roadmap entries can be reordered (move up/down) and deleted from the UI
 
 ## Out of Scope
 

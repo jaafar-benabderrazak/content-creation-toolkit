@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.2 — Smart Automation (Phase 18)
+**Current focus:** Milestone v1.2 — Smart Automation (Phase 19)
 
 ## Current Position
 
-Phase: 18 of 18 (v1.2 — AI Prompt Generation)
-Plan: 2 of 2 completed in current phase
-Status: Phase complete
-Last activity: 2026-03-28 — 18-02 complete: --tags CLI flag and PromptGenerator YAML write-back in study_with_me_generator.py
+Phase: 19 of 19 (v1.2 — Local Gradio UI with Pipeline Execution, Scheduling, and Video Content Roadmap)
+Plan: 1 of 3 completed in current phase
+Status: In progress
+Last activity: 2026-03-29 — 19-01 complete: APScheduler-backed JobQueue with JSON persistence in scheduler.py
 
-Progress: [█████░░░░░] 50% (v1.2 milestone — 5/? plans complete)
+Progress: [█████░░░░░] 50% (v1.2 milestone — 6/? plans complete)
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [█████░░░░░] 50% (v1.2 milestone — 5/? plans com
 | Phase 17 P04 | 2 | 1 tasks | 1 files |
 | Phase 18-ai-prompt-generation P01 | 1 | 1 tasks | 1 files |
 | Phase 19 P02 | 1 | 2 tasks | 1 files |
+| Phase 19 P01 | ~5 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,10 @@ Recent decisions affecting v1.2 work:
 - [Phase 18-02]: _run_prompt_generation uses lazy imports (yaml, generators.prompt_generator) — zero overhead when --tags is not used
 - [Phase 18-02]: YAML write-back uses yaml.safe_load → mutate → yaml.dump(sort_keys=False) — preserves field ordering in profile YAML
 - [Phase 18-02]: cinematic.yaml positive_prompt was already present; Task 2 was a verification pass with no file change
+- [Phase 19-01]: jobs.json written on first instantiation if absent — Plan 03 can assume file always present
+- [Phase 19-01]: Past-due pending jobs on restart fire immediately via daemon thread — no queue drain delay
+- [Phase 19-01]: Atomic save via .json.tmp + Path.replace prevents corrupt JSON on crash
+- [Phase 19-01]: _run_job guards on status=='pending' before executing — prevents double-execution on restart
 - [Phase 19]: Atomic save via .tmp + Path.replace prevents corrupt JSON on crash
 - [Phase 19]: status validation raises ValueError inline in update_status — fast fail at mutation point
 - [Phase 19]: Module-level get_roadmap() lazy singleton — zero overhead on import, safe for multi-call UI code
@@ -97,6 +102,6 @@ Recent decisions affecting v1.2 work:
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Completed 19-02-PLAN.md — VideoRoadmap CRUD backend in roadmap.py
+Last session: 2026-03-29
+Stopped at: Completed 19-01-PLAN.md — APScheduler-backed JobQueue with JSON persistence in scheduler.py
 Resume file: None
