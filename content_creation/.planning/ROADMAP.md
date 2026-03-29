@@ -411,7 +411,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
 | 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
 | 19. Local Gradio UI | 3/3 | Complete   | 2026-03-29 |
-| 21. AI Prompt Chain Metadata | 0/3 | Planned | - |
+| 21. AI Prompt Chain Metadata | 1/3 | In Progress|  |
 
 ### Phase 20: Persistent channel config and auto-generated 60-video lofi content roadmap
 
@@ -426,7 +426,7 @@ Plans:
 
 **Goal:** PromptGenerator produces thumbnail_text, youtube_title, youtube_description, and youtube_tags in every generate() call; the pipeline writes all four to the YAML publish block; pipeline_runner passes thumbnail_text to the thumbnail compositor; Gradio shows the full 7-section prompt chain in the Execute tab preview
 **Depends on:** Phase 20
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 **Requirements**: PMETA-01, PMETA-02, PMETA-03, PMETA-04, PMETA-05
 

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.2 — Smart Automation (Phase 19)
+**Current focus:** Milestone v1.3 — AI-Generated YouTube Metadata (Phase 21)
 
 ## Current Position
 
-Phase: 19 of 19 (v1.2 — Local Gradio UI with Pipeline Execution, Scheduling, and Video Content Roadmap)
+Phase: 21 of 21 (v1.3 — AI-Generated Thumbnail Text, YouTube Metadata, and Full Prompt Chain Visualization in UI)
 Plan: 1 of 3 completed in current phase
 Status: In progress
-Last activity: 2026-03-29 — 19-01 complete: APScheduler-backed JobQueue with JSON persistence in scheduler.py
+Last activity: 2026-03-29 — 21-01 complete: PromptGenerator 8-key output and PublishSettings.thumbnail_text
 
-Progress: [█████░░░░░] 50% (v1.2 milestone — 6/? plans complete)
+Progress: [█████░░░░░] 50% (v1.3 milestone — 1/3 plans complete)
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [█████░░░░░] 50% (v1.2 milestone — 6/? plans com
 | Phase 19 P02 | 1 | 2 tasks | 1 files |
 | Phase 19 P01 | ~5 min | 2 tasks | 3 files |
 | Phase 19 P03 | 5 | 3 tasks | 1 files |
+| Phase 21 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting v1.2 work:
 - [Phase 19]: Module-level get_roadmap() lazy singleton — zero overhead on import, safe for multi-call UI code
 - [Phase 19]: stream_pipeline uses subprocess.Popen generator with 500-line rolling buffer — non-blocking stdout streaming in Gradio
 - [Phase 19]: Execute/Schedule/Roadmap tab helper functions defined at module level above build_ui() — importable and testable independently
+- [Phase 21]: _validate alias at module level: static method exposed for direct import compatibility
+- [Phase 21]: thumbnail_text placed after youtube_tags in PublishSettings — no ENV_VAR_MAP entry (generated content, not credential)
+- [Phase 21]: youtube_tags count validation: range 15-20 enforced in _validate() matching _USER_PROMPT spec
 
 ### Roadmap Evolution
 
@@ -106,5 +110,5 @@ Recent decisions affecting v1.2 work:
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 19-01-PLAN.md — APScheduler-backed JobQueue with JSON persistence in scheduler.py
+Stopped at: Completed 21-01-PLAN.md — PromptGenerator 8-key output and PublishSettings.thumbnail_text
 Resume file: None
