@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GenerationLog } from "@/components/status/GenerationLog";
 import { LiveLogs } from "@/components/status/LiveLogs";
+import { RoadmapPicker } from "@/components/status/RoadmapPicker";
 
 interface RoadmapEntry {
   id: string;
@@ -16,6 +17,7 @@ interface RoadmapEntry {
   profile: string;
   status: string;
 }
+
 
 // Per-unit costs from provider pricing pages (March 2026)
 const PRICING = {
@@ -258,23 +260,12 @@ export default function StatusPage() {
   const [multiImage, setMultiImage] = useState(false);
   const [songCount, setSongCount] = useState(1);
   const [thumbnailCount, setThumbnailCount] = useState(1);
-  const [roadmapEntries, setRoadmapEntries] = useState<RoadmapEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState("");
+  const [selectedTitle, setSelectedTitle] = useState("");
 
-  useEffect(() => {
-    fetch("/api/roadmap?status=planned")
-      .then((r) => r.json())
-      .then((data) => setRoadmapEntries(data.entries || []))
-      .catch(() => {});
-  }, []);
-
-  function onSelectRoadmapEntry(entryId: string) {
-    setSelectedEntry(entryId);
-    const entry = roadmapEntries.find((e) => e.id === entryId);
-    if (entry) {
-      setTags(entry.tags);
-      setSelectedProfile(entry.profile.replace("-", "_"));
-    }
+  function onSelectRoadmapEntry(entry: RoadmapEntry) {
+    setTags(entry.tags);
+    setSelectedProfile(entry.profile.replace("-", "_"));
+    setSelectedTitle(entry.title);
   }
 
   async function handleTrigger() {
@@ -308,24 +299,11 @@ export default function StatusPage() {
         <CardHeader><CardTitle>Trigger Generation</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {/* Roadmap Picker */}
-          {roadmapEntries.length > 0 && (
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                Pick from Roadmap ({roadmapEntries.length} planned)
-              </label>
-              <select
-                value={selectedEntry}
-                onChange={(e) => onSelectRoadmapEntry(e.target.value)}
-                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="">— Select a video —</option>
-                {roadmapEntries.slice(0, 50).map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <RoadmapPicker onSelect={onSelectRoadmapEntry} />
+          {selectedTitle && (
+            <p className="text-xs text-muted-foreground">
+              Selected: <span className="font-medium text-foreground">{selectedTitle}</span>
+            </p>
           )}
 
           <div className="flex gap-3 items-end">
