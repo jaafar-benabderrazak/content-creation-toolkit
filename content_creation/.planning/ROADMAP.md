@@ -411,6 +411,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
 | 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
 | 19. Local Gradio UI | 3/3 | Complete   | 2026-03-29 |
+| 21. AI Prompt Chain Metadata | 0/3 | Planned | - |
 
 ### Phase 20: Persistent channel config and auto-generated 60-video lofi content roadmap
 
@@ -423,9 +424,13 @@ Plans:
 
 ### Phase 21: AI-generated thumbnail text, YouTube metadata, and full prompt chain visualization in UI
 
-**Goal:** [To be planned]
+**Goal:** PromptGenerator produces thumbnail_text, youtube_title, youtube_description, and youtube_tags in every generate() call; the pipeline writes all four to the YAML publish block; pipeline_runner passes thumbnail_text to the thumbnail compositor; Gradio shows the full 7-section prompt chain in the Execute tab preview
 **Depends on:** Phase 20
-**Plans:** 0 plans
+**Plans:** 3 plans
+
+**Requirements**: PMETA-01, PMETA-02, PMETA-03, PMETA-04, PMETA-05
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 21 to break down)
+- [ ] 21-01-PLAN.md — Extend PromptGenerator with 4 new output keys + thumbnail_text field on PublishSettings
+- [ ] 21-02-PLAN.md — _run_prompt_generation writes new fields to YAML publish block; preview_prompts shows full 7-section chain
+- [ ] 21-03-PLAN.md — pipeline_runner.py uses thumbnail_text (falls back to youtube_title) in generate_thumbnail call
