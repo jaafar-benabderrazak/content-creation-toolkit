@@ -21,6 +21,7 @@ import yaml
 from config import PipelineConfig
 from scheduler import get_queue
 from roadmap import get_roadmap
+from execution_log import start_execution, update_execution, format_history
 
 PROFILES_DIR = Path("config/profiles")
 LAST_RUN_FILE = Path("configs/last_run.yaml")
@@ -157,6 +158,8 @@ def stream_pipeline(pipeline: str, output_path: str, tags: str) -> Generator[str
         yield f"Unknown pipeline: {pipeline}"
         return
 
+    entry = start_execution(pipeline, "(from UI)", tags, output_path)
+
     try:
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -171,7 +174,12 @@ def stream_pipeline(pipeline: str, output_path: str, tags: str) -> Generator[str
         proc.wait()
         buffer.append(f"\n[Exit code: {proc.returncode}]")
         yield "\n".join(buffer)
+
+        last_50 = "\n".join(buffer[-50:])
+        status = "done" if proc.returncode == 0 else "failed"
+        update_execution(entry.id, status, proc.returncode, last_50)
     except Exception as e:
+        update_execution(entry.id, "failed", -1, str(e))
         yield f"Error launching pipeline: {e}"
 
 
@@ -317,6 +325,14 @@ def build_ui() -> gr.Blocks:
                     inputs=[exec_pipeline, exec_out, exec_tags],
                     outputs=[exec_output],
                 )
+
+                gr.Markdown("### Execution History (persists across reloads)")
+                exec_history = gr.Textbox(
+                    label="Recent Executions", lines=10, interactive=False,
+                    value=format_history(),
+                )
+                exec_refresh_btn = gr.Button("Refresh History")
+                exec_refresh_btn.click(fn=lambda: format_history(), outputs=[exec_history])
 
             # ------------------------------------------------------------------
             # Video Settings tab
