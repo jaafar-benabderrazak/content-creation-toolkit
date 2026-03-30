@@ -40,7 +40,9 @@ const STEP_COLORS: Record<string, string> = {
   scenes: "bg-teal-500/20 text-teal-400 border-teal-500/30",
   music: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   thumbnail: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  "thumb-text": "bg-pink-500/20 text-pink-400 border-pink-500/30",
   youtube: "bg-red-500/20 text-red-400 border-red-500/30",
+  "yt-desc": "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
 export function PromptTimeline({ profile }: PromptTimelineProps) {
@@ -153,12 +155,17 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
     },
     {
       id: "thumbnail",
-      label: "Thumbnail Text + Prompt",
+      label: "Thumbnail Pipeline",
+      time: "T+render",
+      content: `1. Extract best frame (OpenCV Laplacian sharpness scoring across 10 samples)`,
+      sub: `2. img2img enhance: ${(data.publish as any)?.thumbnail_prompt || "boost contrast, dramatic rim lighting, vibrant colors, cinematic depth"}`,
+    },
+    {
+      id: "thumb-text" as const,
+      label: "Thumbnail Text Overlay",
       time: "T+render",
       content: data.publish?.thumbnail_text || "(not set)",
-      sub: (data.publish as any)?.thumbnail_prompt
-        ? `img2img prompt: ${(data.publish as any).thumbnail_prompt}`
-        : "Best frame → img2img enhance → text overlay",
+      sub: "Impact 72px ALL CAPS, glow + 8-dir outline, dark gradient, vignette, avatar logo",
       artifact: artifacts.thumbnail
         ? `Result: ${artifacts.thumbnail.name}`
         : undefined,
