@@ -8,6 +8,8 @@ v1.1 (AI Generation Quality) extends the foundation with profile-driven SDXL pro
 
 v1.2 (Smart Automation) closes the manual-input loop: smart defaults pre-fill all env-sourced credentials, channel branding is fetched from YouTube and applied automatically, and AI prompt generation lets the user supply only tags — OpenAI writes every SDXL and Suno prompt. One command with tags produces a branded, publish-ready video.
 
+v2.0 (Cloud Deploy) removes all local infrastructure dependencies: Supabase replaces local JSON files, Clerk secures the dashboard, Modal/Replicate/Remotion Lambda replace local GPU execution, and GitHub CI/CD with Vercel handles all deploys. One command — fully cloud-hosted, no local machine required.
+
 ## Phases
 
 **Phase Numbering:**
@@ -33,7 +35,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 16: Smart Defaults** - Config loader pre-fills all env-sourced credentials and shows source provenance in the dashboard (completed 2026-03-28)
 - [x] **Phase 17: Channel Branding** - YouTube channel data fetch, branding propagation to watermark/thumbnail, cached locally, and auto-generated intro/outro clips (completed 2026-03-28)
 - [x] **Phase 18: AI Prompt Generation** - Tag-to-prompt via OpenAI with profile-aware scene variation, saved to YAML, enabling end-to-end tag-only pipeline runs (completed 2026-03-28)
-- [x] **Phase 19: Local Gradio UI** - Pipeline execution with real-time streaming, APScheduler-backed job queue, and content roadmap CRUD — full local control without the terminal (completed 2026-03-29)
+- [x] **Phase 19: Local Gradio UI** - Pipeline execution with real-time streaming, APScheduler-backed job queue, and content roadmap CRUD (completed 2026-03-29)
+- [x] **Phase 21: AI Prompt Chain Metadata** - PromptGenerator extended with thumbnail_text, youtube_title, youtube_description, youtube_tags (completed 2026-03-29)
+- [ ] **Phase 25: Supabase Database Foundation** - Schema creation, data migration (210 roadmap entries), and Supabase client wired into all data access paths
+- [ ] **Phase 26: GitHub CI/CD and Vercel Pipeline** - Repo with branch protection, auto-deploy on merge, preview deployments, and env vars in Vercel dashboard
+- [ ] **Phase 27: Clerk Authentication** - Dashboard protected by Clerk auth, Vercel Marketplace integration, persistent sessions
+- [ ] **Phase 28: Cloud Pipeline Execution** - Modal GPU workers, Replicate image generation, Remotion Lambda rendering, dashboard trigger, real-time status streaming
+- [ ] **Phase 29: Dashboard Migration** - All dashboard data reads/writes from Supabase; Cloudflare tunnel and local pipeline-api proxy removed
 
 ## Phase Details
 
@@ -386,33 +394,6 @@ Plans:
 - [ ] 19-02-PLAN.md — roadmap.py: VideoRoadmap with CRUD for planned/producing/published entries, JSON persistence, move/filter operations
 - [ ] 19-03-PLAN.md — gradio_app.py upgrade: streaming Execute tab, Schedule tab (wired to scheduler.py), Content Roadmap tab (wired to roadmap.py)
 
-## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 16 → 17 → 18 → 19
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Config Foundation | 0/4 | Not started | - |
-| 2. Post-Processing Pipeline | 0/5 | Not started | - |
-| 3. Thumbnail Generation | 0/3 | Not started | - |
-| 4. Notifications and Approval Gate | 0/5 | Not started | - |
-| 5. YouTube Publisher | 0/5 | Not started | - |
-| 6. Pipeline Integration | 0/3 | Not started | - |
-| 7. Config UI | 0/4 | Not started | - |
-| 8. Remotion Compilation Quality | 4/4 | Complete | 2026-03-28 |
-| 9. Config Extension and Prompt Templates | 3/3 | Complete | 2026-03-28 |
-| 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete | 2026-03-28 |
-| 11. Suno Music Integration | 2/2 | Complete | 2026-03-28 |
-| 12. Discord Approval Loops | 0/? | Not started | - |
-| 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
-| 14. Vercel Dashboard UI | 4/4 | In Progress | - |
-| 16. Smart Defaults | 3/3 | Complete   | 2026-03-28 |
-| 17. Channel Branding | 4/4 | Complete   | 2026-03-28 |
-| 18. AI Prompt Generation | 2/2 | Complete   | 2026-03-28 |
-| 19. Local Gradio UI | 3/3 | Complete   | 2026-03-29 |
-| 21. AI Prompt Chain Metadata | 3/3 | Complete   | 2026-03-29 |
-
 ### Phase 20: Persistent channel config and auto-generated 60-video lofi content roadmap
 
 **Goal:** [To be planned]
@@ -463,3 +444,123 @@ Plans:
 - [ ] 24-01-PLAN.md — generators/style_reference.py: StyleReferenceManager with instaloader scraper, colorthief+KMeans extractor, profile.json persistence, CLI
 - [ ] 24-02-PLAN.md — StyleRefSettings sub-model in pipeline_config.py + style_ref block in cinematic.yaml
 - [ ] 24-03-PLAN.md — Wire style_ref_handle into ImageGenerator.generate_scenes() (Seedream 5 + IP-Adapter) and style_ref_paths into thumbnail_gen.py
+
+---
+
+## v2.0 Cloud Deploy (Phases 25-29)
+
+**Milestone Goal:** Remove all local infrastructure dependencies. Supabase replaces local JSON files, Clerk secures the dashboard, Modal/Replicate/Remotion Lambda replace local GPU execution, GitHub CI/CD with Vercel handles all deploys. The dashboard is publicly accessible with no Cloudflare tunnel, no local machine, no GPU required.
+
+### Phase 25: Supabase Database Foundation
+**Goal**: All video pipeline data — roadmap entries, execution history, generated prompts, and user settings — lives in Supabase with the 210 existing roadmap entries migrated, replacing every local JSON file dependency
+
+**Depends on**: Phase 24
+
+**Requirements**: DB-01, DB-02, DB-03, DB-04, DB-05, DB-06
+
+**Success Criteria** (what must be TRUE):
+
+1. The Supabase project contains four tables (`videos`, `executions`, `prompts`, `settings`) with correct schema — a Supabase MCP query returns rows without error
+2. All 210 entries from video_roadmap.json appear in the `videos` table with no data loss — row count matches, titles match spot-checked entries
+3. The dashboard API routes query Supabase exclusively — removing video_roadmap.json and execution_log.json from disk does not break any dashboard page
+4. User settings (API keys, webhook URLs, profile configs) are readable and writable from the `settings` table via the dashboard
+5. Real-time Supabase subscriptions deliver row-level changes to dashboard consumers within 2 seconds of a write
+
+**Plans**: TBD
+
+### Phase 26: GitHub CI/CD and Vercel Pipeline
+**Goal**: Every push to main auto-deploys the dashboard to Vercel, every PR gets a preview URL, and all secrets live in the Vercel dashboard — no manual deploy steps, no local env file management
+
+**Depends on**: Phase 25 (Supabase credentials must exist to wire into Vercel env vars)
+
+**Requirements**: CICD-01, CICD-02, CICD-03, CICD-04
+
+**Success Criteria** (what must be TRUE):
+
+1. Merging a PR to main triggers a Vercel production deployment automatically — no manual `vercel deploy` command required
+2. Opening a PR against main creates a unique preview deployment URL visible in the GitHub PR checks within 3 minutes
+3. The GitHub repository has branch protection on main: direct pushes blocked, PR required, status checks must pass before merge
+4. All environment variables (Supabase URL/key, Clerk keys, API keys) are set in Vercel dashboard and injected at build time — no .env file committed to the repo
+
+**Plans**: TBD
+
+### Phase 27: Clerk Authentication
+**Goal**: The dashboard is protected by Clerk — unauthenticated visitors are redirected to sign-in, sessions persist across browser restarts, and Clerk is provisioned via Vercel Marketplace with zero manual credential copying
+
+**Depends on**: Phase 26
+
+**Requirements**: AUTH-01, AUTH-02, AUTH-03
+
+**Success Criteria** (what must be TRUE):
+
+1. Navigating to the dashboard URL without a session redirects to the Clerk sign-in page — no dashboard content is visible to unauthenticated requests
+2. After signing in, refreshing the page or closing and reopening the browser does not require re-authentication — the session persists
+3. Clerk environment variables (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY) are present in the Vercel project without manual copy-paste — provisioned via Vercel Marketplace integration
+
+**Plans**: TBD
+
+### Phase 28: Cloud Pipeline Execution
+**Goal**: Video generation runs entirely on cloud infrastructure — Modal executes Python pipeline on A10G GPU, Replicate serves image generation, Suno serves music, Remotion Lambda renders video — triggered from the dashboard with real-time status streaming back
+
+**Depends on**: Phase 25 (Supabase for job tracking), Phase 26 (deployment target)
+
+**Requirements**: CLOUD-01, CLOUD-02, CLOUD-03, CLOUD-04, CLOUD-05, CLOUD-06
+
+**Success Criteria** (what must be TRUE):
+
+1. Clicking "Run Pipeline" on the dashboard triggers a Modal job and returns a job ID — no local machine, no SSH, no subprocess required
+2. Image generation calls Replicate Seedream/Gemini API directly — no local Stable Diffusion model loaded, no CUDA required
+3. Video rendering invokes Remotion Lambda or equivalent cloud render — the local `npx remotion render` command is not called
+4. Pipeline status and log lines appear in the dashboard within 5 seconds of being emitted by the Modal worker — streamed via Supabase real-time or Modal webhook
+5. A complete video generation run (prompt → images → music → render) completes on Modal without any intervention from the local machine
+
+**Plans**: TBD
+
+### Phase 29: Dashboard Migration
+**Goal**: The dashboard reads and writes all data from Supabase, the Cloudflare tunnel dependency is eliminated, and the local pipeline-api proxy is removed — the dashboard is fully self-contained and deployable to any Vercel project
+
+**Depends on**: Phase 25 (Supabase), Phase 27 (Clerk), Phase 28 (Modal trigger endpoint)
+
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05
+
+**Success Criteria** (what must be TRUE):
+
+1. The roadmap page loads video entries from Supabase `videos` table and updates in real-time when a row changes — the local video_roadmap.json file is not read
+2. The execution history page loads from Supabase `executions` table — the local execution_log.json file is not read
+3. The prompt chain page loads from Supabase `prompts` table — no local YAML file read required
+4. The pipeline trigger button sends a request to the Modal API endpoint — the Cloudflare tunnel URL is not referenced anywhere in the codebase
+5. Deploying the dashboard to a fresh Vercel project with only Supabase and Clerk env vars produces a fully functional dashboard with no missing features
+
+**Plans**: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 16 → 17 → 18 → 19 → 21 → 22 → 23 → 24 → 25 → 26 → 27 → 28 → 29
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Config Foundation | 0/4 | Not started | - |
+| 2. Post-Processing Pipeline | 0/5 | Not started | - |
+| 3. Thumbnail Generation | 0/3 | Not started | - |
+| 4. Notifications and Approval Gate | 0/5 | Not started | - |
+| 5. YouTube Publisher | 0/5 | Not started | - |
+| 6. Pipeline Integration | 0/3 | Not started | - |
+| 7. Config UI | 0/4 | Not started | - |
+| 8. Remotion Compilation Quality | 4/4 | Complete | 2026-03-28 |
+| 9. Config Extension and Prompt Templates | 3/3 | Complete | 2026-03-28 |
+| 10. SDXL Generator Extraction and Image Caching | 2/2 | Complete | 2026-03-28 |
+| 11. Suno Music Integration | 2/2 | Complete | 2026-03-28 |
+| 12. Discord Approval Loops | 0/? | Not started | - |
+| 13. YouTube Credential Setup and Thumbnail Publishing | 0/? | Not started | - |
+| 14. Vercel Dashboard UI | 4/4 | In Progress | - |
+| 16. Smart Defaults | 3/3 | Complete | 2026-03-28 |
+| 17. Channel Branding | 4/4 | Complete | 2026-03-28 |
+| 18. AI Prompt Generation | 2/2 | Complete | 2026-03-28 |
+| 19. Local Gradio UI | 3/3 | Complete | 2026-03-29 |
+| 21. AI Prompt Chain Metadata | 3/3 | Complete | 2026-03-29 |
+| 25. Supabase Database Foundation | 0/? | Not started | - |
+| 26. GitHub CI/CD and Vercel Pipeline | 0/? | Not started | - |
+| 27. Clerk Authentication | 0/? | Not started | - |
+| 28. Cloud Pipeline Execution | 0/? | Not started | - |
+| 29. Dashboard Migration | 0/? | Not started | - |

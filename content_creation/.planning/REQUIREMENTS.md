@@ -58,35 +58,36 @@
 
 | Requirement | Phase | Status |
 | ----------- | ----- | ------ |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| DB-01 | — | Pending |
-| DB-02 | — | Pending |
-| DB-03 | — | Pending |
-| DB-04 | — | Pending |
-| DB-05 | — | Pending |
-| DB-06 | — | Pending |
-| CLOUD-01 | — | Pending |
-| CLOUD-02 | — | Pending |
-| CLOUD-03 | — | Pending |
-| CLOUD-04 | — | Pending |
-| CLOUD-05 | — | Pending |
-| CLOUD-06 | — | Pending |
-| CICD-01 | — | Pending |
-| CICD-02 | — | Pending |
-| CICD-03 | — | Pending |
-| CICD-04 | — | Pending |
-| DASH-01 | — | Pending |
-| DASH-02 | — | Pending |
-| DASH-03 | — | Pending |
-| DASH-04 | — | Pending |
-| DASH-05 | — | Pending |
+| AUTH-01 | Phase 27 | Pending |
+| AUTH-02 | Phase 27 | Pending |
+| AUTH-03 | Phase 27 | Pending |
+| DB-01 | Phase 25 | Pending |
+| DB-02 | Phase 25 | Pending |
+| DB-03 | Phase 25 | Pending |
+| DB-04 | Phase 25 | Pending |
+| DB-05 | Phase 25 | Pending |
+| DB-06 | Phase 25 | Pending |
+| CLOUD-01 | Phase 28 | Pending |
+| CLOUD-02 | Phase 28 | Pending |
+| CLOUD-03 | Phase 28 | Pending |
+| CLOUD-04 | Phase 28 | Pending |
+| CLOUD-05 | Phase 28 | Pending |
+| CLOUD-06 | Phase 28 | Pending |
+| CICD-01 | Phase 26 | Pending |
+| CICD-02 | Phase 26 | Pending |
+| CICD-03 | Phase 26 | Pending |
+| CICD-04 | Phase 26 | Pending |
+| DASH-01 | Phase 29 | Pending |
+| DASH-02 | Phase 29 | Pending |
+| DASH-03 | Phase 29 | Pending |
+| DASH-04 | Phase 29 | Pending |
+| DASH-05 | Phase 29 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 24 total
-- Mapped to phases: 0
-- Unmapped: 24
+- Mapped to phases: 24
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
+*Traceability updated: 2026-03-30*
