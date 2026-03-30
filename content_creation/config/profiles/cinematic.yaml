@@ -24,91 +24,92 @@ post:
   outro_enabled: false
 publish:
   youtube_enabled: true
-  youtube_title: Cyberpunk Rain Study • Neon Lights & Cozy Night Vibes
-  youtube_description: 'Immerse yourself in the perfect cyberpunk study atmosphere
-    with this cinematic rain and neon ambiance. Golden hour lighting meets electric
-    blue and pink neon signs while gentle rain creates the ultimate cozy studying
-    environment.
+  youtube_title: Secret Server Room | Underground Cyberpunk Atmosphere 4K
+  youtube_description: 'Dive deep into the hidden digital underground with this cinematic
+    journey through a secret server room. Experience the mesmerizing blend of blue
+    LED lights cutting through industrial shadows, where technology meets mystery
+    in perfect harmony.
 
 
-    This premium visual experience combines warm desk lighting with dramatic cyberpunk
-    aesthetics, creating an inspiring backdrop for focused work, reading, or relaxation.
-    The contrast between intimate study spaces and the vast neon cityscape outside
-    provides the perfect balance of comfort and motivation.
+    The warm golden hour light filtering through hidden passages creates a stunning
+    contrast against the cool cyberpunk aesthetic of humming servers and endless cables.
+    This premium cinematic experience captures the essence of our digital age''s hidden
+    infrastructure.
 
 
-    Let the rhythmic rain sounds and atmospheric lighting help you achieve your most
-    productive study sessions. Subscribe for more cinematic study environments and
-    atmospheric content!'
+    Perfect for studying, working, or simply immersing yourself in atmospheric cyberpunk
+    vibes. Let the gentle hum of technology and dramatic lighting transport you to
+    another world.
+
+
+    Subscribe for more cinematic atmospheric experiences and underground vibes!'
   youtube_tags:
+  - cyberpunk atmosphere
+  - underground vibes
+  - server room aesthetic
+  - blue light ambiance
+  - cinematic study music
+  - industrial atmosphere
+  - technology sounds
   - cyberpunk study
-  - neon rain ambiance
-  - night study vibes
-  - cozy study session
-  - rain sounds for studying
-  - cyberpunk aesthetic
-  - study with me
-  - neon lighting
-  - atmospheric study
-  - rainy night study
-  - golden hour study
-  - cinematic study room
-  - lofi study vibes
-  - focus music
-  - study ambiance
-  - cyberpunk rain
-  - neon study space
-  - nighttime studying
-  - rain study session
-  - atmospheric focus
+  - underground ambient
+  - server farm vibes
+  - digital underground
+  - tech aesthetic
+  - atmospheric background
+  - cyberpunk ambience
+  - industrial sounds
+  - study atmosphere
+  - work focus music
+  - underground cinema
+  - tech documentary
+  - ambient workspace
   youtube_category_id: '27'
   youtube_privacy: private
   thumbnail_enabled: true
-  thumbnail_text: NEON RAIN STUDY
+  thumbnail_text: UNDERGROUND CYBER VIBES
 notify:
   require_approval: true
   approval_timeout_seconds: 3600
 sdxl:
-  negative_prompt: low quality, blurry, oversaturated, cartoon, anime, poorly lit,
-    flat lighting, digital noise, overexposed, underexposed, amateur photography,
-    harsh shadows, unrealistic colors
-  positive_prompt: Cinematic wide shot of a neon-lit cyberpunk study room at night,
-    rain streaking down massive windows, warm golden hour glow mixing with electric
-    blue and pink neon signs from the street below, dramatic lighting casting long
-    shadows across vintage wooden desk with scattered books and glowing screens, shallow
-    depth of field blurring the distant cityscape, shot on 35mm film with rich grain
-    texture, high contrast premium production aesthetic, moody atmospheric lighting
-    creating perfect studying ambiance
+  negative_prompt: oversaturated, cartoon, anime, low quality, blurry, soft focus,
+    bright daylight, flat lighting, digital artifacts, overexposed
+  positive_prompt: Cinematic wide shot of secret underground server room, towering
+    racks of humming computers bathed in electric blue LED light, thick bundles of
+    cables snaking across concrete floors, dramatic chiaroscuro lighting cutting through
+    industrial haze, warm golden hour sunlight filtering through hidden ventilation
+    shafts, shallow depth of field isolating foreground servers, 35mm film grain texture,
+    high contrast shadows, cyberpunk aesthetic, premium production quality
   scene_templates:
-  - Close-up of rain droplets on window glass with soft neon reflections, warm desk
-    lamp illuminating open textbook pages, 35mm film grain, shallow focus on raindrops
-    while books blur in background, golden hour mixed with cool neon tones
-  - Wide establishing shot of towering cyberpunk cityscape at night, rain falling
-    heavily, warm light spilling from study room window high in skyscraper, dramatic
-    contrast between cozy interior and harsh urban environment outside
-  - Medium shot of hands turning book pages under warm desk lamp, neon signs casting
-    colored shadows across wooden surface, rain pattering against nearby window, film
-    photography aesthetic with rich contrast and vintage grain texture
-  - Overhead angle of cluttered study desk bathed in golden lamplight, neon reflections
-    dancing on wet window behind, scattered notebooks and pens, coffee mug steaming,
-    rain creating abstract light patterns on glass surface
-  - Profile silhouette of figure studying at window desk, dramatic side lighting from
-    warm lamp mixing with cool neon glow from street, rain creating bokeh effects
-    on glass, high contrast cinematic composition with deep shadows
-  - Wide shot through rain-soaked window looking into cozy study nook, warm golden
-    interior light contrasting with cold blue neon cityscape, books and papers visible
-    on desk, atmospheric depth with layered lighting and film grain
-  - Detail shot of vintage desk lamp casting warm pool of light on open journal, neon
-    signs reflecting in raindrops on nearby window, shallow depth of field isolating
-    the writing area, premium film photography with rich textures
-  - Cinematic angle of study room corner where warm lamplight meets cool neon window
-    light, rain streaking glass creates dynamic patterns, books stacked on wooden
-    desk, moody atmospheric lighting with high contrast and 35mm aesthetic
+  - Underground data center establishing shot, endless rows of server towers stretching
+    into darkness, blue status lights creating geometric patterns, warm golden shafts
+    piercing through concrete ceiling, 35mm cinematic composition
+  - Close-up rack focus pull from foreground cables to background servers, electric
+    blue glow illuminating dust particles in air, dramatic side lighting, high contrast
+    film photography aesthetic
+  - Low angle wide shot looking up server corridor, towering metal racks creating
+    canyon effect, scattered warm light pools, cyberpunk atmosphere with heavy shadows
+    and industrial textures
+  - Overhead drone-like shot of server floor maze, geometric cable routing patterns,
+    blue LED strips creating neon grid, golden hour light streaming through hidden
+    access points
+  - Intimate medium shot of single server rack, focused shallow depth with bokeh background
+    lights, warm rim lighting contrasting cool blue electronics, film grain texture
+    throughout
+  - Sweeping lateral tracking shot down server aisle, motion blur on background equipment,
+    sharp foreground detail, moody atmospheric lighting mixing warm and cool tones,
+    cinematic framing
+  - Secret entrance reveal shot, heavy industrial door opening to blue-lit server
+    cavern, dramatic backlighting silhouette, high contrast between dark entry and
+    bright interior technology
+  - Underground tunnel perspective with servers lining curved walls, vanishing point
+    composition, alternating warm and blue lighting zones, 35mm wide angle distortion,
+    premium production quality
 suno:
   genre: orchestral cinematic
-  prompt_tags: Atmospheric lo-fi study beats with rain sounds, warm analog synths,
-    gentle cyberpunk ambient textures, cozy golden hour vibes, perfect for focused
-    nighttime studying sessions
+  prompt_tags: Dark ambient electronic, pulsing synthesizers, industrial undertones,
+    mysterious atmosphere, cyberpunk vibes, underground bass, technological soundscape,
+    minimal percussion, haunting melodies
   make_instrumental: true
   track_count: 2
 style_ref:
@@ -118,5 +119,3 @@ style_ref:
   max_reference_images: 6
   refresh: false
   style_strength: 0.6
-  # session_file: ~/.config/instaloader/session-<username>
-  # To use local IP-Adapter instead of Replicate: backend: local_ipadapter
