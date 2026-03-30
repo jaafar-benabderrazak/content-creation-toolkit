@@ -80,11 +80,11 @@ interface CostParams {
   imageCount: number;
   multiImage: boolean;
   songCount: number;
-  thumbnailCount: number;
 }
 
 function estimateCost(params: CostParams): { total: number; lines: CostLine[] } {
-  const { budget, durationMinutes, imageCount, multiImage, songCount, thumbnailCount } = params;
+  const { budget, durationMinutes, imageCount, multiImage, songCount } = params;
+  const thumbnailCount = 1; // Always 1 thumbnail per video
   const lines: CostLine[] = [];
   const sceneCount = imageCount;
   const apiImageCalls = multiImage ? imageCount : 1; // multi = N API calls, single = 1 + variants
@@ -257,11 +257,10 @@ export default function StatusPage() {
   const [selectedProfile, setSelectedProfile] = useState("lofi_study");
   const [tags, setTags] = useState("");
   const [budget, setBudget] = useState("standard");
-  const [durationMin, setDurationMin] = useState(120);
-  const [imageCount, setImageCount] = useState(8);
+  const [durationMin, setDurationMin] = useState(10);
+  const [imageCount, setImageCount] = useState(1);
   const [multiImage, setMultiImage] = useState(false);
   const [songCount, setSongCount] = useState(1);
-  const [thumbnailCount, setThumbnailCount] = useState(1);
   const [selectedTitle, setSelectedTitle] = useState("");
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
   const [pipelineStatus, setPipelineStatus] = useState<string>("idle");
@@ -385,9 +384,8 @@ export default function StatusPage() {
                 min={0} max={10} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Thumbnails</label>
-              <input type="number" value={thumbnailCount} onChange={(e) => setThumbnailCount(Number(e.target.value) || 1)}
-                min={1} max={5} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm" />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Thumbnail</label>
+              <div className="h-9 flex items-center text-xs text-muted-foreground">1 (auto)</div>
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Image Mode</label>
@@ -401,7 +399,7 @@ export default function StatusPage() {
 
           {/* Cost Estimate */}
           {(() => {
-            const est = estimateCost({ budget, durationMinutes: durationMin, imageCount, multiImage, songCount, thumbnailCount });
+            const est = estimateCost({ budget, durationMinutes: durationMin, imageCount, multiImage, songCount });
             const paidLines = est.lines.filter(l => l.cost > 0);
             const freeLines = est.lines.filter(l => l.cost === 0);
             return (
