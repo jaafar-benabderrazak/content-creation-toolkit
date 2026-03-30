@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
-"""Start pipeline server + ngrok + auto-update Vercel env var.
+"""Start pipeline server + Cloudflare Tunnel + auto-update Vercel env var.
 
 One command to start everything:
     python start.py
 
 Does:
-1. Kills any existing ngrok/pipeline_server
+1. Kills any existing tunnel/pipeline_server
 2. Starts pipeline_server.py on port 8000
-3. Starts ngrok tunnel
-4. Gets the new ngrok URL
+3. Starts Cloudflare Tunnel (free, no request limits)
+4. Gets the tunnel URL
 5. Updates PIPELINE_TRIGGER_URL on Vercel
-6. Keeps running until Ctrl+C
+6. Redeploys dashboard
+7. Keeps running until Ctrl+C
 """
 from __future__ import annotations
 
 import json
 import os
-import signal
+import re
 import subprocess
 import sys
+import threading
 import time
 
 try:
@@ -29,18 +31,20 @@ except ImportError:
 
 PORT = 8000
 VERCEL_SCOPE = "jaafar-benabderrazaks-projects"
+CLOUDFLARED_URL = [None]  # mutable container for thread
 
 
 def kill_existing():
-    """Kill any existing ngrok and pipeline_server processes."""
+    """Kill any existing tunnel and pipeline_server processes."""
     if sys.platform == "win32":
+        subprocess.run("taskkill /F /IM cloudflared.exe 2>NUL", shell=True, capture_output=True)
         subprocess.run("taskkill /F /IM ngrok.exe 2>NUL", shell=True, capture_output=True)
-        # Kill python processes on port 8000
-        result = subprocess.run(
+        subprocess.run(
             f'for /f "tokens=5" %a in (\'netstat -ano ^| findstr :{PORT} ^| findstr LISTENING\') do taskkill /F /PID %a',
             shell=True, capture_output=True
         )
     else:
+        subprocess.run("pkill -f cloudflared 2>/dev/null", shell=True, capture_output=True)
         subprocess.run("pkill -f ngrok 2>/dev/null", shell=True, capture_output=True)
         subprocess.run("pkill -f pipeline_server 2>/dev/null", shell=True, capture_output=True)
     time.sleep(2)
@@ -57,28 +61,34 @@ def start_pipeline_server() -> subprocess.Popen:
     return proc
 
 
-def start_ngrok() -> subprocess.Popen:
-    """Start ngrok tunnel in background."""
-    print(f"[2/4] Starting ngrok tunnel...")
+def start_cloudflare_tunnel() -> subprocess.Popen:
+    """Start Cloudflare Tunnel in background, capture URL from stderr."""
+    print("[2/4] Starting Cloudflare Tunnel (free, no limits)...")
     proc = subprocess.Popen(
-        ["ngrok", "http", str(PORT), "--log=stdout", "--log-format=json"],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        ["cloudflared", "tunnel", "--url", f"http://localhost:{PORT}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
-    time.sleep(5)
+
+    # Read stderr in a thread to capture the URL
+    def _read_stderr():
+        for line in proc.stderr:
+            text = line.decode("utf-8", errors="replace").strip()
+            # cloudflared prints: "... https://xxx-xxx.trycloudflare.com ..."
+            match = re.search(r"(https://[a-z0-9-]+\.trycloudflare\.com)", text)
+            if match and CLOUDFLARED_URL[0] is None:
+                CLOUDFLARED_URL[0] = match.group(1)
+
+    t = threading.Thread(target=_read_stderr, daemon=True)
+    t.start()
+
+    # Wait up to 15s for the URL to appear
+    for _ in range(30):
+        if CLOUDFLARED_URL[0]:
+            break
+        time.sleep(0.5)
+
     return proc
-
-
-def get_ngrok_url() -> str:
-    """Get the public ngrok URL from the local API."""
-    import urllib.request
-    for port in [4040, 4041]:
-        try:
-            resp = urllib.request.urlopen(f"http://localhost:{port}/api/tunnels", timeout=5)
-            data = json.loads(resp.read())
-            return data["tunnels"][0]["public_url"]
-        except Exception:
-            continue
-    raise RuntimeError("Could not get ngrok URL — is ngrok running?")
 
 
 def update_vercel_env(url: str):
@@ -97,8 +107,8 @@ def update_vercel_env(url: str):
     if proc.returncode == 0:
         print(f"    Updated PIPELINE_TRIGGER_URL = {url}/trigger")
     else:
-        print(f"    Warning: Vercel env update may have failed. Set manually if needed.")
-        print(f"    URL: {url}/trigger")
+        print(f"    Warning: Vercel env update may have failed.")
+        print(f"    URL to set manually: {url}/trigger")
 
 
 def redeploy_vercel():
@@ -112,7 +122,7 @@ def redeploy_vercel():
     if result.returncode == 0:
         print("    Dashboard redeployed.")
     else:
-        print("    Warning: Redeploy may have failed. Dashboard might use cached env.")
+        print("    Warning: Redeploy may have failed.")
 
 
 def main():
@@ -125,18 +135,16 @@ def main():
     kill_existing()
 
     server_proc = start_pipeline_server()
-    ngrok_proc = start_ngrok()
+    tunnel_proc = start_cloudflare_tunnel()
 
-    try:
-        url = get_ngrok_url()
-        print(f"\n    ngrok URL: {url}")
-        print(f"    Pipeline:  http://localhost:{PORT}")
-    except RuntimeError as e:
-        print(f"\n    ERROR: {e}")
-        print("    Pipeline server is running but ngrok failed.")
-        print(f"    Local access: http://localhost:{PORT}")
-        print("    Start ngrok manually: ngrok http 8000")
-        url = None
+    url = CLOUDFLARED_URL[0]
+    if url:
+        print(f"\n    Tunnel URL: {url}")
+        print(f"    Pipeline:   http://localhost:{PORT}")
+    else:
+        print(f"\n    WARNING: Could not get Cloudflare Tunnel URL.")
+        print(f"    Pipeline server is running locally: http://localhost:{PORT}")
+        print(f"    Try: cloudflared tunnel --url http://localhost:{PORT}")
 
     if url:
         update_vercel_env(url)
@@ -157,7 +165,7 @@ def main():
     except KeyboardInterrupt:
         print("\nShutting down...")
         server_proc.terminate()
-        ngrok_proc.terminate()
+        tunnel_proc.terminate()
         print("Done.")
 
 
