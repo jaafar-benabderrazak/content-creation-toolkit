@@ -20,12 +20,18 @@ export function RoadmapPicker({ onSelect }: RoadmapPickerProps) {
   const [universe, setUniverse] = useState("all");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/roadmap?status=planned")
       .then((r) => r.json())
-      .then((data) => setEntries(data.entries || []))
-      .catch(() => {})
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+        }
+        setEntries(data.entries || []);
+      })
+      .catch((e) => setError(`Fetch failed: ${e.message || e}`))
       .finally(() => setLoading(false));
   }, []);
 
@@ -80,6 +86,9 @@ export function RoadmapPicker({ onSelect }: RoadmapPickerProps) {
 
   return (
     <div className="space-y-2">
+      {error && (
+        <p className="text-xs text-red-500 bg-red-500/10 rounded p-2">{error}</p>
+      )}
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium text-muted-foreground">
           Pick from Roadmap ({entries.length} planned)
