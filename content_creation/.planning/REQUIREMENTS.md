@@ -1,80 +1,92 @@
-# Requirements: Content Creation Toolkit v1.2
+# Requirements: Content Creation Toolkit v2.0
 
-**Defined:** 2026-03-28
-**Core Value:** One command with tags produces a publish-ready video — zero manual prompt writing, channel-branded, auto-published.
+**Defined:** 2026-03-30
+**Core Value:** One command produces a publish-ready video — from prompt to YouTube upload — fully cloud-hosted with auth, persistent data, and no local GPU needed.
 
-## v1.2 Requirements — Smart Automation
+## v2.0 Requirements — Cloud Deploy
 
-### Smart Defaults
+### Authentication (Clerk)
 
-- [x] **DFLT-01**: Config loader pre-fills Discord webhook URL, API keys, and channel info from environment variables when not set in YAML
-- [x] **DFLT-02**: Dashboard config editor shows which values are env-sourced vs. YAML-defined (visual distinction)
-- [x] **DFLT-03**: First-run setup detects all available env vars and generates a starter profile with populated defaults
+- [ ] **AUTH-01**: Dashboard protected by Clerk authentication — unauthenticated users redirected to sign-in
+- [ ] **AUTH-02**: Clerk configured via Vercel Marketplace integration (auto-provisioned env vars)
+- [ ] **AUTH-03**: User session persists across page reloads and browser restarts
 
-### Channel Branding
+### Database (Supabase)
 
-- [x] **BRND-01**: Pipeline fetches YouTube channel name, avatar image, and description via YouTube Data API using existing OAuth credentials
-- [x] **BRND-02**: Watermark text defaults to channel name when not explicitly set in config
-- [x] **BRND-03**: Intro/outro clips auto-generated from channel avatar + name + description tagline (no manual video files needed)
-- [x] **BRND-04**: Thumbnail branding uses channel avatar as corner logo overlay
-- [x] **BRND-05**: Channel branding cached locally — re-fetched only on explicit refresh or config change
+- [ ] **DB-01**: Video roadmap stored in Supabase `videos` table (replaces video_roadmap.json)
+- [ ] **DB-02**: Execution history stored in Supabase `executions` table (replaces execution_log.json)
+- [ ] **DB-03**: Generated prompts stored in Supabase `prompts` table (all 8 prompt chain sections per video)
+- [ ] **DB-04**: User settings stored in Supabase `settings` table (API keys, webhook URLs, profile configs)
+- [ ] **DB-05**: Dashboard reads/writes all data from Supabase — no local JSON file dependencies
+- [ ] **DB-06**: Existing 210 roadmap entries migrated from video_roadmap.json to Supabase
 
-### AI Prompt Generation
+### Cloud Pipeline (Modal/Replicate)
 
-- [x] **AGEN-01**: User provides only tags (e.g., "lofi, rain, cozy, study") and OpenAI generates full SDXL positive prompt, negative prompt, and Suno music prompt
-- [x] **AGEN-02**: Generated prompts respect the active profile's style (cinematic tags produce cinematic prompt style)
-- [x] **AGEN-03**: Tag-to-prompt generation produces scene variation prompts (8 variants from tags, not 1 repeated prompt)
-- [x] **AGEN-04**: Generated prompts are saved to the profile YAML so they're visible and editable before generation
-- [x] **AGEN-05**: Pipeline can run end-to-end with just tags + profile name — no manual prompt editing required
+- [ ] **CLOUD-01**: Video generation pipeline runs on Modal (GPU A10G) — no local GPU required
+- [ ] **CLOUD-02**: Image generation uses Replicate Seedream/Gemini APIs (already cloud, just remove local SD fallback as primary)
+- [ ] **CLOUD-03**: Music generation via Suno kie.ai API (already cloud)
+- [ ] **CLOUD-04**: Video rendering via Remotion Lambda or cloud render (replace local npx remotion render)
+- [ ] **CLOUD-05**: Pipeline triggered from dashboard via API call to Modal endpoint
+- [ ] **CLOUD-06**: Pipeline status/logs streamed back to dashboard in real-time
 
-### Local Gradio UI
+### CI/CD (GitHub + Vercel)
 
-- [x] **GRAD-01**: User can launch the Study Video pipeline from the Gradio UI Execute tab; pipeline stdout streams line-by-line without freezing the browser tab
-- [x] **GRAD-02**: Execute tab accepts an optional tags field forwarded as --tags to the pipeline subprocess
-- [x] **GRAD-03**: User can queue a pipeline run for a future datetime; the scheduler fires the subprocess at the scheduled time
-- [x] **GRAD-04**: Schedule tab shows all queued jobs with status (pending/running/done/failed) and supports job cancellation
-- [x] **GRAD-05**: User can add a planned video entry (title, tags, profile, notes) to the content roadmap from the Gradio UI
-- [x] **GRAD-06**: Content Roadmap tab lists entries with status badges and supports status transitions (planned → producing → published)
-- [x] **GRAD-07**: Roadmap entries can be reordered (move up/down) and deleted from the UI
+- [ ] **CICD-01**: Dashboard deployed to Vercel via GitHub push (auto-deploy on merge to main)
+- [ ] **CICD-02**: GitHub repository created with proper .gitignore, README, and branch protection
+- [ ] **CICD-03**: Environment variables managed via Vercel dashboard (Supabase, Clerk, API keys)
+- [ ] **CICD-04**: Preview deployments on PR for dashboard changes
+
+### Dashboard Migration
+
+- [ ] **DASH-01**: Replace local pipeline-api proxy with direct Supabase queries
+- [ ] **DASH-02**: Replace Cloudflare tunnel dependency — all data from Supabase, pipeline trigger via Modal API
+- [ ] **DASH-03**: Roadmap page reads from Supabase `videos` table with real-time updates
+- [ ] **DASH-04**: Execution history reads from Supabase `executions` table
+- [ ] **DASH-05**: Prompt chain reads from Supabase `prompts` table
 
 ## Out of Scope
 
 | Feature | Reason |
-|---------|--------|
-| Auto-detect channel "vibe" from video history | Requires analyzing existing videos — complex, defer to v2 |
-| Multi-channel support | Single channel workflow for now |
-| Prompt marketplace/sharing | Over-engineering for single creator |
-| Auto-scheduling YouTube uploads | Deferred per v1.0 decision |
+| ------- | ------ |
+| Multi-user / team features | Single user for v2.0, multi-user deferred |
+| Stripe billing | No monetization in v2.0 |
+| Custom domain | Use Vercel default domain for now |
+| Mobile app | Web dashboard is sufficient |
+| Local GPU fallback | v2.0 is cloud-only by design |
 
 ## Traceability
 
 | Requirement | Phase | Status |
-|-------------|-------|--------|
-| DFLT-01 | Phase 16 | Complete |
-| DFLT-02 | Phase 16 | Complete |
-| DFLT-03 | Phase 16 | Complete |
-| BRND-01 | Phase 17 | Complete |
-| BRND-02 | Phase 17 | Complete |
-| BRND-03 | Phase 17 | Complete |
-| BRND-04 | Phase 17 | Complete |
-| BRND-05 | Phase 17 | Complete |
-| AGEN-01 | Phase 18 | Complete |
-| AGEN-02 | Phase 18 | Complete |
-| AGEN-03 | Phase 18 | Complete |
-| AGEN-04 | Phase 18 | Complete |
-| AGEN-05 | Phase 18 | Complete |
-| GRAD-01 | Phase 19 | Planned |
-| GRAD-02 | Phase 19 | Planned |
-| GRAD-03 | Phase 19 | Planned |
-| GRAD-04 | Phase 19 | Planned |
-| GRAD-05 | Phase 19 | Planned |
-| GRAD-06 | Phase 19 | Planned |
-| GRAD-07 | Phase 19 | Planned |
+| ----------- | ----- | ------ |
+| AUTH-01 | — | Pending |
+| AUTH-02 | — | Pending |
+| AUTH-03 | — | Pending |
+| DB-01 | — | Pending |
+| DB-02 | — | Pending |
+| DB-03 | — | Pending |
+| DB-04 | — | Pending |
+| DB-05 | — | Pending |
+| DB-06 | — | Pending |
+| CLOUD-01 | — | Pending |
+| CLOUD-02 | — | Pending |
+| CLOUD-03 | — | Pending |
+| CLOUD-04 | — | Pending |
+| CLOUD-05 | — | Pending |
+| CLOUD-06 | — | Pending |
+| CICD-01 | — | Pending |
+| CICD-02 | — | Pending |
+| CICD-03 | — | Pending |
+| CICD-04 | — | Pending |
+| DASH-01 | — | Pending |
+| DASH-02 | — | Pending |
+| DASH-03 | — | Pending |
+| DASH-04 | — | Pending |
+| DASH-05 | — | Pending |
 
 **Coverage:**
-- v1.2 requirements: 20 total
-- Mapped to phases: 20
-- Unmapped: 0
+- v2.0 requirements: 24 total
+- Mapped to phases: 0
+- Unmapped: 24
 
 ---
-*Requirements defined: 2026-03-28*
+*Requirements defined: 2026-03-30*
