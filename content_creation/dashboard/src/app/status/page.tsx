@@ -10,6 +10,7 @@ import { GenerationLog } from "@/components/status/GenerationLog";
 import { LiveLogs } from "@/components/status/LiveLogs";
 import { RoadmapPicker } from "@/components/status/RoadmapPicker";
 import { PromptTimeline } from "@/components/status/PromptTimeline";
+import { PipelineGraph } from "@/components/status/PipelineGraph";
 
 interface RoadmapEntry {
   id: string;
@@ -262,6 +263,28 @@ export default function StatusPage() {
   const [songCount, setSongCount] = useState(1);
   const [thumbnailCount, setThumbnailCount] = useState(1);
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [liveLogs, setLiveLogs] = useState<string[]>([]);
+  const [pipelineStatus, setPipelineStatus] = useState<string>("idle");
+
+  // Poll logs for the graph (reuses the same endpoint as LiveLogs)
+  useEffect(() => {
+    if (!triggerResult || triggerResult.startsWith("Error")) return;
+    setPipelineStatus("running");
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/logs");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.lines) setLiveLogs(data.lines);
+          if (data.status === "done" || data.status === "failed") {
+            setPipelineStatus(data.status);
+            clearInterval(interval);
+          }
+        }
+      } catch { /* silent */ }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [triggerResult]);
 
   function onSelectRoadmapEntry(entry: RoadmapEntry) {
     setTags(entry.tags);
@@ -456,14 +479,20 @@ export default function StatusPage() {
         </CardContent>
       </Card>
 
-      {/* Prompt Chain Timeline */}
+      {/* Pipeline Graph — live execution visualization */}
       <Card>
         <CardHeader>
-          <CardTitle>Prompt Chain</CardTitle>
-          <CardDescription>Lineage of prompts used for generation — from tags to YouTube metadata</CardDescription>
+          <CardTitle>Pipeline Graph</CardTitle>
+          <CardDescription>
+            Full prompt chain with live execution status — click any node to see its prompt
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <PromptTimeline profile={selectedProfile} />
+          <PipelineGraph
+            profile={selectedProfile}
+            logs={liveLogs}
+            runStatus={pipelineStatus}
+          />
         </CardContent>
       </Card>
 
