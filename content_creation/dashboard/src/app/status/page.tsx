@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { GenerationLog } from "@/components/status/GenerationLog";
 import { LiveLogs } from "@/components/status/LiveLogs";
 import { RoadmapPicker } from "@/components/status/RoadmapPicker";
+import { PromptTimeline } from "@/components/status/PromptTimeline";
 
 interface RoadmapEntry {
   id: string;
@@ -452,6 +453,17 @@ export default function StatusPage() {
               {triggerResult}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Prompt Chain Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Prompt Chain</CardTitle>
+          <CardDescription>Lineage of prompts used for generation — from tags to YouTube metadata</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PromptTimeline profile={selectedProfile} />
         </CardContent>
       </Card>
 
