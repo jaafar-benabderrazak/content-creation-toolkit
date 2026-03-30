@@ -86,16 +86,14 @@ def update_vercel_env(url: str):
     print(f"[3/4] Updating Vercel env: {url}/trigger")
     # Remove old
     subprocess.run(
-        ["vercel", "env", "rm", "PIPELINE_TRIGGER_URL", "production",
-         "--yes", "--scope", VERCEL_SCOPE],
-        capture_output=True,
+        f"vercel env rm PIPELINE_TRIGGER_URL production --yes --scope {VERCEL_SCOPE}",
+        shell=True,
+        capture_output=True, shell=True,
     )
     # Add new
     proc = subprocess.run(
-        ["vercel", "env", "add", "PIPELINE_TRIGGER_URL", "production",
-         "--scope", VERCEL_SCOPE],
-        input=f"{url}/trigger".encode(),
-        capture_output=True,
+        f'echo {url}/trigger | vercel env add PIPELINE_TRIGGER_URL production --scope {VERCEL_SCOPE}',
+        capture_output=True, shell=True,
     )
     if proc.returncode == 0:
         print(f"    Updated PIPELINE_TRIGGER_URL = {url}/trigger")
@@ -108,9 +106,9 @@ def redeploy_vercel():
     """Redeploy dashboard to pick up new env var."""
     print("[4/4] Redeploying dashboard...")
     result = subprocess.run(
-        ["vercel", "deploy", "--prod", "--yes", "--scope", VERCEL_SCOPE],
-        capture_output=True, text=True,
-        cwd=os.path.join(os.path.dirname(__file__), "dashboard"),
+        f"vercel deploy --prod --yes --scope {VERCEL_SCOPE}",
+        capture_output=True, text=True, shell=True,
+        cwd=os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard"),
     )
     if result.returncode == 0:
         print("    Dashboard redeployed.")
