@@ -48,6 +48,7 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
   const [artifacts, setArtifacts] = useState<Artifacts>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showMeta, setShowMeta] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -152,36 +153,72 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
     },
     {
       id: "thumbnail",
-      label: "Thumbnail Text",
+      label: "Thumbnail Text + Prompt",
       time: "T+render",
       content: data.publish?.thumbnail_text || "(not set)",
-      sub: "Best frame → img2img enhance → text overlay",
+      sub: (data.publish as any)?.thumbnail_prompt
+        ? `img2img prompt: ${(data.publish as any).thumbnail_prompt}`
+        : "Best frame → img2img enhance → text overlay",
       artifact: artifacts.thumbnail
         ? `Result: ${artifacts.thumbnail.name}`
         : undefined,
     },
     {
       id: "youtube",
-      label: "YouTube Metadata",
+      label: "YouTube Title",
       time: "T+publish",
       content: data.publish?.youtube_title || "(not set)",
       sub: data.publish?.youtube_tags
-        ? `${data.publish.youtube_tags.length} tags • ${(data.publish.youtube_description || "").length} char description`
+        ? `${data.publish.youtube_tags.length} tags`
         : undefined,
       artifact: artifacts.video
         ? `Result: ${artifacts.video.name} (${artifacts.video.size_mb} MB)`
         : undefined,
     },
+    ...(data.publish?.youtube_description ? [{
+      id: "yt-desc" as const,
+      label: "YouTube Description",
+      time: "T+publish",
+      content: data.publish.youtube_description.slice(0, 120) + (data.publish.youtube_description.length > 120 ? "..." : ""),
+      sub: `${data.publish.youtube_description.length} chars, ${data.publish.youtube_description.split("\n\n").length} paragraphs`,
+    }] : []),
   ];
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium">Prompt Chain Timeline</h4>
-        <Badge variant="outline" className="text-[10px]">
-          {data.profile || profile}
-        </Badge>
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="text-[10px]">
+            {data.profile || profile}
+          </Badge>
+          <button
+            onClick={() => setShowMeta(!showMeta)}
+            className="text-[10px] text-blue-500 hover:underline"
+          >
+            {showMeta ? "Hide" : "Show"} generation prompts
+          </button>
+        </div>
       </div>
+
+      {showMeta && (
+        <div className="mb-4 space-y-2 bg-muted/20 rounded p-3 border border-dashed">
+          <p className="text-[10px] font-medium text-muted-foreground">System Prompt (sent to Claude)</p>
+          <p className="text-[10px] font-mono text-muted-foreground">
+            You are a world-class AI content director who creates viral YouTube video concepts.
+            You combine deep expertise in SDXL prompt engineering, YouTube SEO, music mood design, and thumbnail psychology.
+            Style: <span className="text-foreground">{data.video?.style_prompt?.slice(0, 60) || profile}...</span>
+          </p>
+          <p className="text-[10px] font-medium text-muted-foreground mt-2">User Prompt (9 sections requested)</p>
+          <p className="text-[10px] font-mono text-muted-foreground">
+            Theme tags → positive_prompt (60-100 words, photography terms) → negative_prompt (8-12 SDXL terms) →
+            scene_templates (8 cinematic moments, film language) → music_prompt (genre, BPM, instruments) →
+            thumbnail_text (3-5 power words) → thumbnail_prompt (img2img enhancement, dramatic) →
+            youtube_title (SEO formula) → youtube_description (5 paragraphs, 200-300 words) →
+            youtube_tags (18 mixed breadth)
+          </p>
+        </div>
+      )}
 
       <div className="relative">
         {/* Vertical line */}

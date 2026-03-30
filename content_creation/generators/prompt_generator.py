@@ -47,6 +47,7 @@ _REQUIRED_KEYS = {
     "scene_templates",
     "music_prompt",
     "thumbnail_text",
+    "thumbnail_prompt",
     "youtube_title",
     "youtube_description",
     "youtube_tags",
@@ -54,28 +55,60 @@ _REQUIRED_KEYS = {
 _SCENE_TEMPLATE_COUNT = 8
 
 _SYSTEM_PROMPT = (
-    "You are a professional AI image prompt engineer. "
-    "Generate prompts for a {profile_style} visual aesthetic. "
-    "Return only valid JSON, no markdown fences, no explanation."
+    "You are a world-class AI content director who creates viral YouTube video concepts. "
+    "You combine deep expertise in Stable Diffusion XL prompt engineering, YouTube SEO, "
+    "music mood design, and thumbnail psychology. "
+    "Your prompts produce photorealistic, cinematic, emotionally resonant imagery. "
+    "Style: {profile_style}. "
+    "Return only valid JSON — no markdown fences, no explanation, no commentary."
 )
 
 _USER_PROMPT = (
-    "Tags: {tags}\n\n"
-    "Generate a JSON object with these exact keys:\n"
-    "- positive_prompt: one SDXL positive prompt (50-80 words) that captures the tags in the {profile_style} aesthetic\n"
-    "- negative_prompt: SDXL negative prompt (5-10 terms, comma-separated) optimized for this style\n"
-    "- scene_templates: list of exactly 8 distinct scene variation prompts, "
-    "each 40-60 words, covering different moments/lighting/compositions derived from the tags\n"
-    "- music_prompt: Suno-compatible music prompt (20-30 words) matching the mood of the tags\n"
-    "- thumbnail_text: short punchy text overlay for the thumbnail (3-7 words, ALL CAPS, "
-    "derived from the positive prompt atmosphere — e.g. \"MIDNIGHT STUDY VIBES\" or \"GOLDEN HOUR FOCUS\")\n"
-    "- youtube_title: SEO-optimized YouTube title (60 chars max) including mood/atmosphere keywords "
-    "derived from the tags and positive_prompt style\n"
-    "- youtube_description: 150-200 word YouTube description with relevant keywords derived from scene themes; "
-    "include 2-3 paragraph breaks; end with a call to subscribe\n"
-    "- youtube_tags: JSON array of exactly 15-20 SEO tags derived from the tags input and generated content; "
-    "mix broad (lofi study, study with me) and specific (rainy day studying, cozy study session)\n\n"
-    "Return JSON only. No markdown."
+    "Theme tags: {tags}\n"
+    "Visual style: {profile_style}\n\n"
+    "Generate a JSON object with ALL of these keys:\n\n"
+    "1. **positive_prompt** (60-100 words): A master SDXL prompt that creates a single stunning hero image. "
+    "Structure: [subject] + [environment details] + [lighting] + [atmosphere] + [camera/lens] + [quality boosters]. "
+    "Use specific photography terms (f/1.4, 35mm, golden hour, chiaroscuro). "
+    "Include texture words (grain, bokeh, haze). "
+    "End with quality tags: masterpiece, best quality, 8k, photorealistic, award-winning photography.\n\n"
+    "2. **negative_prompt** (8-12 terms): SDXL-optimized rejection terms. "
+    "Focus on style-breaking elements for this aesthetic — not generic SD1.5 anatomy lists. "
+    "Include: quality issues (blurry, overexposed, flat), style breaks (cartoon, anime, 3d render), "
+    "and mood breaks specific to the theme.\n\n"
+    "3. **scene_templates** (exactly 8 items, 50-70 words each): Eight distinct cinematic moments from the SAME location. "
+    "Each must differ in: camera angle (wide/close/overhead/low), time of day (dawn/golden hour/dusk/night), "
+    "and focal element (detail shot vs establishing shot). "
+    "Use film language: tracking shot, rack focus, dolly zoom, crane shot. "
+    "Each template should feel like a different frame from a film, not a different location.\n\n"
+    "4. **music_prompt** (25-40 words): A Suno AI music prompt. "
+    "Specify: genre, tempo (BPM), instruments, mood adjectives, and what to avoid. "
+    "Example: 'lofi hip hop, 72 BPM, warm piano chords, vinyl crackle, soft rain, mellow bass, no vocals, study focus'\n\n"
+    "5. **thumbnail_text** (3-5 words, ALL CAPS): Punchy, curiosity-driving text for YouTube thumbnail overlay. "
+    "Use power words that stop scrolling: SECRET, HIDDEN, ULTIMATE, PERFECT, MIDNIGHT, GOLDEN. "
+    "Must be readable at small size.\n\n"
+    "6. **thumbnail_prompt** (40-60 words): An img2img enhancement prompt specifically for the thumbnail. "
+    "Make it more dramatic than the video: boost contrast, add dramatic rim lighting, enhance depth, "
+    "increase visual impact. The thumbnail should be the most visually striking frame — "
+    "punchier colors, stronger composition, more dramatic than any video frame.\n\n"
+    "7. **youtube_title** (50-65 chars): SEO-optimized title using this formula: "
+    "[Atmosphere] + [Location/Theme] + [Benefit/Use Case]. "
+    "Include 1-2 high-search-volume keywords. Use pipes | or dashes — for separation. "
+    "Must trigger curiosity.\n\n"
+    "8. **youtube_description** (200-300 words, 4-5 paragraphs): "
+    "Para 1: Hook — what the viewer will experience (sensory, emotional). "
+    "Para 2: Scene description — paint the visual journey through the video. "
+    "Para 3: Use case — who this is for (studying, working, relaxing, sleeping). "
+    "Para 4: Technical — what makes this special (AI-generated, 4K, original music). "
+    "Para 5: CTA — subscribe, like, comment what they want next. "
+    "Naturally embed 5-8 SEO keywords throughout.\n\n"
+    "9. **youtube_tags** (exactly 18 tags): Mix of: "
+    "3 broad (study with me, lofi, ambient), "
+    "5 medium (cozy study room, rain sounds study), "
+    "5 specific (cyberpunk server room study, underground lofi beats), "
+    "5 long-tail (4 hour study music no ads, relaxing rain sounds for sleeping). "
+    "All lowercase.\n\n"
+    "Return JSON only."
 )
 
 
@@ -187,9 +220,9 @@ class PromptGenerator:
             raise PromptGenerationError(
                 f"youtube_tags must be a list, got {type(ytags).__name__}"
             )
-        if not (15 <= len(ytags) <= 20):
+        if not (10 <= len(ytags) <= 25):
             raise PromptGenerationError(
-                f"youtube_tags must have 15-20 items, got {len(ytags)}"
+                f"youtube_tags must have 10-25 items, got {len(ytags)}"
             )
 
     @staticmethod

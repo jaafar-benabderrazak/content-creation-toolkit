@@ -79,6 +79,16 @@ export default function PromptsPage() {
       {result && (
         <div className="space-y-4">
           <Card>
+            <CardHeader><CardTitle>Generation Prompt (sent to Claude)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="bg-muted/20 rounded p-3 border border-dashed text-xs font-mono text-muted-foreground space-y-2">
+                <p><span className="text-foreground font-medium">System:</span> World-class AI content director. SDXL prompt engineering + YouTube SEO + thumbnail psychology. Style: {profile}</p>
+                <p><span className="text-foreground font-medium">User:</span> Tags: &quot;{tags}&quot; → Generate 9 sections: positive_prompt (60-100 words, photography terms, quality boosters) → negative_prompt (8-12 SDXL terms) → 8 scene_templates (cinematic film language) → music_prompt (genre, BPM, instruments) → thumbnail_text (power words) → thumbnail_prompt (img2img dramatic enhancement) → youtube_title (SEO formula) → youtube_description (5 paragraphs) → youtube_tags (18 mixed)</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardHeader><CardTitle>Image Prompts</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div>
@@ -106,16 +116,28 @@ export default function PromptsPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Music & Thumbnail</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
+            <CardHeader><CardTitle>Music</CardTitle></CardHeader>
+            <CardContent>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Music Prompt</label>
+                <label className="text-xs font-medium text-muted-foreground">Music Prompt (Suno)</label>
                 <p className="text-sm bg-muted/30 rounded p-3 mt-1">{result.music_prompt}</p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Thumbnail</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Thumbnail Text</label>
+                <label className="text-xs font-medium text-muted-foreground">Thumbnail Text Overlay</label>
                 <p className="text-lg font-bold bg-muted/30 rounded p-3 mt-1">{result.thumbnail_text}</p>
               </div>
+              {(result as any).thumbnail_prompt && (
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Thumbnail img2img Prompt</label>
+                  <p className="text-sm bg-muted/30 rounded p-3 mt-1">{(result as any).thumbnail_prompt}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
