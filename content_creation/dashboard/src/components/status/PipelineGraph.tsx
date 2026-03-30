@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge";
 interface GraphNode {
   id: string;
   label: string;
+  icon: string;
   category: "input" | "ai" | "generate" | "post" | "output";
   prompt: string;
   sub: string;
   status: "pending" | "running" | "done" | "failed" | "skipped";
   result?: string;
   deps: string[];
-  col: number;  // column position (0-based)
-  row: number;  // row position (0-based)
+  lane: number; // 0=top, 1=bottom (for parallel nodes)
 }
 
 interface PipelineGraphProps {
@@ -24,49 +24,57 @@ interface PipelineGraphProps {
   runStatus: string;
 }
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Status styles ──────────────────────────────────────────────
 
-const NODE_W = 220;
-const NODE_H = 64;
-const COL_GAP = 40;
-const ROW_GAP = 24;
-const PAD = 20;
-
-const STATUS_COLORS: Record<string, { fill: string; stroke: string; text: string; dot: string }> = {
-  pending:  { fill: "#18181b", stroke: "#3f3f46", text: "#a1a1aa", dot: "#71717a" },
-  running:  { fill: "#172554", stroke: "#3b82f6", text: "#93c5fd", dot: "#60a5fa" },
-  done:     { fill: "#052e16", stroke: "#22c55e", text: "#86efac", dot: "#4ade80" },
-  failed:   { fill: "#450a0a", stroke: "#ef4444", text: "#fca5a5", dot: "#f87171" },
-  skipped:  { fill: "#18181b", stroke: "#27272a", text: "#52525b", dot: "#3f3f46" },
+const STATUS_BG: Record<string, string> = {
+  pending: "bg-zinc-900 border-zinc-700/50",
+  running: "bg-blue-950 border-blue-500 ring-1 ring-blue-500/30",
+  done: "bg-emerald-950 border-emerald-600",
+  failed: "bg-red-950 border-red-600",
+  skipped: "bg-zinc-900/50 border-zinc-800",
 };
 
-const CAT_BADGE: Record<string, string> = {
-  input: "#8b5cf6", ai: "#06b6d4", generate: "#10b981", post: "#f59e0b", output: "#ef4444",
+const STATUS_DOT: Record<string, string> = {
+  pending: "bg-zinc-600",
+  running: "bg-blue-400 animate-pulse",
+  done: "bg-emerald-400",
+  failed: "bg-red-400",
+  skipped: "bg-zinc-700",
+};
+
+const CAT_COLOR: Record<string, string> = {
+  input: "bg-violet-500/20 text-violet-300",
+  ai: "bg-cyan-500/20 text-cyan-300",
+  generate: "bg-emerald-500/20 text-emerald-300",
+  post: "bg-amber-500/20 text-amber-300",
+  output: "bg-red-500/20 text-red-300",
 };
 
 // ─── Log parser ─────────────────────────────────────────────────
 
-function parseLogStatus(logs: string[]): Record<string, GraphNode["status"]> {
-  const s: Record<string, GraphNode["status"]> = {};
+type NStatus = "running" | "done" | "failed" | "skipped";
+
+function parseLogStatus(logs: string[]): Record<string, NStatus> {
+  const s: Record<string, NStatus> = {};
   const t = logs.join("\n");
-  if (t.includes("[Tags] Generating")) s["prompts"] = "running";
-  if (t.includes("[Tags] Prompts written")) { s["prompts"] = "done"; s["chain"] = "done"; }
-  if (t.includes("[Images] Generating")) s["images"] = "running";
-  if (t.includes("[Images] Using") || t.includes("images for video")) s["images"] = "done";
-  if (t.includes("[Music] Submitting")) s["music"] = "running";
-  if (t.includes("Suno track ready")) s["music"] = "done";
-  if (t.includes("Credits insufficient") || t.includes("Suno API error")) s["music"] = "failed";
-  if (t.includes("Assembling enhanced") || t.includes("Remotion")) s["render"] = "running";
-  if (t.includes("DONE") || t.includes("Saved to:")) s["render"] = "done";
-  if (t.includes("[PostProcess]")) s["post"] = "running";
-  if (t.includes("PostProcess] Done")) s["post"] = "done";
-  if (t.includes("[Thumbnail]")) s["thumb"] = "running";
-  if (t.includes("Thumbnail] Saved")) s["thumb"] = "done";
-  if (t.includes("Discord") && t.includes("sent")) s["discord"] = "done";
-  if (t.includes("Video preview sent")) s["approval"] = "running";
-  if (t.includes("Approved") || t.includes("Exit code: 0")) s["approval"] = "done";
-  if (t.includes("Upload complete")) s["youtube"] = "done";
-  if (t.includes("publishing disabled")) s["youtube"] = "skipped";
+  if (t.includes("[Tags] Generating")) s.prompts = "running";
+  if (t.includes("[Tags] Prompts written")) { s.prompts = "done"; s.chain = "done"; }
+  if (t.includes("[Images] Generating")) s.images = "running";
+  if (t.includes("[Images] Using") || t.includes("images for video")) s.images = "done";
+  if (t.includes("[Music] Submitting")) s.music = "running";
+  if (t.includes("Suno track ready")) s.music = "done";
+  if (t.includes("Credits insufficient") || t.includes("Suno API error")) s.music = "failed";
+  if (t.includes("Assembling enhanced") || t.includes("Remotion")) s.render = "running";
+  if (t.includes("DONE") || t.includes("Saved to:")) s.render = "done";
+  if (t.includes("[PostProcess]")) s.post = "running";
+  if (t.includes("PostProcess] Done")) s.post = "done";
+  if (t.includes("[Thumbnail]")) s.thumb = "running";
+  if (t.includes("Thumbnail] Saved")) s.thumb = "done";
+  if (t.includes("Discord") && t.includes("sent")) s.discord = "done";
+  if (t.includes("Video preview sent")) s.approval = "running";
+  if (t.includes("Approved") || t.includes("Exit code: 0")) s.approval = "done";
+  if (t.includes("Upload complete")) s.youtube = "done";
+  if (t.includes("publishing disabled")) s.youtube = "skipped";
   return s;
 }
 
@@ -75,7 +83,6 @@ function parseLogStatus(logs: string[]): Record<string, GraphNode["status"]> {
 export function PipelineGraph({ profile, logs, runStatus }: PipelineGraphProps) {
   const [profileData, setProfileData] = useState<any>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     fetch(`/api/config/profiles/${profile.replace("-", "_")}`)
@@ -90,220 +97,235 @@ export function PipelineGraph({ profile, logs, runStatus }: PipelineGraphProps) 
   function ns(id: string): GraphNode["status"] {
     if (runStatus === "idle") return "pending";
     if (ls[id]) return ls[id];
-    if (runStatus === "running") return "pending";
     if (runStatus === "done") return "done";
     return "pending";
   }
 
-  // ─── Define graph layout ────────────────────────────────────
-  // Col 0: inputs, Col 1: AI, Col 2: parallel gen, Col 3: post, Col 4: output
-  const nodes: GraphNode[] = [
-    { id: "tags", label: "Tags", category: "input", col: 0, row: 0, deps: [],
-      prompt: d.video?.mood || "(user tags)", sub: "Comma-separated keywords", status: runStatus !== "idle" ? "done" : "pending" },
-    ...(d.style_ref?.handle ? [{ id: "style", label: "Style Ref", category: "input" as const, col: 0, row: 1, deps: [] as string[],
-      prompt: `@${d.style_ref.handle}`, sub: `${d.style_ref.max_reference_images || 6} images`, status: "done" as const }] : []),
-    { id: "prompts", label: "Claude Gen", category: "ai", col: 1, row: 0, deps: ["tags"],
-      prompt: `System: AI content director\nTags → 9 sections via Claude Sonnet`, sub: "positive, negative, 8 scenes, music, thumb, YT", status: ns("prompts"),
-      result: d.sdxl?.positive_prompt ? "✓" : undefined },
-    { id: "chain", label: "Prompt Chain", category: "ai", col: 1, row: 1, deps: ["prompts"],
-      prompt: [
-        `+prompt: ${(d.sdxl?.positive_prompt || "").slice(0, 80)}...`,
-        `-prompt: ${d.sdxl?.negative_prompt || "?"}`,
-        `scenes: ${d.sdxl?.scene_templates?.length || 0}`,
-        `music: ${(d.suno?.prompt_tags || d.video?.music_prompt || "").slice(0, 60)}`,
-        `thumb: ${d.publish?.thumbnail_text || "?"}`,
-        `thumb_prompt: ${((d.publish as any)?.thumbnail_prompt || "").slice(0, 60)}`,
-        `yt_title: ${d.publish?.youtube_title || "?"}`,
-        `yt_desc: ${(d.publish?.youtube_description || "").length} chars`,
-        `yt_tags: ${d.publish?.youtube_tags?.length || 0}`,
-      ].join("\n"),
-      sub: "9 outputs saved to YAML", status: ns("chain") },
-    { id: "images", label: "Images", category: "generate", col: 2, row: 0, deps: ["chain"],
-      prompt: (d.sdxl?.positive_prompt || d.video?.style_prompt || "").slice(0, 120),
-      sub: `1 base → ${d.video?.scene_count || 8} variants`, status: ns("images"),
-      result: ls["images"] === "done" ? "✓ generated" : undefined },
-    { id: "music", label: "Music", category: "generate", col: 2, row: 1, deps: ["chain"],
-      prompt: d.suno?.prompt_tags || d.video?.music_prompt || "",
-      sub: `Suno ${d.suno?.genre || "?"} • 2 tracks`, status: ns("music"),
-      result: ls["music"] === "failed" ? "✗ silent" : ls["music"] === "done" ? "✓ ready" : undefined },
-    { id: "render", label: "Remotion", category: "generate", col: 3, row: 0, deps: ["images", "music"],
-      prompt: `${d.video?.scene_count || 8} scenes • ${d.video?.duration_minutes || 3}min • spring + parallax`,
-      sub: "TransitionSeries + wipe/fade", status: ns("render") },
-    { id: "post", label: "Post-Process", category: "post", col: 3, row: 1, deps: ["render"],
-      prompt: `Watermark: "${d.post?.watermark_text || "channel"}" • Sub: ${d.post?.subtitles_enabled ? "on" : "off"}`,
-      sub: "FFmpeg watermark + subtitles + intro/outro", status: ns("post") },
-    { id: "thumb", label: "Thumbnail", category: "post", col: 4, row: 0, deps: ["post"],
-      prompt: [
-        `1. Best frame (OpenCV sharpness)`,
-        `2. img2img: ${((d.publish as any)?.thumbnail_prompt || "dramatic enhance").slice(0, 60)}`,
-        `3. Claude Vision → text: "${d.publish?.thumbnail_text || "?"}"`,
-      ].join("\n"),
-      sub: "Seedream img2img → Claude text → Pillow", status: ns("thumb") },
-    { id: "discord", label: "Discord", category: "output", col: 4, row: 1, deps: ["thumb"],
-      prompt: "Send 15s snippet + thumbnail to webhook", sub: "Preview for approval", status: ns("discord") },
-    { id: "approval", label: "Approve", category: "output", col: 5, row: 0, deps: ["discord"],
-      prompt: "CLI: Enter=approve, r=reject (up to 5x)", sub: "Gate before publish", status: ns("approval") },
-    { id: "youtube", label: "YouTube", category: "output", col: 5, row: 1, deps: ["approval"],
-      prompt: [
-        `Title: ${(d.publish?.youtube_title || "").slice(0, 50)}`,
-        `Desc: ${(d.publish?.youtube_description || "").length} chars`,
-        `Tags: ${d.publish?.youtube_tags?.length || 0}`,
-      ].join("\n"),
-      sub: "Resumable upload + thumbnail.set", status: ns("youtube") },
+  // ─── Build nodes in execution order ──────────────────────────
+  // Groups: each group renders as a row, parallel nodes side-by-side
+
+  type Group = { nodes: GraphNode[]; connector?: "split" | "merge" };
+
+  const groups: Group[] = [
+    // Row 1: Inputs
+    {
+      nodes: [
+        { id: "tags", label: "Tags Input", icon: "🏷", category: "input", prompt: d.video?.mood || "(user tags)", sub: "Comma-separated keywords → drives everything", status: runStatus !== "idle" ? "done" : "pending", deps: [], lane: 0 },
+        ...(d.style_ref?.handle ? [{ id: "style", label: "Style Ref", icon: "🎨", category: "input" as const, prompt: `@${d.style_ref.handle} (${d.style_ref.backend || "replicate"})`, sub: `${d.style_ref.max_reference_images || 6} reference images`, status: "done" as const, deps: [] as string[], lane: 1 }] : []),
+      ],
+    },
+    // Row 2: AI generation
+    {
+      nodes: [
+        { id: "prompts", label: "Claude Prompt Gen", icon: "🤖", category: "ai", prompt: `System: "World-class AI content director"\nInput: tags → Output: 9 prompt sections via Claude Sonnet`, sub: "positive, negative, 8 scenes, music, thumb, YT title/desc/tags", status: ns("prompts"), deps: ["tags"], lane: 0, result: d.sdxl?.positive_prompt ? "✓ 9 sections" : undefined },
+      ],
+    },
+    // Row 3: Prompt chain detail
+    {
+      nodes: [
+        { id: "chain", label: "Prompt Chain", icon: "⛓", category: "ai",
+          prompt: [
+            `POSITIVE: ${(d.sdxl?.positive_prompt || "(pending)").slice(0, 100)}`,
+            `NEGATIVE: ${d.sdxl?.negative_prompt || "(pending)"}`,
+            `SCENES: ${d.sdxl?.scene_templates?.length || 0} cinematic templates`,
+            `MUSIC: ${(d.suno?.prompt_tags || d.video?.music_prompt || "(pending)").slice(0, 80)}`,
+            `THUMB TEXT: ${d.publish?.thumbnail_text || "(pending)"}`,
+            `THUMB PROMPT: ${((d.publish as any)?.thumbnail_prompt || "(pending)").slice(0, 80)}`,
+            `YT TITLE: ${d.publish?.youtube_title || "(pending)"}`,
+            `YT DESC: ${(d.publish?.youtube_description || "").length} chars`,
+            `YT TAGS: ${d.publish?.youtube_tags?.length || 0} SEO tags`,
+          ].join("\n"),
+          sub: "All 9 sections saved to profile YAML", status: ns("chain"), deps: ["prompts"], lane: 0 },
+      ],
+    },
+    // Row 4: Parallel generation (images + music)
+    {
+      connector: "split",
+      nodes: [
+        { id: "images", label: "Image Generation", icon: "🖼", category: "generate", prompt: (d.sdxl?.positive_prompt || d.video?.style_prompt || "(from chain)").slice(0, 150), sub: `Seedream → Gemini → DALL-E → SD fallback • 1 base → ${d.video?.scene_count || 8} variants`, status: ns("images"), deps: ["chain"], lane: 0, result: ls.images === "done" ? "✓" : undefined },
+        { id: "music", label: "Music Generation", icon: "🎵", category: "generate", prompt: d.suno?.prompt_tags || d.video?.music_prompt || "(from chain)", sub: `Suno V4.5 (kie.ai) • ${d.suno?.genre || "?"} • 2 tracks`, status: ns("music"), deps: ["chain"], lane: 1, result: ls.music === "failed" ? "✗ silent" : ls.music === "done" ? "✓" : undefined },
+      ],
+    },
+    // Row 5: Render (merges images + music)
+    {
+      connector: "merge",
+      nodes: [
+        { id: "render", label: "Video Render", icon: "🎬", category: "generate", prompt: `Remotion: ${d.video?.scene_count || 8} scenes • ${d.video?.duration_minutes || 3} min • spring physics + parallax + particles`, sub: "TransitionSeries + wipe/fade transitions + timer overlay", status: ns("render"), deps: ["images", "music"], lane: 0 },
+      ],
+    },
+    // Row 6: Post-process
+    {
+      nodes: [
+        { id: "post", label: "Post-Process", icon: "✂", category: "post", prompt: `Watermark: "${d.post?.watermark_text || "channel"}" at ${d.post?.watermark_position || "bottom-right"}\nSubtitles: ${d.post?.subtitles_enabled ? "ON" : "off"}\nIntro/Outro: ${d.post?.intro_enabled ? "ON" : "off"}`, sub: "FFmpeg: watermark → subtitles → intro/outro", status: ns("post"), deps: ["render"], lane: 0 },
+      ],
+    },
+    // Row 7: Thumbnail
+    {
+      nodes: [
+        { id: "thumb", label: "Thumbnail", icon: "📸", category: "post",
+          prompt: [
+            `STEP 1: Extract best frame (OpenCV Laplacian sharpness, 10 samples)`,
+            `STEP 2: img2img enhance: ${((d.publish as any)?.thumbnail_prompt || "dramatic lighting, vibrant").slice(0, 80)}`,
+            `STEP 3: Claude Vision analyzes image → designs text overlay`,
+            `  text: "${d.publish?.thumbnail_text || "?"}"`,
+            `  → picks position, font_size, color, glow, emphasis word`,
+          ].join("\n"),
+          sub: "Seedream img2img → Claude Vision text design → Pillow composite", status: ns("thumb"), deps: ["post"], lane: 0 },
+      ],
+    },
+    // Row 8: Parallel outputs (Discord + YouTube prep)
+    {
+      connector: "split",
+      nodes: [
+        { id: "discord", label: "Discord Preview", icon: "💬", category: "output", prompt: "Send 15s video snippet + thumbnail image to Discord webhook", sub: "Preview for human approval before publishing", status: ns("discord"), deps: ["thumb"], lane: 0 },
+        { id: "approval", label: "Approval Gate", icon: "✅", category: "output", prompt: "CLI: [Enter]=approve, [r]=reject+regenerate (up to 5 attempts)", sub: "Pipeline pauses until human approves", status: ns("approval"), deps: ["discord"], lane: 1 },
+      ],
+    },
+    // Row 9: YouTube
+    {
+      nodes: [
+        { id: "youtube", label: "YouTube Upload", icon: "📺", category: "output",
+          prompt: [
+            `Title: ${(d.publish?.youtube_title || "(from chain)").slice(0, 60)}`,
+            `Description: ${(d.publish?.youtube_description || "").length} chars, ${(d.publish?.youtube_description || "").split("\n\n").length} paragraphs`,
+            `Tags: ${d.publish?.youtube_tags?.length || 0} SEO tags`,
+            `Privacy: ${d.publish?.youtube_privacy || "private"}`,
+            `Thumbnail: uploaded via thumbnails.set API`,
+          ].join("\n"),
+          sub: "Resumable upload + thumbnail.set + quota guard (1600 units)", status: ns("youtube"), deps: ["approval"], lane: 0 },
+      ],
+    },
   ];
 
-  // ─── Layout calculations ────────────────────────────────────
-  const maxCol = Math.max(...nodes.map(n => n.col));
-  const maxRow = Math.max(...nodes.map(n => n.row));
-  const svgW = (maxCol + 1) * (NODE_W + COL_GAP) + PAD * 2;
-  const svgH = (maxRow + 1) * (NODE_H + ROW_GAP) + PAD * 2 + (selected ? 200 : 0);
-
-  function nodeX(col: number) { return PAD + col * (NODE_W + COL_GAP); }
-  function nodeY(row: number) { return PAD + row * (NODE_H + ROW_GAP); }
-  function nodeCenterX(n: GraphNode) { return nodeX(n.col) + NODE_W / 2; }
-  function nodeCenterY(n: GraphNode) { return nodeY(n.row) + NODE_H / 2; }
-
-  const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const allNodes = groups.flatMap(g => g.nodes);
+  const nodeMap = Object.fromEntries(allNodes.map(n => [n.id, n]));
   const selectedNode = selected ? nodeMap[selected] : null;
 
-  // ─── Progress ───────────────────────────────────────────────
   const counts = { done: 0, running: 0, failed: 0, pending: 0, skipped: 0 };
-  nodes.forEach(n => { counts[n.status] = (counts[n.status] || 0) + 1; });
+  allNodes.forEach(n => { counts[n.status]++; });
+  const total = allNodes.length;
+  const progress = Math.round((counts.done / total) * 100);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Progress bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2 text-[10px]">
-          {counts.done > 0 && <Badge className="bg-emerald-500/20 text-emerald-400 text-[10px]">{counts.done} done</Badge>}
-          {counts.running > 0 && <Badge className="bg-blue-500/20 text-blue-400 text-[10px]">{counts.running} running</Badge>}
-          {counts.failed > 0 && <Badge className="bg-red-500/20 text-red-400 text-[10px]">{counts.failed} failed</Badge>}
-          {counts.pending > 0 && <Badge className="bg-zinc-500/20 text-zinc-400 text-[10px]">{counts.pending} pending</Badge>}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex gap-2">
+            {counts.done > 0 && <span className="text-emerald-400">{counts.done} done</span>}
+            {counts.running > 0 && <span className="text-blue-400">{counts.running} running</span>}
+            {counts.failed > 0 && <span className="text-red-400">{counts.failed} failed</span>}
+            {counts.pending > 0 && <span className="text-zinc-500">{counts.pending} pending</span>}
+          </div>
+          <span className="text-zinc-500">{progress}%</span>
         </div>
-        <Badge variant="outline" className="text-[10px]">{profile}</Badge>
+        <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+              background: counts.failed > 0
+                ? "linear-gradient(90deg, #22c55e, #ef4444)"
+                : counts.running > 0
+                  ? "linear-gradient(90deg, #22c55e, #3b82f6)"
+                  : "#22c55e",
+            }}
+          />
+        </div>
       </div>
 
-      {/* SVG Graph */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
-        <svg ref={svgRef} width={svgW} height={svgH} className="min-w-full">
-          <defs>
-            <marker id="arrow-done" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6" fill="#22c55e" />
-            </marker>
-            <marker id="arrow-running" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6" fill="#3b82f6" />
-            </marker>
-            <marker id="arrow-pending" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-              <path d="M0,0 L8,3 L0,6" fill="#3f3f46" />
-            </marker>
-          </defs>
+      {/* Graph rows */}
+      <div className="space-y-2">
+        {groups.map((group, gi) => (
+          <div key={gi}>
+            {/* Connector line between groups */}
+            {gi > 0 && (
+              <div className="flex justify-center py-1">
+                <div className="flex items-center gap-1 text-zinc-600">
+                  {group.connector === "split" && <span className="text-[10px]">splits into parallel</span>}
+                  {group.connector === "merge" && <span className="text-[10px]">merges</span>}
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <path d="M8,2 L8,14 M4,10 L8,14 L12,10" stroke="currentColor" fill="none" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              </div>
+            )}
 
-          {/* Dependency edges */}
-          {nodes.map(node =>
-            node.deps.map(depId => {
-              const dep = nodeMap[depId];
-              if (!dep) return null;
-              const x1 = nodeX(dep.col) + NODE_W;
-              const y1 = nodeY(dep.row) + NODE_H / 2;
-              const x2 = nodeX(node.col);
-              const y2 = nodeY(node.row) + NODE_H / 2;
-              const edgeStatus = dep.status === "done" ? "done" : dep.status === "running" ? "running" : "pending";
-              const color = STATUS_COLORS[edgeStatus].stroke;
-              // Curved path
-              const mx = (x1 + x2) / 2;
-              return (
-                <path
-                  key={`${depId}-${node.id}`}
-                  d={`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={edgeStatus === "done" ? 2 : 1}
-                  strokeDasharray={edgeStatus === "pending" ? "4,4" : undefined}
-                  markerEnd={`url(#arrow-${edgeStatus})`}
-                  opacity={edgeStatus === "pending" ? 0.4 : 0.8}
-                />
-              );
-            })
-          )}
+            {/* Node row */}
+            <div className={`grid gap-2 ${group.nodes.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+              {group.nodes.map(node => {
+                const isSelected = selected === node.id;
+                return (
+                  <button
+                    key={node.id}
+                    onClick={() => setSelected(isSelected ? null : node.id)}
+                    className={`text-left rounded-xl border p-3 transition-all hover:brightness-125 ${STATUS_BG[node.status]} ${isSelected ? "ring-2 ring-white/50" : ""}`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {/* Status dot */}
+                      <div className={`mt-0.5 h-2.5 w-2.5 rounded-full shrink-0 ${STATUS_DOT[node.status]}`} />
 
-          {/* Nodes */}
-          {nodes.map(node => {
-            const x = nodeX(node.col);
-            const y = nodeY(node.row);
-            const s = STATUS_COLORS[node.status];
-            const isSelected = selected === node.id;
+                      <div className="flex-1 min-w-0">
+                        {/* Header: icon + label + category + result */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-sm">{node.icon}</span>
+                          <span className="text-xs font-semibold text-zinc-200">{node.label}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${CAT_COLOR[node.category]}`}>
+                            {node.category}
+                          </span>
+                          {node.result && (
+                            <span className="text-[10px] text-emerald-400 font-mono ml-auto">{node.result}</span>
+                          )}
+                        </div>
 
-            return (
-              <g key={node.id} onClick={() => setSelected(isSelected ? null : node.id)} cursor="pointer">
-                {/* Node background */}
-                <rect
-                  x={x} y={y} width={NODE_W} height={NODE_H} rx={8}
-                  fill={s.fill} stroke={isSelected ? "#fff" : s.stroke}
-                  strokeWidth={isSelected ? 2 : 1}
-                />
-                {/* Status dot */}
-                <circle cx={x + 14} cy={y + 16} r={4} fill={s.dot}>
-                  {node.status === "running" && (
-                    <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
-                  )}
-                </circle>
-                {/* Category badge */}
-                <rect x={x + 24} y={y + 8} width={50} height={16} rx={4} fill={CAT_BADGE[node.category]} opacity={0.2} />
-                <text x={x + 49} y={y + 20} textAnchor="middle" fontSize={8} fill={CAT_BADGE[node.category]} fontFamily="monospace">
-                  {node.category}
-                </text>
-                {/* Label */}
-                <text x={x + 80} y={y + 20} fontSize={11} fill={s.text} fontWeight="600">
-                  {node.label}
-                </text>
-                {/* Result badge */}
-                {node.result && (
-                  <text x={x + NODE_W - 10} y={y + 20} textAnchor="end" fontSize={9} fill="#4ade80" fontFamily="monospace">
-                    {node.result}
-                  </text>
-                )}
-                {/* Prompt preview */}
-                <text x={x + 14} y={y + 40} fontSize={9} fill={s.text} opacity={0.6}>
-                  {node.prompt.split("\n")[0].slice(0, 30)}{node.prompt.length > 30 ? "..." : ""}
-                </text>
-                {/* Sub text */}
-                <text x={x + 14} y={y + 54} fontSize={8} fill={s.text} opacity={0.4}>
-                  {node.sub.slice(0, 35)}{node.sub.length > 35 ? "..." : ""}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
+                        {/* Prompt preview (first line) */}
+                        <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                          {node.prompt.split("\n")[0]}
+                        </p>
+
+                        {/* Sub */}
+                        <p className="text-[10px] text-zinc-600 mt-0.5">{node.sub}</p>
+                      </div>
+
+                      {/* Expand */}
+                      <span className="text-zinc-600 text-[10px] shrink-0 mt-1">{isSelected ? "▾" : "▸"}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Selected node detail panel */}
+      {/* Selected detail panel */}
       {selectedNode && (
-        <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-4 space-y-2">
+        <div className="rounded-xl border border-zinc-700 bg-zinc-900/80 p-4 space-y-3 backdrop-blur">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className={`h-3 w-3 rounded-full`} style={{ backgroundColor: STATUS_COLORS[selectedNode.status].dot }} />
-              <span className="text-sm font-medium" style={{ color: CAT_BADGE[selectedNode.category] }}>
-                {selectedNode.label}
-              </span>
-              <Badge className="text-[10px]" style={{ backgroundColor: CAT_BADGE[selectedNode.category] + "30", color: CAT_BADGE[selectedNode.category] }}>
+              <span className="text-base">{selectedNode.icon}</span>
+              <span className="text-sm font-semibold text-zinc-200">{selectedNode.label}</span>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${CAT_COLOR[selectedNode.category]}`}>
                 {selectedNode.category}
-              </Badge>
+              </span>
               <Badge variant="outline" className="text-[10px]">{selectedNode.status}</Badge>
             </div>
-            <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-zinc-300 text-sm">✕</button>
+            <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-zinc-300">✕</button>
           </div>
 
-          <div className="text-xs text-zinc-400">{selectedNode.sub}</div>
+          <p className="text-xs text-zinc-400">{selectedNode.sub}</p>
 
           {selectedNode.deps.length > 0 && (
             <div className="text-[10px] text-zinc-500">
-              Dependencies: {selectedNode.deps.map(d => (
-                <button key={d} onClick={() => setSelected(d)} className="text-blue-400 hover:underline mr-1">{d}</button>
+              Depends on: {selectedNode.deps.map(d => (
+                <button key={d} onClick={() => setSelected(d)} className="text-blue-400 hover:underline mr-1.5">
+                  {nodeMap[d]?.icon} {nodeMap[d]?.label || d}
+                </button>
               ))}
             </div>
           )}
 
-          <pre className="text-[11px] font-mono text-zinc-300 whitespace-pre-wrap bg-black/50 rounded p-3 max-h-48 overflow-y-auto border border-zinc-800">
+          <pre className="text-[11px] font-mono text-zinc-300 whitespace-pre-wrap bg-black/60 rounded-lg p-3 max-h-52 overflow-y-auto border border-zinc-800 leading-relaxed">
             {selectedNode.prompt}
           </pre>
 

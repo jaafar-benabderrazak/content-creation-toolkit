@@ -266,25 +266,22 @@ export default function StatusPage() {
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
   const [pipelineStatus, setPipelineStatus] = useState<string>("idle");
 
-  // Poll logs for the graph (reuses the same endpoint as LiveLogs)
+  // Always poll logs — shows latest run regardless of trigger
   useEffect(() => {
-    if (!triggerResult || triggerResult.startsWith("Error")) return;
-    setPipelineStatus("running");
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/api/logs");
         if (res.ok) {
           const data = await res.json();
-          if (data.lines) setLiveLogs(data.lines);
-          if (data.status === "done" || data.status === "failed") {
-            setPipelineStatus(data.status);
-            clearInterval(interval);
+          if (data.lines && data.lines.length > 0) {
+            setLiveLogs(data.lines);
+            setPipelineStatus(data.status || "idle");
           }
         }
       } catch { /* silent */ }
     }, 3000);
     return () => clearInterval(interval);
-  }, [triggerResult]);
+  }, []);
 
   function onSelectRoadmapEntry(entry: RoadmapEntry) {
     setTags(entry.tags);
