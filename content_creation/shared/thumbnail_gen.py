@@ -222,11 +222,24 @@ def enhance_thumbnail_image(
     return out
 
 
-def _claude_optimize_text(image_path: Path, title: str) -> dict:
-    """Use Claude to analyze the image and optimize text overlay placement + styling.
+def _claude_optimize_text(
+    image_path: Path,
+    title: str,
+    thumbnail_prompt: str = "",
+    positive_prompt: str = "",
+    youtube_title: str = "",
+) -> dict:
+    """Use Claude Vision to analyze the thumbnail image and design the optimal text overlay.
 
-    Returns dict with: text, position (top-left/bottom-left/center), font_size,
-    text_color (hex), outline_color (hex), lines (word-wrapped).
+    Context inputs:
+    - image_path: the enhanced thumbnail frame (what Claude sees)
+    - title: the generated thumbnail_text (e.g., "UNDERGROUND CYBER VIBES")
+    - thumbnail_prompt: the img2img prompt used to enhance this frame
+    - positive_prompt: the SDXL prompt that generated the original scene
+    - youtube_title: the video's YouTube title for thematic coherence
+
+    Returns dict with: text, position, font_size, text_color, outline_color,
+    glow_color, lines, emphasis_word.
     """
     try:
         import anthropic
@@ -240,10 +253,25 @@ def _claude_optimize_text(image_path: Path, title: str) -> dict:
         b64 = base64.b64encode(img_bytes).decode()
         media_type = "image/jpeg" if str(image_path).lower().endswith(".jpg") else "image/png"
 
+        # Build rich context from all available prompts
+        context_parts = []
+        if thumbnail_prompt:
+            context_parts.append(f"Image enhancement prompt: \"{thumbnail_prompt}\"")
+        if positive_prompt:
+            context_parts.append(f"Original scene prompt: \"{positive_prompt[:200]}\"")
+        if youtube_title:
+            context_parts.append(f"YouTube title: \"{youtube_title}\"")
+        context_block = "\n".join(context_parts) if context_parts else "(no additional context)"
+
         client = anthropic.Anthropic(api_key=api_key)
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=500,
+            max_tokens=600,
+            system=(
+                "You are a YouTube thumbnail text designer who creates scroll-stopping overlays. "
+                "You understand color theory, visual hierarchy, typography psychology, and YouTube CTR optimization. "
+                "You analyze the actual image content to make data-driven placement decisions."
+            ),
             messages=[{
                 "role": "user",
                 "content": [
@@ -254,16 +282,32 @@ def _claude_optimize_text(image_path: Path, title: str) -> dict:
                     {
                         "type": "text",
                         "text": (
-                            f"This image will be a YouTube thumbnail. The text overlay is: \"{title}\"\n\n"
-                            "Analyze the image and return JSON with:\n"
-                            "- text: the final text to display (can refine the input, 3-5 words, ALL CAPS, punchy)\n"
-                            "- position: where to place text for maximum impact without covering key visual elements "
-                            "(one of: bottom-left, bottom-center, top-left, center)\n"
-                            "- font_size: optimal size in pixels (60-90) based on text length and image complexity\n"
-                            "- text_color: hex color that contrasts well with this specific image (e.g., #FFFFFF, #FFE066)\n"
-                            "- outline_color: hex color for text outline/shadow (usually dark, e.g., #000000, #1a1a2e)\n"
-                            "- lines: the text split into 1-2 lines for best visual balance (array of strings)\n\n"
-                            "Return JSON only. No explanation."
+                            f"Design the text overlay for this YouTube thumbnail.\n\n"
+                            f"Suggested text: \"{title}\"\n"
+                            f"Context:\n{context_block}\n\n"
+                            "ANALYZE the image carefully, then return JSON:\n\n"
+                            "- text: final overlay text (2-5 words, ALL CAPS). "
+                            "Refine the suggestion — make it punchier, more curiosity-driving. "
+                            "Use power words: SECRET, HIDDEN, ULTIMATE, DARK, PERFECT, MIDNIGHT, GOLDEN, LOST. "
+                            "The text should complement the image mood, not just describe it.\n\n"
+                            "- position: where to place text (bottom-left | bottom-center | top-left | center). "
+                            "LOOK at the image — find the area with least visual detail or darkest region. "
+                            "Never place text over a face, bright light source, or key focal point.\n\n"
+                            "- font_size: pixels (60-90). Larger if 2 words, smaller if 4+ words. "
+                            "Must be readable at YouTube's 320x180 preview size.\n\n"
+                            "- text_color: hex color that POPS against this specific image. "
+                            "Analyze dominant colors — pick a complementary or high-contrast accent. "
+                            "Warm images → cool text (#E0F0FF). Cool images → warm text (#FFE066). "
+                            "Dark images → bright white (#FFFFFF). Bright images → deep color (#1a1a2e).\n\n"
+                            "- outline_color: hex for thick outline. Usually very dark (#000000, #0a0a0a). "
+                            "Match the image's shadow tone if visible.\n\n"
+                            "- glow_color: hex for the blur glow behind text. "
+                            "Use a muted version of the image's dominant accent color for cohesion.\n\n"
+                            "- lines: array of 1-2 strings — split the text for visual balance. "
+                            "If 4+ words, split into 2 lines. Line 1 should have the hook word.\n\n"
+                            "- emphasis_word: which single word should be slightly larger or different color "
+                            "for visual hierarchy (the most important/curiosity word).\n\n"
+                            "Return JSON only."
                         ),
                     },
                 ],
@@ -276,7 +320,12 @@ def _claude_optimize_text(image_path: Path, title: str) -> dict:
         text = re.sub(r"```json\s*", "", text)
         text = re.sub(r"```\s*$", "", text).strip()
         result = json.loads(text)
-        logger.info(f"[Thumbnail] Claude text optimization: {result.get('text', '?')} at {result.get('position', '?')}")
+        logger.info(
+            f"[Thumbnail] Claude design: \"{result.get('text', '?')}\" "
+            f"at {result.get('position', '?')} "
+            f"color={result.get('text_color', '?')} "
+            f"emphasis={result.get('emphasis_word', '?')}"
+        )
         return result
     except Exception as e:
         logger.warning(f"[Thumbnail] Claude text optimization failed: {e}")
@@ -289,11 +338,15 @@ def composite_text(
     title: str = "",
     branding: str = "",
     avatar_path: Optional[Path] = None,
+    thumbnail_prompt: str = "",
+    positive_prompt: str = "",
+    youtube_title: str = "",
 ) -> Path:
     """Composite title text with YouTube-optimized visual effects.
 
-    Uses Claude vision to analyze the image and optimize text placement,
-    then falls back to default positioning if Claude is unavailable.
+    Uses Claude Vision to analyze the image + generation prompts and design
+    the optimal text overlay (position, color, size, emphasis).
+    Falls back to default positioning if Claude is unavailable.
     """
     from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
@@ -301,7 +354,12 @@ def composite_text(
     img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
 
     # --- Step 0: Ask Claude for optimal text placement ---
-    claude_opts = _claude_optimize_text(image_path, title) if title else {}
+    claude_opts = _claude_optimize_text(
+        image_path, title,
+        thumbnail_prompt=thumbnail_prompt,
+        positive_prompt=positive_prompt,
+        youtube_title=youtube_title,
+    ) if title else {}
 
     # --- Step 1: Enhance base image ---
     img = ImageEnhance.Contrast(img).enhance(1.2)
@@ -345,6 +403,8 @@ def composite_text(
         position = claude_opts.get("position", "bottom-left")
         text_color_hex = claude_opts.get("text_color", "#FFFFF0")
         outline_color_hex = claude_opts.get("outline_color", "#000000")
+        glow_color_hex = claude_opts.get("glow_color", outline_color_hex)
+        emphasis_word = claude_opts.get("emphasis_word", "").upper()
         text_lines = claude_opts.get("lines", None)
 
         # Parse hex colors
@@ -355,9 +415,11 @@ def composite_text(
         try:
             text_color = _hex_to_rgb(text_color_hex)
             outline_color = _hex_to_rgb(outline_color_hex)
+            glow_color = _hex_to_rgb(glow_color_hex)
         except (ValueError, IndexError):
             text_color = (255, 255, 240)
             outline_color = (0, 0, 0)
+            glow_color = (0, 0, 0)
 
         font_title = _load_font(int(font_size))
 
@@ -408,11 +470,11 @@ def composite_text(
                 x = x_base
             y = start_y + i * line_height
 
-            # Glow effect
+            # Glow effect with Claude-chosen glow color
             glow_layer = Image.new("RGBA", (THUMB_WIDTH, THUMB_HEIGHT), (0, 0, 0, 0))
             glow_draw = ImageDraw.Draw(glow_layer)
-            glow_draw.text((x, y), line, fill=(*outline_color, 200), font=font_title)
-            glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=6))
+            glow_draw.text((x, y), line, fill=(*glow_color, 200), font=font_title)
+            glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=8))
             img = Image.alpha_composite(img.convert("RGBA"), glow_layer).convert("RGB")
             draw = ImageDraw.Draw(img)
 
@@ -420,8 +482,23 @@ def composite_text(
             for ox, oy in [(-3,-3),(-3,0),(-3,3),(0,-3),(0,3),(3,-3),(3,0),(3,3)]:
                 draw.text((x + ox, y + oy), line, fill=outline_color, font=font_title)
 
-            # Main text with Claude-chosen color
-            draw.text((x, y), line, fill=text_color, font=font_title)
+            # Main text — emphasis word gets slightly different treatment
+            if emphasis_word and emphasis_word in line:
+                # Render word by word, emphasis word gets accent color
+                words_in_line = line.split()
+                curr_x = x
+                for word in words_in_line:
+                    word_text = word + " "
+                    if word == emphasis_word:
+                        # Emphasis: slightly larger or accent color
+                        accent = tuple(min(c + 40, 255) for c in text_color)
+                        draw.text((curr_x, y), word_text, fill=accent, font=font_title)
+                    else:
+                        draw.text((curr_x, y), word_text, fill=text_color, font=font_title)
+                    bbox = draw.textbbox((0, 0), word_text, font=font_title)
+                    curr_x += bbox[2] - bbox[0]
+            else:
+                draw.text((x, y), line, fill=text_color, font=font_title)
 
     # --- Step 4: Branding text (top-right, subtle) ---
     if branding:
@@ -497,45 +574,46 @@ def generate_thumbnail(
     sample_count: int = 10,
     avatar_path: Optional[Path] = None,
     enhance_prompt: str = "",
+    thumbnail_prompt: str = "",
+    positive_prompt: str = "",
+    youtube_title: str = "",
     style_ref_paths: Optional[list] = None,
 ) -> Optional[Path]:
-    """Full pipeline: extract best frame → img2img enhance → composite text → save.
+    """Full pipeline: extract best frame → img2img enhance → Claude text design → save.
 
     Parameters
     ----------
-    video_path : Path
-        Source video to extract frames from.
-    output_path : Path
-        Where to save the final thumbnail JPEG.
     title : str
-        Text to overlay (e.g., "ROOFTOP STUDY VIBES"). Usually from thumbnail_text.
-    branding : str
-        Channel name or watermark text (top-right pill).
-    sample_count : int
-        Number of frames to sample for sharpness scoring.
-    avatar_path : Path, optional
-        Channel avatar for corner logo.
+        Text overlay (from thumbnail_text). Claude may refine it.
     enhance_prompt : str
-        Prompt for img2img enhancement (e.g., the positive_prompt from the video).
-        If empty, skips API img2img and uses local Pillow enhancement only.
+        Legacy prompt for img2img. Overridden by thumbnail_prompt if set.
+    thumbnail_prompt : str
+        Dedicated img2img prompt from prompt generator. Also sent to Claude
+        for context-aware text design.
+    positive_prompt : str
+        SDXL positive prompt (scene context for Claude).
+    youtube_title : str
+        YouTube title (thematic coherence for Claude).
     style_ref_paths : list, optional
-        Paths to style reference images forwarded to enhance_thumbnail_image()
-        for Seedream 5 aesthetic conditioning.
+        Style reference images for Seedream 5 conditioning.
     """
     best = select_best_frame(video_path, sample_count)
     if not best:
         return None
 
-    # Step 1: Enhance the frame (img2img or local boost)
+    # Step 1: Enhance the frame
     enhanced = enhance_thumbnail_image(
         best,
-        prompt=enhance_prompt,
+        prompt=thumbnail_prompt or enhance_prompt,
         output_path=best.with_name(f"{best.stem}_enhanced.jpg"),
         style_ref_paths=style_ref_paths,
     )
 
-    # Step 2: Composite text + branding + avatar
+    # Step 2: Claude-designed text overlay
     return composite_text(
         enhanced, output_path,
         title=title, branding=branding, avatar_path=avatar_path,
+        thumbnail_prompt=thumbnail_prompt,
+        positive_prompt=positive_prompt,
+        youtube_title=youtube_title,
     )

@@ -113,17 +113,23 @@ def run_shared_pipeline(
         try:
             from shared.thumbnail_gen import generate_thumbnail
             thumb_out = current_video.with_name(f"{current_video.stem}_thumb.jpg")
-            # Use positive prompt for img2img thumbnail enhancement
-            enhance_prompt = ""
+
+            # Gather all prompt context for Claude-designed thumbnail
+            positive_prompt = ""
             if hasattr(config, "sdxl") and config.sdxl:
-                enhance_prompt = getattr(config.sdxl, "positive_prompt", "") or ""
+                positive_prompt = getattr(config.sdxl, "positive_prompt", "") or ""
+            thumbnail_prompt = getattr(config.publish, "thumbnail_prompt", "") or ""
+            youtube_title = config.publish.youtube_title or ""
 
             thumbnail_path = generate_thumbnail(
                 current_video, thumb_out,
-                title=config.publish.thumbnail_text or config.publish.youtube_title,
+                title=config.publish.thumbnail_text or youtube_title,
                 branding=config.post.watermark_text,
                 avatar_path=avatar_path,
-                enhance_prompt=enhance_prompt,
+                enhance_prompt=positive_prompt,
+                thumbnail_prompt=thumbnail_prompt,
+                positive_prompt=positive_prompt,
+                youtube_title=youtube_title,
             )
         except Exception as e:
             logger.warning(f"[Pipeline] Thumbnail generation failed: {e}")
