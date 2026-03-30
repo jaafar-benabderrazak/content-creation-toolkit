@@ -466,7 +466,13 @@ Plans:
 4. User settings (API keys, webhook URLs, profile configs) are readable and writable from the `settings` table via the dashboard
 5. Real-time Supabase subscriptions deliver row-level changes to dashboard consumers within 2 seconds of a write
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+- [ ] 25-01-PLAN.md — Supabase project setup + 4-table schema (videos, executions, prompts, settings) via MCP
+- [ ] 25-02-PLAN.md — Migration script: 210 video_roadmap.json entries upserted into videos table
+- [ ] 25-03-PLAN.md — Dashboard Supabase client + API routes rewrite (/api/roadmap, /api/history, /api/artifacts)
 
 ### Phase 26: GitHub CI/CD and Vercel Pipeline
 **Goal**: Every push to main auto-deploys the dashboard to Vercel, every PR gets a preview URL, and all secrets live in the Vercel dashboard — no manual deploy steps, no local env file management
