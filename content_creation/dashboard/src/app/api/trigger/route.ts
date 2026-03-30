@@ -1,51 +1,60 @@
-// Triggers the local pipeline server (pipeline_server.py) via ngrok tunnel.
-// Set PIPELINE_TRIGGER_URL to the ngrok URL (e.g., https://abc123.ngrok.io/trigger)
-// Set WEBHOOK_SECRET to match the local server's secret.
+// Triggers the cloud pipeline via Modal web endpoint.
+// Set MODAL_TRIGGER_URL to the Modal web endpoint URL.
+// Fallback: PIPELINE_TRIGGER_URL for local pipeline server (via tunnel).
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const triggerUrl = process.env.PIPELINE_TRIGGER_URL;
-  if (!triggerUrl) {
-    return Response.json(
-      { error: "PIPELINE_TRIGGER_URL not configured. Run pipeline_server.py + ngrok locally." },
-      { status: 503 }
-    );
-  }
-
+  const modalUrl = process.env.MODAL_TRIGGER_URL;
+  const localUrl = process.env.PIPELINE_TRIGGER_URL;
   const secret = process.env.WEBHOOK_SECRET || "pipeline-local-secret";
+
   const body = await request.json().catch(() => ({}));
 
-  try {
-    const res = await fetch(triggerUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-webhook-secret": secret,
-      },
-      body: JSON.stringify({ ...body, source: "dashboard" }),
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => "");
-      return Response.json(
-        { error: `Pipeline returned ${res.status}: ${errBody.slice(0, 200)}` },
-        { status: 502 }
-      );
+  // Try Modal first (cloud)
+  if (modalUrl) {
+    try {
+      const res = await fetch(modalUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, source: "dashboard" }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Response.json({ triggered: true, cloud: true, ...data });
+      }
+    } catch {
+      // Fall through to local
     }
-
-    const data = await res.json();
-    return Response.json({
-      triggered: true,
-      run_id: data.run_id,
-      message: data.message,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json(
-      { error: `Failed to reach pipeline server: ${message}. Is pipeline_server.py running?` },
-      { status: 502 }
-    );
   }
+
+  // Fallback: local pipeline server (via tunnel)
+  if (localUrl) {
+    try {
+      const res = await fetch(localUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-webhook-secret": secret,
+        },
+        body: JSON.stringify({ ...body, source: "dashboard" }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Response.json({ triggered: true, cloud: false, ...data });
+      }
+      const errBody = await res.text().catch(() => "");
+      return Response.json({ error: `Pipeline returned ${res.status}` }, { status: 502 });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown";
+      return Response.json({ error: `Pipeline unreachable: ${msg}` }, { status: 502 });
+    }
+  }
+
+  return Response.json(
+    { error: "Neither MODAL_TRIGGER_URL nor PIPELINE_TRIGGER_URL configured" },
+    { status: 503 }
+  );
 }
