@@ -44,11 +44,13 @@ class PipelineHandler(BaseHTTPRequestHandler):
     """HTTP handler for pipeline trigger and status endpoints."""
 
     def _send_json(self, status: int, data: dict) -> None:
+        origin = self.headers.get("Origin", "*")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, x-webhook-secret")
+        self.send_header("Access-Control-Allow-Origin", origin)
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept, x-webhook-secret")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Max-Age", "86400")
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
 
