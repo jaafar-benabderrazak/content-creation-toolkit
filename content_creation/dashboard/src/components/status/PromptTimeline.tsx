@@ -21,6 +21,13 @@ interface ProfileData {
   style_ref?: { handle?: string; backend?: string };
 }
 
+interface Artifacts {
+  video?: { path: string; size_mb: number; name: string } | null;
+  thumbnail?: { path: string; name: string } | null;
+  image?: { path: string; name: string; count: number } | null;
+  audio?: { path: string; size_mb: number; name: string } | null;
+}
+
 interface PromptTimelineProps {
   profile: string;
 }
@@ -37,15 +44,21 @@ const STEP_COLORS: Record<string, string> = {
 
 export function PromptTimeline({ profile }: PromptTimelineProps) {
   const [data, setData] = useState<ProfileData | null>(null);
+  const [artifacts, setArtifacts] = useState<Artifacts>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!profile) return;
     setLoading(true);
-    fetch(`/api/config/profiles/${profile.replace("-", "_")}`)
-      .then((r) => r.json())
-      .then((d) => setData(d.config || d))
+    Promise.all([
+      fetch(`/api/config/profiles/${profile.replace("-", "_")}`).then((r) => r.json()),
+      fetch("/api/artifacts").then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([profileData, arts]) => {
+        setData(profileData.config || profileData);
+        setArtifacts(arts || {});
+      })
       .catch(() => setError("Cannot load profile"))
       .finally(() => setLoading(false));
   }, [profile]);
@@ -80,6 +93,9 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
       sub: data.sdxl?.negative_prompt
         ? `Negative: ${data.sdxl.negative_prompt}`
         : undefined,
+      artifact: artifacts.image
+        ? `Result: ${artifacts.image.count} images generated (${artifacts.image.name})`
+        : undefined,
     },
     {
       id: "scenes",
@@ -96,6 +112,9 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
       time: "T+5s (async)",
       content: data.suno?.prompt_tags || data.video?.music_prompt || "(not set)",
       sub: data.suno?.genre ? `Genre: ${data.suno.genre}` : undefined,
+      artifact: artifacts.audio
+        ? `Result: ${artifacts.audio.name} (${artifacts.audio.size_mb} MB)`
+        : undefined,
     },
     {
       id: "thumbnail",
@@ -103,6 +122,9 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
       time: "T+render",
       content: data.publish?.thumbnail_text || "(not set)",
       sub: "Best frame → img2img enhance → text overlay",
+      artifact: artifacts.thumbnail
+        ? `Result: ${artifacts.thumbnail.name}`
+        : undefined,
     },
     {
       id: "youtube",
@@ -111,6 +133,9 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
       content: data.publish?.youtube_title || "(not set)",
       sub: data.publish?.youtube_tags
         ? `${data.publish.youtube_tags.length} tags • ${(data.publish.youtube_description || "").length} char description`
+        : undefined,
+      artifact: artifacts.video
+        ? `Result: ${artifacts.video.name} (${artifacts.video.size_mb} MB)`
         : undefined,
     },
   ];
@@ -155,6 +180,11 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
               {step.sub && (
                 <p className="text-[10px] text-muted-foreground truncate">
                   {step.sub}
+                </p>
+              )}
+              {step.artifact && (
+                <p className="text-[10px] text-emerald-400 font-mono mt-0.5">
+                  {step.artifact}
                 </p>
               )}
             </div>

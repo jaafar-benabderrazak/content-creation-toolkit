@@ -133,6 +133,43 @@ class PipelineHandler(BaseHTTPRequestHandler):
             })
             return
 
+        # --- Last Artifacts ---
+        if self.path.startswith("/artifacts"):
+            from pathlib import Path
+            import glob
+            out_dir = Path("out")
+            artifacts = {"video": None, "thumbnail": None, "image": None, "audio": None}
+
+            # Find most recent video
+            videos = sorted(out_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True) if out_dir.exists() else []
+            if videos:
+                v = videos[0]
+                artifacts["video"] = {"path": str(v), "size_mb": round(v.stat().st_size / (1024*1024), 1), "name": v.name}
+                # Find associated assets
+                assets_dir = v.with_name(v.stem + "_enhanced_assets")
+                if assets_dir.exists():
+                    # Thumbnail
+                    thumbs = list(assets_dir.glob("*thumb*")) + list(assets_dir.glob("*_processed_thumb*"))
+                    if not thumbs:
+                        thumbs = list(Path(".").glob(f"out/*thumb*.jpg"))
+                    if thumbs:
+                        artifacts["thumbnail"] = {"path": str(thumbs[0]), "name": thumbs[0].name}
+                    # Audio
+                    audio_files = list(assets_dir.glob("*.wav")) + list(assets_dir.glob("*.mp3"))
+                    if audio_files:
+                        a = audio_files[0]
+                        artifacts["audio"] = {"path": str(a), "size_mb": round(a.stat().st_size / (1024*1024), 1), "name": a.name}
+
+            # Find most recent generated image
+            cache_scenes = Path(".cache/images/scenes")
+            if cache_scenes.exists():
+                images = sorted(cache_scenes.glob("*.jpg"), key=lambda p: p.stat().st_mtime, reverse=True)
+                if images:
+                    artifacts["image"] = {"path": str(images[0]), "name": images[0].name, "count": len(images)}
+
+            self._send_json(200, artifacts)
+            return
+
         # --- Prompt Preview ---
         if self.path.startswith("/preview-prompts"):
             from urllib.parse import urlparse, parse_qs
