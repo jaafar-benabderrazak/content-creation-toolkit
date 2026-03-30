@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -17,6 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    <ClerkProvider>
     <html lang="en">
       <body className={inter.className}>
         <div className="flex min-h-screen">
@@ -29,6 +31,9 @@ export default function RootLayout({
               <p className="text-xs text-muted-foreground mt-1">
                 Local control panel
               </p>
+              <div className="mt-2">
+                <UserButton />
+              </div>
             </div>
             <nav className="flex flex-col gap-1">
               <Link
@@ -70,5 +75,6 @@ export default function RootLayout({
         <Toaster />
       </body>
     </html>
+    </ClerkProvider>
   );
 }
