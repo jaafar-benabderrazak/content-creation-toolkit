@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** One command produces a publish-ready video — from prompt to YouTube upload — with human approval gates via Discord/Slack before anything goes public.
-**Current focus:** Milestone v1.4 — Instagram Style Reference System (Phase 24)
+**Current focus:** Milestone v2.0 — Cloud Deploy (Clerk + Supabase + Modal + GitHub CI/CD)
 
 ## Current Position
 
-Phase: 24 of 24 (v1.4 — Instagram style reference system, @radstream aesthetic, img2img with reference images)
-Plan: 3 of 3 completed in current phase
-Status: Complete
-Last activity: 2026-03-29 — 24-03 complete: style ref wired into generate_scenes() (Seedream 5 + IP-Adapter) and enhance_thumbnail_image()
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v2.0
+Last activity: 2026-03-30 — Milestone v2.0 started (cloud deploy with Clerk auth, Supabase DB, Modal pipeline)
 
-Progress: [██████████] 100% (v1.4 milestone — 3/3 plans complete — Phase 24 done)
+Progress: [░░░░░░░░░░] 0% (v2.0 milestone)
 
 ## Performance Metrics
 

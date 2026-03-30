@@ -23,13 +23,24 @@ One command produces a publish-ready video — from prompt to YouTube upload —
 - ✓ Configurable video quality presets (1080p/720p/480p) — existing
 - ✓ Visual effects (parallax, dynamic lighting, time progression) — existing
 
-### Active (v1.2 — Smart Automation)
+### Active (v2.0 — Cloud Deploy)
 
-- [ ] Smart defaults — pre-fill config with known env values (Discord URL, API keys, channel info)
-- [ ] YouTube channel branding — fetch channel name, avatar, description via YouTube API
-- [ ] Auto-generate intro/outro/watermark from channel branding (name, logo, vibe)
-- [ ] AI prompt generation — user provides tags only, OpenAI generates full SDXL + Suno prompts
-- [ ] Tag-based pipeline — single command with tags produces a complete video
+- [ ] Clerk authentication on the Next.js dashboard (single user)
+- [ ] Supabase database for video roadmap, execution history, generated prompts, user settings
+- [ ] Cloud pipeline execution via Modal/Replicate (no local GPU needed)
+- [ ] GitHub CI/CD for automated deployments
+- [ ] Migrate local JSON files (video_roadmap.json, execution_log.json) to Supabase tables
+- [ ] Dashboard reads/writes all data from Supabase (not local filesystem)
+- [ ] Pipeline trigger sends jobs to cloud workers instead of local subprocess
+
+### Shipped (v1.2 — Smart Automation)
+
+- ✓ Smart defaults + env var fallback — Phase 16
+- ✓ YouTube channel branding + auto watermark/intro/outro — Phase 17
+- ✓ AI prompt generation (tags → Claude → 8 sections) — Phase 18
+- ✓ Local Gradio UI with scheduling + content roadmap — Phase 19
+- ✓ Unified Next.js dashboard — Phase 23
+- ✓ Instagram style reference system — Phase 24
 
 ### Shipped (v1.1 — AI Generation Quality)
 
