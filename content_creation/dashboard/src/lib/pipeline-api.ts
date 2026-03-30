@@ -17,8 +17,20 @@ export async function pipelineGet(path: string, timeoutMs = 30000): Promise<Resp
     const res = await fetch(`${base}${path}`, {
       signal: AbortSignal.timeout(timeoutMs),
       cache: "no-store",
+      headers: {
+        "User-Agent": "pipeline-dashboard/1.0",
+        "Accept": "application/json",
+      },
     });
-    const data = await res.json();
+    const text = await res.text();
+    // Cloudflare free tunnels sometimes return an HTML interstitial page
+    if (text.startsWith("<!") || text.startsWith("<html")) {
+      return Response.json(
+        { error: "Cloudflare tunnel returned interstitial page. Retry in a few seconds.", entries: [] },
+        { status: 502 }
+      );
+    }
+    const data = JSON.parse(text);
     return Response.json(data, { status: res.status });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -42,7 +54,11 @@ export async function pipelinePost(path: string, body: unknown): Promise<Respons
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),
     });
-    const data = await res.json();
+    const text = await res.text();
+    if (text.startsWith("<!") || text.startsWith("<html")) {
+      return Response.json({ error: "Cloudflare tunnel interstitial page. Retry." }, { status: 502 });
+    }
+    const data = JSON.parse(text);
     return Response.json(data, { status: res.status });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
