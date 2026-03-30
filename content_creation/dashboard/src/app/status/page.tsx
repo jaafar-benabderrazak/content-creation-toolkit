@@ -307,7 +307,7 @@ export default function StatusPage() {
             </p>
           )}
 
-          <div className="flex gap-3 items-end">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
             <div className="flex-1">
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Tags</label>
               <input
@@ -348,7 +348,7 @@ export default function StatusPage() {
           </div>
 
           {/* Generation Parameters */}
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Duration (min)</label>
               <input type="number" value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value) || 1)}

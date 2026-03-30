@@ -95,7 +95,7 @@ export default function RoadmapPage() {
       <Card>
         <CardHeader><CardTitle>Add Video</CardTitle></CardHeader>
         <CardContent>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}

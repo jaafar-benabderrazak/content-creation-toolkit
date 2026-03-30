@@ -22,8 +22,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="flex min-h-screen">
-          {/* Sidebar */}
-          <aside className="w-56 border-r bg-muted/40 p-4 flex flex-col gap-6">
+          {/* Sidebar — hidden on mobile, shown on md+ */}
+          <aside className="hidden md:flex w-56 shrink-0 border-r bg-muted/40 p-4 flex-col gap-6">
             <div>
               <h1 className="text-base font-semibold tracking-tight text-foreground">
                 Pipeline Dashboard
@@ -69,8 +69,23 @@ export default function RootLayout({
             </nav>
           </aside>
 
-          {/* Main content */}
-          <main className="flex-1 p-6">{children}</main>
+          {/* Mobile nav bar */}
+          <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b px-4 py-2 flex items-center justify-between">
+            <h1 className="text-sm font-semibold">Pipeline Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <nav className="flex gap-2 text-xs">
+                <Link href="/status" className="hover:text-accent-foreground">Generate</Link>
+                <Link href="/roadmap" className="hover:text-accent-foreground">Roadmap</Link>
+                <Link href="/prompts" className="hover:text-accent-foreground">Prompts</Link>
+                <Link href="/config" className="hover:text-accent-foreground">Config</Link>
+                <Link href="/credits" className="hover:text-accent-foreground">Credits</Link>
+              </nav>
+              <UserButton />
+            </div>
+          </div>
+
+          {/* Main content — full width, responsive padding */}
+          <main className="flex-1 w-full min-w-0 p-4 md:p-6 pt-14 md:pt-6">{children}</main>
         </div>
         <Toaster />
       </body>
