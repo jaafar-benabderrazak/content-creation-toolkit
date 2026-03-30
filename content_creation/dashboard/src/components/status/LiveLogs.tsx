@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePipelineUrl } from "@/hooks/use-pipeline";
 
 interface LogData {
   run_id: string;
@@ -17,11 +18,15 @@ export function LiveLogs() {
   const [error, setError] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
+  const pipelineUrl = usePipelineUrl();
 
   async function fetchLogs() {
+    const base = pipelineUrl;
+    if (!base) return;
     try {
       const res = await fetch(
-        `/api/logs?run_id=${runId}&offset=${offsetRef.current}`
+        `${base}/logs?run_id=${runId}&offset=${offsetRef.current}`,
+        { headers: { Accept: "application/json" } }
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

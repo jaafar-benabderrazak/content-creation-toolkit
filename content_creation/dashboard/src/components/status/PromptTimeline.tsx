@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { usePipelineUrl, pipelineFetch } from "@/hooks/use-pipeline";
 
 interface ProfileData {
   profile?: string;
@@ -47,21 +48,27 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
   const [artifacts, setArtifacts] = useState<Artifacts>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const pipelineUrl = usePipelineUrl();
 
   useEffect(() => {
     if (!profile) return;
     setLoading(true);
-    Promise.all([
-      fetch(`/api/config/profiles/${profile.replace("-", "_")}`).then((r) => r.json()),
-      fetch("/api/artifacts").then((r) => r.json()).catch(() => ({})),
-    ])
-      .then(([profileData, arts]) => {
+
+    // Profile from Vercel (bundled data), artifacts from pipeline server (direct)
+    const profilePromise = fetch(`/api/config/profiles/${profile.replace("-", "_")}`)
+      .then((r) => r.json());
+    const artifactsPromise = pipelineUrl
+      ? pipelineFetch(pipelineUrl, "/artifacts").catch(() => ({}))
+      : Promise.resolve({});
+
+    Promise.all([profilePromise, artifactsPromise])
+      .then(([profileData, arts]: [any, any]) => {
         setData(profileData.config || profileData);
         setArtifacts(arts || {});
       })
       .catch(() => setError("Cannot load profile"))
       .finally(() => setLoading(false));
-  }, [profile]);
+  }, [profile, pipelineUrl]);
 
   if (!profile) return null;
   if (loading) return <p className="text-xs text-muted-foreground">Loading prompts...</p>;
