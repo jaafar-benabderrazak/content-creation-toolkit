@@ -58,10 +58,39 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
     const artifactsPromise = fetch("/api/artifacts")
       .then((r) => r.json())
       .catch(() => ({}));
+    // Try to get latest generated prompts from Supabase
+    const supabasePromptsPromise = fetch("/api/history")
+      .then((r) => r.json())
+      .then((d: any) => {
+        // Get the most recent execution to find associated prompts
+        const latest = d.entries?.[0];
+        if (latest?.id) {
+          return fetch(`/api/preview-prompts?video_id=${latest.id}`)
+            .then((r) => r.json())
+            .catch(() => null);
+        }
+        return null;
+      })
+      .catch(() => null);
 
-    Promise.all([profilePromise, artifactsPromise])
-      .then(([profileData, arts]: [any, any]) => {
-        setData(profileData.config || profileData);
+    Promise.all([profilePromise, artifactsPromise, supabasePromptsPromise])
+      .then(([profileData, arts, supabasePrompts]: [any, any, any]) => {
+        const cfg = profileData.config || profileData;
+        // Merge Supabase prompts into profile data if available
+        if (supabasePrompts && supabasePrompts.positive_prompt) {
+          if (!cfg.sdxl) cfg.sdxl = {};
+          cfg.sdxl.positive_prompt = supabasePrompts.positive_prompt;
+          cfg.sdxl.negative_prompt = supabasePrompts.negative_prompt;
+          cfg.sdxl.scene_templates = supabasePrompts.scene_templates;
+          if (!cfg.suno) cfg.suno = {};
+          cfg.suno.prompt_tags = supabasePrompts.music_prompt;
+          if (!cfg.publish) cfg.publish = {};
+          cfg.publish.thumbnail_text = supabasePrompts.thumbnail_text;
+          cfg.publish.youtube_title = supabasePrompts.youtube_title;
+          cfg.publish.youtube_description = supabasePrompts.youtube_description;
+          cfg.publish.youtube_tags = supabasePrompts.youtube_tags;
+        }
+        setData(cfg);
         setArtifacts(arts || {});
       })
       .catch(() => setError("Cannot load profile"))

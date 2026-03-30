@@ -1,11 +1,12 @@
 profile: cinematic
-
 video:
-  style_prompt: "cinematic wide shot, dramatic lighting, film photography, high contrast, warm golden hour, shallow depth of field, 35mm grain, premium production"
-  music_prompt: "orchestral cinematic score, sweeping strings, subtle percussion, emotional build, no lyrics, Hollywood quality, 80 bpm"
+  style_prompt: cinematic wide shot, dramatic lighting, film photography, high contrast,
+    warm golden hour, shallow depth of field, 35mm grain, premium production
+  music_prompt: orchestral cinematic score, sweeping strings, subtle percussion, emotional
+    build, no lyrics, Hollywood quality, 80 bpm
   mood: dramatic
   duration_minutes: 60
-  resolution: "1080p"
+  resolution: 1080p
   quality_preset: high
   scene_count: 18
   scene_duration_seconds: 30.0
@@ -14,45 +15,102 @@ video:
   enable_parallax: true
   enable_particles: true
   parallax_strength: 0.05
-
 post:
   watermark_enabled: true
-  watermark_text: "Your Channel"
+  watermark_text: Your Channel
   watermark_position: bottom-right
   subtitles_enabled: false
   intro_enabled: false
   outro_enabled: false
-
 publish:
   youtube_enabled: true
-  youtube_title: "Cinematic Study Session — Focus & Flow"
-  youtube_description: "An immersive cinematic study session with dramatic visuals and orchestral music."
+  youtube_title: Golden Hour Solarpunk Rooftop Garden | Sustainable City Vibes
+  youtube_description: 'Escape into a sustainable future with this cinematic journey
+    through solarpunk rooftop gardens. Experience the harmony of technology and nature
+    as solar panels integrate seamlessly with lush greenery under warm golden hour
+    lighting.
+
+
+    This premium visual experience showcases the beauty of green cities, where communities
+    thrive in rooftop gardens powered by clean energy. Perfect for relaxation, inspiration,
+    or dreaming of a more sustainable tomorrow.
+
+
+    Immerse yourself in the warm, hopeful atmosphere of solarpunk aesthetics - where
+    technology serves nature and communities flourish. Subscribe for more cinematic
+    sustainable future content and eco-friendly inspiration!'
   youtube_tags:
-    - cinematic
-    - study with me
-    - focus
-    - orchestral
-    - dramatic
-  youtube_category_id: "27"
+  - solarpunk
+  - rooftop garden
+  - solar panels
+  - green city
+  - sustainable living
+  - golden hour
+  - cinematic nature
+  - eco friendly
+  - urban farming
+  - renewable energy
+  - future city
+  - green architecture
+  - sustainable future
+  - rooftop farming
+  - solar energy
+  - urban sustainability
+  - eco city
+  - green technology
+  - sustainable design
+  youtube_category_id: '27'
   youtube_privacy: private
   thumbnail_enabled: true
-
+  thumbnail_text: SOLARPUNK ROOFTOP VIBES
 notify:
-  # webhook URLs loaded from env vars (NOTF_DISCORD_WEBHOOK_URL, NOTF_SLACK_WEBHOOK_URL)
   require_approval: true
   approval_timeout_seconds: 3600
-
 sdxl:
-  negative_prompt: "cartoon, anime, watermark, text, logo, oversaturated, flat lighting"
-  positive_prompt: "cinematic wide shot, dramatic lighting, film photography, high contrast, golden hour, shallow depth of field, 35mm grain"
+  negative_prompt: dark, gloomy, pollution, concrete jungle, industrial waste, smog,
+    artificial lighting, cold tones, oversaturated, blurry
+  positive_prompt: Cinematic wide shot of a sprawling solarpunk rooftop garden with
+    gleaming solar panels integrated into lush greenery, warm golden hour sunlight
+    casting dramatic shadows across vertical farms and sustainable architecture, shallow
+    depth of field highlighting blooming plants against a green cityscape backdrop,
+    35mm film grain, high contrast lighting, premium cinematic production quality,
+    warm amber tones
   scene_templates:
-    - "{positive_prompt}, {weather}, epic composition, anamorphic lens"
-    - "{positive_prompt}, {time_of_day}, volumetric light, cinematic color grade"
-    - "{positive_prompt}, {weather}, {time_of_day}, dramatic shadows, premium production"
-  # steps, guidance_scale, quality_suffix overridden by quality_preset validator
-
+  - Aerial view of interconnected rooftop gardens with solar panel canopies, warm
+    sunlight filtering through hanging vines and trellises, shallow focus on blooming
+    flowers with city skyline softly blurred, 35mm grain texture, golden hour warmth
+  - Close-up of hands tending to tomato plants growing beneath translucent solar panels,
+    dramatic backlighting creating lens flares, shallow depth of field on green leaves,
+    warm golden tones, high contrast film photography aesthetic
+  - Wide establishing shot of multi-level rooftop farm with workers harvesting vegetables,
+    solar panels gleaming in afternoon sun, dramatic shadows across wooden walkways,
+    35mm grain, premium production lighting and composition
+  - Low angle view looking up through vertical garden towers with integrated photovoltaic
+    cells, warm sunlight streaming between leaves, shallow focus on dewdrops, golden
+    hour glow, cinematic depth and contrast
+  - Panoramic view of green city district with solar-covered rooftops connected by
+    sky bridges, warm sunset lighting casting long shadows, film grain texture, high
+    contrast between light and shadow areas
+  - Medium shot of community gathering space on rooftop garden with solar pergola
+    overhead, warm golden light filtering through plants, shallow depth highlighting
+    faces in conversation, 35mm film aesthetic
+  - Detail shot of rainwater collection system integrated with solar panels and herb
+    garden, dramatic side lighting creating texture and depth, warm amber tones, premium
+    cinematography with shallow focus
+  - Time-lapse style wide shot of rooftop garden transitioning from day to evening,
+    solar panels tracking sun movement, warm golden hour light gradually shifting,
+    high contrast film photography with grain texture
 suno:
-  genre: "orchestral cinematic"
-  prompt_tags: "cinematic orchestral, epic, atmospheric, sweeping strings, no vocals, film score"
+  genre: orchestral cinematic
+  prompt_tags: Uplifting ambient electronic with organic textures, warm synthesizer
+    pads, gentle acoustic guitar arpeggios, nature sounds, hopeful and sustainable
+    future vibes
   make_instrumental: true
   track_count: 2
+style_ref:
+  handle: radstream
+  backend: replicate
+  post_limit: 30
+  max_reference_images: 6
+  refresh: false
+  style_strength: 0.6
