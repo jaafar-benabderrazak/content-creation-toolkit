@@ -87,7 +87,6 @@ def update_vercel_env(url: str):
     # Remove old
     subprocess.run(
         f"vercel env rm PIPELINE_TRIGGER_URL production --yes --scope {VERCEL_SCOPE}",
-        shell=True,
         capture_output=True, shell=True,
     )
     # Add new
