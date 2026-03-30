@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePipelineUrl } from "@/hooks/use-pipeline";
 
 interface LogData {
   run_id: string;
@@ -18,15 +17,12 @@ export function LiveLogs() {
   const [error, setError] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
-  const pipelineUrl = usePipelineUrl();
 
   async function fetchLogs() {
-    const base = pipelineUrl;
-    if (!base) return;
     try {
+      // Try Supabase-backed logs via API first, fallback to pipeline-url proxy
       const res = await fetch(
-        `${base}/logs?run_id=${runId}&offset=${offsetRef.current}`,
-        { headers: { Accept: "application/json" } }
+        `/api/logs?run_id=${runId}&offset=${offsetRef.current}`
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

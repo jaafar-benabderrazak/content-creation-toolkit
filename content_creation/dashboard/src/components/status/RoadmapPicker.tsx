@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePipelineUrl, pipelineFetch } from "@/hooks/use-pipeline";
 
 interface RoadmapEntry {
   id: string;
@@ -22,21 +21,18 @@ export function RoadmapPicker({ onSelect }: RoadmapPickerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const pipelineUrl = usePipelineUrl();
 
   useEffect(() => {
-    if (!pipelineUrl) return;
     setLoading(true);
-    pipelineFetch(pipelineUrl, "/roadmap?status=planned")
+    fetch("/api/roadmap?status=planned")
+      .then((r) => r.json())
       .then((data: any) => {
-        if (data.error) {
-          setError(data.error);
-        }
+        if (data.error) setError(data.error);
         setEntries(data.entries || []);
       })
       .catch((e: Error) => setError(`Fetch failed: ${e.message || e}`))
       .finally(() => setLoading(false));
-  }, [pipelineUrl]);
+  }, []);
 
   // Extract universe groups from titles like "[Solarpunk] Solar Garden Study"
   const universes = useMemo(() => {

@@ -1,6 +1,16 @@
 export const runtime = "nodejs";
-import { pipelineGet } from "@/lib/pipeline-api";
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  return pipelineGet("/history");
+  const { data, error } = await supabase
+    .from("executions")
+    .select("*")
+    .order("started_at", { ascending: false })
+    .limit(30);
+
+  if (error) {
+    return Response.json({ error: error.message, entries: [] }, { status: 500 });
+  }
+
+  return Response.json({ entries: data || [] });
 }
