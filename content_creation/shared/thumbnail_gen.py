@@ -222,6 +222,67 @@ def enhance_thumbnail_image(
     return out
 
 
+def _claude_optimize_text(image_path: Path, title: str) -> dict:
+    """Use Claude to analyze the image and optimize text overlay placement + styling.
+
+    Returns dict with: text, position (top-left/bottom-left/center), font_size,
+    text_color (hex), outline_color (hex), lines (word-wrapped).
+    """
+    try:
+        import anthropic
+        import base64
+
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            return {}
+
+        img_bytes = image_path.read_bytes()
+        b64 = base64.b64encode(img_bytes).decode()
+        media_type = "image/jpeg" if str(image_path).lower().endswith(".jpg") else "image/png"
+
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=500,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {"type": "base64", "media_type": media_type, "data": b64},
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            f"This image will be a YouTube thumbnail. The text overlay is: \"{title}\"\n\n"
+                            "Analyze the image and return JSON with:\n"
+                            "- text: the final text to display (can refine the input, 3-5 words, ALL CAPS, punchy)\n"
+                            "- position: where to place text for maximum impact without covering key visual elements "
+                            "(one of: bottom-left, bottom-center, top-left, center)\n"
+                            "- font_size: optimal size in pixels (60-90) based on text length and image complexity\n"
+                            "- text_color: hex color that contrasts well with this specific image (e.g., #FFFFFF, #FFE066)\n"
+                            "- outline_color: hex color for text outline/shadow (usually dark, e.g., #000000, #1a1a2e)\n"
+                            "- lines: the text split into 1-2 lines for best visual balance (array of strings)\n\n"
+                            "Return JSON only. No explanation."
+                        ),
+                    },
+                ],
+            }],
+        )
+
+        import json
+        import re
+        text = response.content[0].text
+        text = re.sub(r"```json\s*", "", text)
+        text = re.sub(r"```\s*$", "", text).strip()
+        result = json.loads(text)
+        logger.info(f"[Thumbnail] Claude text optimization: {result.get('text', '?')} at {result.get('position', '?')}")
+        return result
+    except Exception as e:
+        logger.warning(f"[Thumbnail] Claude text optimization failed: {e}")
+        return {}
+
+
 def composite_text(
     image_path: Path,
     output_path: Path,
@@ -229,11 +290,18 @@ def composite_text(
     branding: str = "",
     avatar_path: Optional[Path] = None,
 ) -> Path:
-    """Composite title text with YouTube-optimized visual effects."""
+    """Composite title text with YouTube-optimized visual effects.
+
+    Uses Claude vision to analyze the image and optimize text placement,
+    then falls back to default positioning if Claude is unavailable.
+    """
     from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
     img = Image.open(image_path).convert("RGB")
     img = img.resize((THUMB_WIDTH, THUMB_HEIGHT), Image.LANCZOS)
+
+    # --- Step 0: Ask Claude for optimal text placement ---
+    claude_opts = _claude_optimize_text(image_path, title) if title else {}
 
     # --- Step 1: Enhance base image ---
     img = ImageEnhance.Contrast(img).enhance(1.2)
@@ -269,50 +337,91 @@ def composite_text(
                 continue
         return ImageFont.load_default()
 
-    # --- Step 3: Title text (bottom-left, large, with glow + outline) ---
+    # --- Step 3: Title text with Claude-optimized placement ---
     if title:
-        # Word-wrap long titles
-        font_title = _load_font(72)
-        words = title.upper().split()
-        lines = []
-        current_line = ""
-        max_width = THUMB_WIDTH - 120  # 60px margin each side
+        # Use Claude recommendations or defaults
+        final_text = claude_opts.get("text", title).upper()
+        font_size = claude_opts.get("font_size", 72)
+        position = claude_opts.get("position", "bottom-left")
+        text_color_hex = claude_opts.get("text_color", "#FFFFF0")
+        outline_color_hex = claude_opts.get("outline_color", "#000000")
+        text_lines = claude_opts.get("lines", None)
 
-        for word in words:
-            test_line = f"{current_line} {word}".strip()
-            bbox = draw.textbbox((0, 0), test_line, font=font_title)
-            if bbox[2] - bbox[0] > max_width and current_line:
+        # Parse hex colors
+        def _hex_to_rgb(h: str) -> tuple:
+            h = h.lstrip("#")
+            return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+        try:
+            text_color = _hex_to_rgb(text_color_hex)
+            outline_color = _hex_to_rgb(outline_color_hex)
+        except (ValueError, IndexError):
+            text_color = (255, 255, 240)
+            outline_color = (0, 0, 0)
+
+        font_title = _load_font(int(font_size))
+
+        # Word-wrap: use Claude's lines or auto-wrap
+        if text_lines and isinstance(text_lines, list):
+            lines = [l.upper() for l in text_lines]
+        else:
+            words = final_text.split()
+            lines = []
+            current_line = ""
+            max_width = THUMB_WIDTH - 120
+
+            for word in words:
+                test_line = f"{current_line} {word}".strip()
+                bbox = draw.textbbox((0, 0), test_line, font=font_title)
+                if bbox[2] - bbox[0] > max_width and current_line:
+                    lines.append(current_line)
+                    current_line = word
+                else:
+                    current_line = test_line
+            if current_line:
                 lines.append(current_line)
-                current_line = word
-            else:
-                current_line = test_line
-        if current_line:
-            lines.append(current_line)
 
-        # Position: bottom-left with margin
-        line_height = 80
+        # Position based on Claude recommendation
+        line_height = int(font_size) + 10
         total_height = len(lines) * line_height
-        start_y = THUMB_HEIGHT - total_height - 80  # 80px from bottom
+
+        if position == "top-left":
+            start_y = 60
+            x_base = 60
+        elif position == "center":
+            start_y = (THUMB_HEIGHT - total_height) // 2
+            x_base = None  # center each line
+        elif position == "bottom-center":
+            start_y = THUMB_HEIGHT - total_height - 80
+            x_base = None
+        else:  # bottom-left (default)
+            start_y = THUMB_HEIGHT - total_height - 80
+            x_base = 60
 
         for i, line in enumerate(lines):
-            x = 60
+            if x_base is None:
+                # Center the line
+                bbox = draw.textbbox((0, 0), line, font=font_title)
+                tw = bbox[2] - bbox[0]
+                x = (THUMB_WIDTH - tw) // 2
+            else:
+                x = x_base
             y = start_y + i * line_height
 
-            # Glow effect (blurred shadow layer)
+            # Glow effect
             glow_layer = Image.new("RGBA", (THUMB_WIDTH, THUMB_HEIGHT), (0, 0, 0, 0))
             glow_draw = ImageDraw.Draw(glow_layer)
-            glow_draw.text((x, y), line, fill=(0, 0, 0, 200), font=font_title)
+            glow_draw.text((x, y), line, fill=(*outline_color, 200), font=font_title)
             glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=6))
             img = Image.alpha_composite(img.convert("RGBA"), glow_layer).convert("RGB")
-            draw = ImageDraw.Draw(img)  # re-create draw after composite
+            draw = ImageDraw.Draw(img)
 
-            # Thick outline (draw text offset in 8 directions)
-            outline_color = (0, 0, 0)
+            # Thick outline (8 directions)
             for ox, oy in [(-3,-3),(-3,0),(-3,3),(0,-3),(0,3),(3,-3),(3,0),(3,3)]:
                 draw.text((x + ox, y + oy), line, fill=outline_color, font=font_title)
 
-            # Main text — white with slight yellow tint for warmth
-            draw.text((x, y), line, fill=(255, 255, 240), font=font_title)
+            # Main text with Claude-chosen color
+            draw.text((x, y), line, fill=text_color, font=font_title)
 
     # --- Step 4: Branding text (top-right, subtle) ---
     if branding:

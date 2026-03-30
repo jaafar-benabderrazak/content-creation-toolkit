@@ -155,17 +155,17 @@ export function PromptTimeline({ profile }: PromptTimelineProps) {
     },
     {
       id: "thumbnail",
-      label: "Thumbnail Pipeline",
+      label: "Thumbnail Frame + Enhance",
       time: "T+render",
-      content: `1. Extract best frame (OpenCV Laplacian sharpness scoring across 10 samples)`,
-      sub: `2. img2img enhance: ${(data.publish as any)?.thumbnail_prompt || "boost contrast, dramatic rim lighting, vibrant colors, cinematic depth"}`,
+      content: "1. Extract best frame (OpenCV Laplacian sharpness, 10 samples)",
+      sub: `2. img2img: ${(data.publish as any)?.thumbnail_prompt || "dramatic lighting, boost contrast, vibrant cinematic depth"}`,
     },
     {
       id: "thumb-text" as const,
-      label: "Thumbnail Text Overlay",
+      label: "Thumbnail Text (Claude Vision)",
       time: "T+render",
       content: data.publish?.thumbnail_text || "(not set)",
-      sub: "Impact 72px ALL CAPS, glow + 8-dir outline, dark gradient, vignette, avatar logo",
+      sub: "Claude analyzes the image → picks optimal position, font size, text color, outline color for this specific frame. Fallback: Impact 72px bottom-left white.",
       artifact: artifacts.thumbnail
         ? `Result: ${artifacts.thumbnail.name}`
         : undefined,
