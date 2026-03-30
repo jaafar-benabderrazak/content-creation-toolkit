@@ -29,7 +29,7 @@ try:
 except ImportError:
     pass
 
-PORT = 8000
+PORT = 8080
 VERCEL_SCOPE = "jaafar-benabderrazaks-projects"
 CLOUDFLARED_URL = [None]  # mutable container for thread
 
